@@ -13,6 +13,10 @@ jobs:
     steps:
       - name: Checks-out repository 
         uses: actions/checkout@v4
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
       - name: Build
         run: |
           dotnet build ./src/
