@@ -1,0 +1,37 @@
+name: tests
+
+on:
+  pull_request:
+      types: [ opened, synchronize, reopened, ready_for_review, labeled, unlabeled ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checks-out repository 
+        uses: actions/checkout@v4
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: Build
+        run: |
+          dotnet build ./src/
+      - name: Test
+        run: |
+          dotnet test ./src/ --no-build -f "net9.0" --blame-hang --blame-hang-timeout 15m -l "console;verbosity=detailed" -l "trx;LogFileName=test-results.trx"
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Test results                                # Name of the check run which will be created
+          path: src/Tests/*/TestResults/test-results.trx    # Path to test results
+          reporter: dotnet-trx                              # Format of test results

@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc", "ExprCalc\ExprCalc.csproj", "{D6F4EBC9-7267-4A4A-AE07-C3F982347A9E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{11875CEC-539A-4607-B268-1E6592F094F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.Tests", "Tests\ExprCalc.Tests\ExprCalc.Tests.csproj", "{56A0AA8D-1096-44C7-A804-295A6D733418}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,8 +19,15 @@ Global
 		{D6F4EBC9-7267-4A4A-AE07-C3F982347A9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6F4EBC9-7267-4A4A-AE07-C3F982347A9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6F4EBC9-7267-4A4A-AE07-C3F982347A9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56A0AA8D-1096-44C7-A804-295A6D733418}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56A0AA8D-1096-44C7-A804-295A6D733418}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56A0AA8D-1096-44C7-A804-295A6D733418}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56A0AA8D-1096-44C7-A804-295A6D733418}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{56A0AA8D-1096-44C7-A804-295A6D733418} = {11875CEC-539A-4607-B268-1E6592F094F5}
 	EndGlobalSection
 EndGlobal
