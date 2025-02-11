@@ -1,0 +1,21 @@
+name: tests
+
+on:
+  pull_request:
+      types: [ opened, synchronize, reopened, ready_for_review, labeled, unlabeled ]
+  push:
+    branches: [ main ]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checks-out repository 
+        uses: actions/checkout@v4
+      - name: Build
+        run: |
+          dotnet build ./src/
+      - name: Test net60
+        run: |
+          dotnet test ./src/ --no-build -f "net9.0" --blame-hang --blame-hang-timeout 15m -l "console;verbosity=detailed"
