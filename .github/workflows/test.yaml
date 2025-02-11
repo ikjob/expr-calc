@@ -20,6 +20,13 @@ jobs:
       - name: Build
         run: |
           dotnet build ./src/
-      - name: Test net60
+      - name: Test
         run: |
-          dotnet test ./src/ --no-build -f "net9.0" --blame-hang --blame-hang-timeout 15m -l "console;verbosity=detailed"
+          dotnet test ./src/ --no-build -f "net9.0" --blame-hang --blame-hang-timeout 15m -l "console;verbosity=detailed" -l "trx;LogFileName=test-results.trx"
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Unit Tests                                  # Name of the check run which will be created
+          path: src/Tests/*/TestResults/test-results.trx    # Path to test results
+          reporter: dotnet-trx                              # Format of test results
