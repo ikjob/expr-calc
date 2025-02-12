@@ -32,6 +32,6 @@ jobs:
         uses: dorny/test-reporter@v1
         if: success() || failure()    # run this step even if previous step failed
         with:
-          name: Test results                                # Name of the check run which will be created
-          path: src/Tests/*/TestResults/test-results.trx    # Path to test results
-          reporter: dotnet-trx                              # Format of test results
+          name: Test results                                 # Name of the check run which will be created
+          path: src/*/*.Tests/TestResults/test-results.trx   # Path to test results
+          reporter: dotnet-trx                               # Format of test results
