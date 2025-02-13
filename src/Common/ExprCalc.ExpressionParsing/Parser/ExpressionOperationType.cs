@@ -22,9 +22,9 @@ namespace ExprCalc.ExpressionParsing.Parser
 
     public static class ExpressionNodeTypeExtensions
     {
-        public static string GetStringRepr(this ExpressionOperationType exprNodeType)
+        public static string GetStringRepr(this ExpressionOperationType exprOpType)
         {
-            return exprNodeType switch
+            return exprOpType switch
             {
                 ExpressionOperationType.Add => "+",
                 ExpressionOperationType.Subtract => "-",
@@ -34,21 +34,21 @@ namespace ExprCalc.ExpressionParsing.Parser
                 ExpressionOperationType.UnaryPlus => "+",
                 ExpressionOperationType.UnaryMinus => "-",
                 ExpressionOperationType.Ln => "ln",
-                _ => throw new NotImplementedException(),
+                _ => throw new UncatchableParserException("Unexpected expression operation type: " + exprOpType.ToString()),
             };
         }
 
-        public static bool IsBinary(this ExpressionOperationType exprNodeType)
+        public static bool IsBinary(this ExpressionOperationType exprOpType)
         {
-            return exprNodeType <= ExpressionOperationType.Exponent;
+            return exprOpType <= ExpressionOperationType.Exponent;
         }
-        public static bool IsUnary(this ExpressionOperationType exprNodeType)
+        public static bool IsUnary(this ExpressionOperationType exprOpType)
         {
-            return exprNodeType >= ExpressionOperationType.UnaryPlus;
+            return exprOpType >= ExpressionOperationType.UnaryPlus;
         }
-        public static bool IsFunction(this ExpressionOperationType exprNodeType)
+        public static bool IsFunction(this ExpressionOperationType exprOpType)
         {
-            return exprNodeType >= ExpressionOperationType.Ln;
+            return exprOpType >= ExpressionOperationType.Ln;
         }
     }
 }

@@ -49,7 +49,7 @@ namespace ExprCalc.ExpressionParsing.Parser
                 case Lexer.TokenType.ExponentSign:
                     return Exponent;
                 default:
-                    throw new Exception();
+                    throw new UncatchableParserException("Unexpected token for expression operation: " + token.ToString());
             }
         }
 
@@ -62,7 +62,7 @@ namespace ExprCalc.ExpressionParsing.Parser
                 case Lexer.TokenType.Minus:
                     return UnaryMinus;
                 default:
-                    throw new Exception();
+                    throw new UncatchableParserException("Unexpected token for unary operator: " + token.ToString());
             }
         }
 
