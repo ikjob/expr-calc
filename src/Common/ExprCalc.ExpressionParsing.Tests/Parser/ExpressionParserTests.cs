@@ -21,6 +21,7 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
                 ["-ln(ln(15) + 10)", -2.5422356667537486481598345380761],
                 ["33 / 55", 0.6],
                 ["(5 ^ 2 - 3 ^ 2) * 2 - 4 ^ 2", 16],
+                ["-2.5 * -2", 5],
             ];
 
         public static IEnumerable<object[]> ValidExpressions => ValidExpressionsWithResults.Select(x => new object[] { x[0] });
