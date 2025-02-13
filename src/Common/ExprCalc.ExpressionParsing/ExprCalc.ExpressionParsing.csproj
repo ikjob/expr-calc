@@ -13,9 +13,5 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Representation\" />
-  </ItemGroup>
-
 
 </Project>

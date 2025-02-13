@@ -45,7 +45,7 @@ namespace ExprCalc.ExpressionParsing.Lexer
             return _text.AsSpan(Offset, Length);
         }
 
-        public string GetTokenTextDebug(int maxLength, bool ellipses = true)
+        public string GetTokenTextDebug(int maxLength = DefaultTokenDisplayLength, bool ellipses = true)
         {
             if (Length <= maxLength)
                 return _text.Substring(Offset, Length);
@@ -58,15 +58,15 @@ namespace ExprCalc.ExpressionParsing.Lexer
         public void ThrowOnError()
         {
             if (ErrorDescription != null)
-                throw new TokenizationException($"{ErrorDescription}. At [{Offset}, {Length}]. Value = {GetTokenTextDebug(DefaultTokenDisplayLength)}", Offset, Length);
+                throw new TokenizationException($"{ErrorDescription}. At [{Offset}, {Length}]. Value = {GetTokenTextDebug()}", Offset, Length);
         }
 
         public override string ToString()
         {
             if (ErrorDescription != null)
-                return $"{Type}[{GetTokenTextDebug(DefaultTokenDisplayLength)}]. Error: {ErrorDescription}";
+                return $"{Type}[{GetTokenTextDebug()}]. Error: {ErrorDescription}";
 
-            return $"{Type}[{GetTokenTextDebug(DefaultTokenDisplayLength)}]";
+            return $"{Type}[{GetTokenTextDebug()}]";
         }
     }
 }
