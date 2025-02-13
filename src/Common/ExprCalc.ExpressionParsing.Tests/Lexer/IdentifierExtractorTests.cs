@@ -12,7 +12,7 @@ namespace ExprCalc.ExpressionParsing.Tests.Lexer
         [Theory]
         [InlineData("ln(3)", 0, 2)]
         [InlineData(" Abc12+", 1, 5)]
-        [InlineData("a_b", 0, 1)]
+        [InlineData("a_b", 0, 3)]
         public void ParseIdentifierTest(string text, int offset, int expectedLength)
         {
             var token = IdentifierExtractor.ParseIdentifier(text, ref offset);

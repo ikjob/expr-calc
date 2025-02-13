@@ -45,12 +45,12 @@ namespace ExprCalc.ExpressionParsing.Lexer
             return _text.AsSpan(Offset, Length);
         }
 
-        public string GetTokenTextDebug(int maxLength = DefaultTokenDisplayLength, bool ellipses = true)
+        public ReadOnlySpan<char> GetTokenTextDebug(int maxLength = DefaultTokenDisplayLength, bool ellipses = true)
         {
             if (Length <= maxLength)
-                return _text.Substring(Offset, Length);
+                return _text.AsSpan(Offset, Length);
             else if (!ellipses)
-                return _text.Substring(Offset, maxLength);
+                return _text.AsSpan(Offset, maxLength);
             else
                 return _text.Substring(Offset, maxLength) + "..";
         }

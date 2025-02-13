@@ -36,34 +36,25 @@ namespace ExprCalc.ExpressionParsing.Parser
 
         public static ExpressionOperation GetOperatorForLexerToken(Lexer.TokenType token)
         {
-            switch (token)
+            return token switch
             {
-                case Lexer.TokenType.Plus:
-                    return Add;
-                case Lexer.TokenType.Minus:
-                    return Subtract;
-                case Lexer.TokenType.MultiplicationSign:
-                    return Multiply;
-                case Lexer.TokenType.DivisionSign:
-                    return Divide;
-                case Lexer.TokenType.ExponentSign:
-                    return Exponent;
-                default:
-                    throw new UncatchableParserException("Unexpected token for expression operation: " + token.ToString());
-            }
+                Lexer.TokenType.Plus => Add,
+                Lexer.TokenType.Minus => Subtract,
+                Lexer.TokenType.MultiplicationSign => Multiply,
+                Lexer.TokenType.DivisionSign => Divide,
+                Lexer.TokenType.ExponentSign => Exponent,
+                _ => throw new UncatchableParserException("Unexpected token for expression operation: " + token.ToString()),
+            };
         }
 
         public static ExpressionOperation GetUnaryOperatorForLexerToken(Lexer.TokenType token)
         {
-            switch (token)
+            return token switch
             {
-                case Lexer.TokenType.Plus:
-                    return UnaryPlus;
-                case Lexer.TokenType.Minus:
-                    return UnaryMinus;
-                default:
-                    throw new UncatchableParserException("Unexpected token for unary operator: " + token.ToString());
-            }
+                Lexer.TokenType.Plus => UnaryPlus,
+                Lexer.TokenType.Minus => UnaryMinus,
+                _ => throw new UncatchableParserException("Unexpected token for unary operator: " + token.ToString()),
+            };
         }
 
         // =========

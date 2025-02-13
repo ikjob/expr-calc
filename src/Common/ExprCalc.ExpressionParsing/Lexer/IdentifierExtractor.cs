@@ -17,7 +17,7 @@ namespace ExprCalc.ExpressionParsing.Lexer
                 throw new ArgumentException($"Symbol at initial position for identifier should be an ascii letter. Found: {text[position]}");
 
             int initialPos = position;
-            while (position < text.Length && char.IsAsciiLetterOrDigit(text[position]))
+            while (position < text.Length && (char.IsAsciiLetterOrDigit(text[position]) || text[position] == '_'))
                 position++;
 
             return new Token(text, TokenType.Identifier, initialPos, position - initialPos);
