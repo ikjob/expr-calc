@@ -229,17 +229,17 @@ namespace ExprCalc.ExpressionParsing.Parser
             {
                 case 1:
                     if (args.Count < 1)
-                        throw new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 1 operand which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", 0);
+                        return ValueTask.FromException<TNode>(new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 1 operand which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", 0));
                     var lastArg = args.Pop();
                     return nodeFactory.UnaryOpAsync(oper.Op.OperationType.Value, lastArg);
                 case 2:
                     if (args.Count < 2)
-                        throw new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 2 operands which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", 0);
+                        return ValueTask.FromException<TNode>(new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 2 operands which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", 0));
                     var arg2 = args.Pop();
                     var arg1 = args.Pop();
                     return nodeFactory.BinaryOpAsync(oper.Op.OperationType.Value, arg1, arg2);
                 default:
-                    throw new UncatchableParserException("Unsupported number of operands: " + oper.Op.OperandCount.ToString());
+                    return ValueTask.FromException<TNode>(new UncatchableParserException("Unsupported number of operands: " + oper.Op.OperandCount.ToString()));
             }
         }
 
