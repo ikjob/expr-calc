@@ -9,6 +9,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{11875CEC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.Tests", "Tests\ExprCalc.Tests\ExprCalc.Tests.csproj", "{56A0AA8D-1096-44C7-A804-295A6D733418}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{C26B41A7-CF23-4B98-BCD8-834CC46124BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.ExpressionParsing", "Common\ExprCalc.ExpressionParsing\ExprCalc.ExpressionParsing.csproj", "{3366A370-7790-4791-935D-4D4D518C4AB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.ExpressionParsing.Tests", "Common\ExprCalc.ExpressionParsing.Tests\ExprCalc.ExpressionParsing.Tests.csproj", "{7F111FAE-F89A-4C54-A8B2-91BA5CFBB05D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,11 +29,21 @@ Global
 		{56A0AA8D-1096-44C7-A804-295A6D733418}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56A0AA8D-1096-44C7-A804-295A6D733418}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56A0AA8D-1096-44C7-A804-295A6D733418}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3366A370-7790-4791-935D-4D4D518C4AB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3366A370-7790-4791-935D-4D4D518C4AB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3366A370-7790-4791-935D-4D4D518C4AB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3366A370-7790-4791-935D-4D4D518C4AB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F111FAE-F89A-4C54-A8B2-91BA5CFBB05D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F111FAE-F89A-4C54-A8B2-91BA5CFBB05D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F111FAE-F89A-4C54-A8B2-91BA5CFBB05D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F111FAE-F89A-4C54-A8B2-91BA5CFBB05D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{56A0AA8D-1096-44C7-A804-295A6D733418} = {11875CEC-539A-4607-B268-1E6592F094F5}
+		{3366A370-7790-4791-935D-4D4D518C4AB2} = {C26B41A7-CF23-4B98-BCD8-834CC46124BE}
+		{7F111FAE-F89A-4C54-A8B2-91BA5CFBB05D} = {C26B41A7-CF23-4B98-BCD8-834CC46124BE}
 	EndGlobalSection
 EndGlobal

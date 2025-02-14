@@ -27,11 +27,16 @@ jobs:
           dotnet build ./src/
       - name: Test
         run: |
-          dotnet test ./src/ --no-build -f "net9.0" --blame-hang --blame-hang-timeout 15m -l "console;verbosity=detailed" -l "trx;LogFileName=test-results.trx"
+          dotnet test ./src/ --no-build -f "net9.0" --blame-hang --blame-hang-timeout 15m -l "console;verbosity=detailed" -l "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
+
       - name: Test Report
         uses: dorny/test-reporter@v1
         if: success() || failure()    # run this step even if previous step failed
         with:
-          name: Test results                                # Name of the check run which will be created
-          path: src/Tests/*/TestResults/test-results.trx    # Path to test results
-          reporter: dotnet-trx                              # Format of test results
+          name: Test results                                 # Name of the check run which will be created
+          path: src/*/*.Tests/TestResults/test-results.trx   # Path to test results
+          reporter: dotnet-trx                               # Format of test results
+
+      - name: Code Coverage Report
+        run: |
+          find src/*/*.Tests/TestResults/*/ -name 'coverage.cobertura.xml' -execdir head -n 5 {} \; -execdir echo -e '\n\n' \;
