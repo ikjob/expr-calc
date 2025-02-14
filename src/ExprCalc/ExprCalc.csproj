@@ -11,4 +11,13 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Common\ExprCalc.Entities\ExprCalc.Entities.csproj" />
+    <ProjectReference Include="..\CoreLogic\ExprCalc.CoreLogic.Api\ExprCalc.CoreLogic.Api.csproj" />
+    <ProjectReference Include="..\CoreLogic\ExprCalc.CoreLogic\ExprCalc.CoreLogic.csproj" />
+    <ProjectReference Include="..\RestApi\ExprCalc.RestApi\ExprCalc.RestApi.csproj" />
+    <ProjectReference Include="..\Storage\ExprCalc.Storage.Api\ExprCalc.Storage.Api.csproj" />
+    <ProjectReference Include="..\Storage\ExprCalc.Storage\ExprCalc.Storage.csproj" />
+  </ItemGroup>
+
 </Project>
