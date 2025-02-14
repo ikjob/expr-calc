@@ -39,4 +39,4 @@ jobs:
 
       - name: Code Coverage Report
         run: |
-          find . -name 'src/*/*.Tests/TestResults/*/coverage.cobertura.xml' -execdir head -n 5 {} \; -execdir echo -e '\n\n' \;
+          find src/*/*.Tests/TestResults/*/ -name 'coverage.cobertura.xml' -execdir head -n 5 {} \; -execdir echo -e '\n\n' \;
