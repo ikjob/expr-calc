@@ -12,4 +12,11 @@ namespace ExprCalc.ExpressionParsing.Parser
         TNode UnaryOp(ExpressionOperationType opType, TNode value);
         TNode BinaryOp(ExpressionOperationType opType, TNode left, TNode right);
     }
+
+    public interface IAsyncExpressionNodesFactory<TNode>
+    {
+        ValueTask<TNode> NumberAsync(double value);
+        ValueTask<TNode> UnaryOpAsync(ExpressionOperationType opType, TNode value);
+        ValueTask<TNode> BinaryOpAsync(ExpressionOperationType opType, TNode left, TNode right);
+    }
 }

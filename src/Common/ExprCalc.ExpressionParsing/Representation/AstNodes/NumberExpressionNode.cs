@@ -27,5 +27,10 @@ namespace ExprCalc.ExpressionParsing.Representation.AstNodes
         {
             yield break;
         }
+
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
     }
 }

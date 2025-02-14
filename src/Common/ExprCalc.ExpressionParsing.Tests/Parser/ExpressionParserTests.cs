@@ -3,6 +3,7 @@ using ExprCalc.ExpressionParsing.Representation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,21 +11,46 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
 {
     public class ExpressionParserTests
     {
-        public static IEnumerable<object[]> ValidExpressionsWithResults =>
-            [
-                ["1.E2 + 15 * 3", 145.0],
-                ["30 ^ 2 / 100 - -1", 10.0],
-                ["((((((1+2)+3)+4)+5)+6)+7)", 28.0],
-                ["-1.0", -1.0],
-                ["1.5", 1.5],
-                ["ln(ln(15))", 0.99622889295139486837451569612192],
-                ["-ln(ln(15) + 10)", -2.5422356667537486481598345380761],
-                ["33 / 55", 0.6],
-                ["(5 ^ 2 - 3 ^ 2) * 2 - 4 ^ 2", 16],
-                ["-2.5 * -2", 5],
-            ];
+        public static TheoryData<string, double> ValidExpressionsWithResults => new()
+            {
+                { "1.E2 + 15 * 3", 145.0 },
+                { "30 ^ 2 / 100 - -1", 10.0 },
+                { "((((((1+2)+3)+4)+5)+6)+7)", 28.0 },
+                { "-1.0", -1.0 },
+                { "1.5", 1.5 },
+                { "ln(ln(15))", 0.99622889295139486837451569612192 },
+                { "-ln(ln(15) + 10)", -2.5422356667537486481598345380761 },
+                { "33 / 55", 0.6 },
+                { "(5 ^ 2 - 3 ^ 2) * 2 - 4 ^ 2", 16 },
+                { "-2.5 * -2", 5 },
+            };
 
-        public static IEnumerable<object[]> ValidExpressions => ValidExpressionsWithResults.Select(x => new object[] { x[0] });
+        public static TheoryData<string> ValidExpressions => new TheoryData<string>(ValidExpressionsWithResults.Select(o => (string)o[0]));
+
+        public static TheoryData<string> InvalidExpressions => new()
+            {
+                { "1 ln()" },
+                { "" },
+                { "1 2" },
+                { "abs(10)" },
+                { "ln 10" },
+                { "+" },
+                { "1 1 +" },
+                { "1E99999999999999999999999999999999999999999999" },
+                { "1E+" },
+                { "!" },
+            };
+
+        public static TheoryData<string> InvalidCalculationsExpressions => new()
+            {
+                { "ln(1 - 5)" },
+                { "1 / 0" },
+                { "0 ^ 0" },
+                { "-1 ^ 0.3333" },
+                { "9999999999999 ^ 99999999999999 ^ 9999999999999" },
+                { "ln(-9)" },
+            };
+
 
         [Theory]
         [InlineData("1 + 2", "(1 + 2)")]
@@ -35,7 +61,7 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
         [InlineData("1 + 2 * 3 - 4 / (5 + 6)", "((1 + (2 * 3)) - (4 / (5 + 6)))")]
         public void ExpressionParsingTest(string expression, string outputNotation)
         {
-            var transformedStr = ExpressionParser.SharedParser.ParseExpression<StringBuildingExpressionNodeFactory, string>(expression, new StringBuildingExpressionNodeFactory());
+            var transformedStr = ExpressionParser.ParseExpression<StringBuildingExpressionNodeFactory, string>(expression, new StringBuildingExpressionNodeFactory());
             Assert.Equal(outputNotation, transformedStr);
         }
 
@@ -48,16 +74,14 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
         }
 
         [Theory]
-        [InlineData("1 ln()")]
-        [InlineData("")]
-        [InlineData("1 2")]
-        [InlineData("abs(10)")]
-        [InlineData("ln 10")]
-        [InlineData("+")]
-        [InlineData("1 1 +")]
-        [InlineData("1E99999999999999999999999999999999999999999999")]
-        [InlineData("1E+")]
-        [InlineData("!")]
+        [MemberData(nameof(ValidExpressions))]
+        public async Task ExpressionValidationForValidExpressionsTestAsync(string expression)
+        {
+            await MathExpression.ValidateExpressionAsync(expression);
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidExpressions))]
         public void ExpressionValidationForInvalidExpressionsTest(string expression)
         {
             Assert.ThrowsAny<ExpressionParserException>(() =>
@@ -65,6 +89,17 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
                 MathExpression.ValidateExpression(expression);
             });
         }
+
+        [Theory]
+        [MemberData(nameof(InvalidExpressions))]
+        public async Task ExpressionValidationForInvalidExpressionsTestAsync(string expression)
+        {
+            await Assert.ThrowsAnyAsync<ExpressionParserException>(async () =>
+            {
+                await MathExpression.ValidateExpressionAsync(expression);
+            });
+        }
+
 
         [Theory]
         [MemberData(nameof(ValidExpressionsWithResults))]
@@ -75,13 +110,18 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
             Assert.Equal(expectedResult, calculatedValue, 1E-8);
         }
 
+        [Theory]
+        [MemberData(nameof(ValidExpressionsWithResults))]
+        public async Task ExpressionCalculationForValidExpressionsTestAsync(string expression, double expectedResult)
+        {
+            var calculatedValue = await MathExpression.CalculateExpressionAsync(expression, NumberValidationBehaviour.Strict);
+
+            Assert.Equal(expectedResult, calculatedValue, 1E-8);
+        }
+
 
         [Theory]
-        [InlineData("ln(1 - 5)")]
-        [InlineData("1 / 0")]
-        [InlineData("0 ^ 0")]
-        [InlineData("-1 ^ 0.3333")]
-        [InlineData("9999999999999 ^ 99999999999999 ^ 9999999999999")]
+        [MemberData(nameof(InvalidCalculationsExpressions))]
         public void ExpressionCalculationForInvalidExpressionsTest(string expression)
         {
             Assert.ThrowsAny<ExpressionCalculationException>(() =>
@@ -89,6 +129,17 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
                 MathExpression.CalculateExpression(expression, NumberValidationBehaviour.Strict);
             });
         }
+
+        [Theory]
+        [MemberData(nameof(InvalidCalculationsExpressions))]
+        public async Task ExpressionCalculationForInvalidExpressionsTestAsync(string expression)
+        {
+            await Assert.ThrowsAnyAsync<ExpressionCalculationException>(async () =>
+            {
+                await MathExpression.CalculateExpressionAsync(expression, NumberValidationBehaviour.Strict);
+            });
+        }
+
 
 
         [Theory]
@@ -103,11 +154,7 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
 
 
         [Theory]
-        [InlineData("ln(-9)")]
-        [InlineData("1 / 0")]
-        [InlineData("0 ^ 0")]
-        [InlineData("-1 ^ 0.3333")]
-        [InlineData("9999999999999 ^ 99999999999999 ^ 9999999999999")]
+        [MemberData(nameof(InvalidCalculationsExpressions))]
         public void ExpressionAstBuildingAndCalculationForInvalidExpressionsTest(string expression)
         {
             Assert.ThrowsAny<ExpressionCalculationException>(() =>
@@ -115,6 +162,38 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
                 var ast = MathExpression.BuildExpressionAst(expression);
                 ast.Calculate(NumberValidationBehaviour.Strict);
             });
+        }
+
+
+
+        [Fact]
+        public void VeryLongExpressionTest()
+        {
+            const int opNum = 32000;
+
+            StringBuilder builder = new StringBuilder((opNum + 1) * 2);
+            for (int i = 0; i < opNum; i++)
+            {
+                builder.Append("+1");
+            }
+
+            double sum = MathExpression.CalculateExpression(builder.ToString(), NumberValidationBehaviour.Strict);
+            Assert.Equal(opNum, sum);
+        }
+
+        [Fact]
+        public async Task VeryLongExpressionTestAsync()
+        {
+            const int opNum = 32000;
+
+            StringBuilder builder = new StringBuilder((opNum + 1) * 2);
+            for (int i = 0; i < opNum; i++)
+            {
+                builder.Append("+1");
+            }
+
+            double sum = await MathExpression.CalculateExpressionAsync(builder.ToString(), NumberValidationBehaviour.Strict);
+            Assert.Equal(opNum, sum);
         }
     }
 }

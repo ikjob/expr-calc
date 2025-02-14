@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.ExpressionParsing.Representation
 {
-    internal readonly struct CalculationExpressionNodesFactory : IExpressionNodesFactory<double>
+    internal readonly struct CalculationExpressionNodesFactory : IExpressionNodesFactory<double>, IAsyncExpressionNodesFactory<double>
     {
         public CalculationExpressionNodesFactory(NumberValidationBehaviour numberValidationBehaviour)
         {
@@ -57,6 +57,42 @@ namespace ExprCalc.ExpressionParsing.Representation
 
             NumberValidationBehaviour.ValidateNumber(result, opType);
             return result;
+        }
+
+        public ValueTask<double> NumberAsync(double value)
+        {
+            try
+            {
+                return new ValueTask<double>(Number(value));
+            }
+            catch (ExpressionCalculationException ex)
+            {
+                return ValueTask.FromException<double>(ex);
+            }
+        }
+
+        public ValueTask<double> UnaryOpAsync(ExpressionOperationType opType, double value)
+        {
+            try
+            {
+                return new ValueTask<double>(UnaryOp(opType, value));
+            }
+            catch (ExpressionCalculationException ex)
+            {
+                return ValueTask.FromException<double>(ex);
+            }
+        }
+
+        public ValueTask<double> BinaryOpAsync(ExpressionOperationType opType, double left, double right)
+        {
+            try
+            {
+                return new ValueTask<double>(BinaryOp(opType, left, right));
+            }
+            catch (ExpressionCalculationException ex)
+            {
+                return ValueTask.FromException<double>(ex);
+            }
         }
     }
 }

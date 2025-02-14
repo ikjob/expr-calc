@@ -16,16 +16,18 @@ namespace ExprCalc.ExpressionParsing.Representation
 
     public static class NumberValidationBehaviourExtensions
     {
-        public static void ValidateNumber(this NumberValidationBehaviour behaviour, double val, ExpressionOperationType? operationType = null)
+        public static bool IsValidNumber(this NumberValidationBehaviour behaviour, double val)
         {
-            bool isValid = behaviour switch
+            return behaviour switch
             {
                 NumberValidationBehaviour.Strict when double.IsNaN(val) || double.IsInfinity(val) => false,
                 NumberValidationBehaviour.AllowInf when double.IsNaN(val) => false,
                 _ => true
             };
-
-            if (!isValid)
+        }
+        public static void ValidateNumber(this NumberValidationBehaviour behaviour, double val, ExpressionOperationType? operationType = null)
+        {
+            if (!IsValidNumber(behaviour, val))
             {
                 if (operationType != null)
                     throw new ExpressionCalculationException($"Bad operatands for operation {operationType.Value} detected");

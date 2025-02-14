@@ -32,5 +32,10 @@ namespace ExprCalc.ExpressionParsing.Representation.AstNodes
         {
             yield return Arg;
         }
+
+        public override string ToString()
+        {
+            return OperationType.ToString();
+        }
     }
 }
