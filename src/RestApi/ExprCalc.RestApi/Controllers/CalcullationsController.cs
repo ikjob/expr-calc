@@ -27,9 +27,9 @@ namespace ExprCalc.RestApi.Controllers
             _logger.LogDebug("Get calculations list called");
             return Task.FromResult<ActionResult<IEnumerable<CalculationDto>>>(
                 new CalculationDto[] {
-                    new CalculationDto { Id = 1 },
-                    new CalculationDto { Id = 2 },
-                    new CalculationDto { Id = 3 }
+                    new CalculationDto { IdNum = 1 },
+                    new CalculationDto { IdNum = 2 },
+                    new CalculationDto { IdNum = 3 }
                 });
         }
     }

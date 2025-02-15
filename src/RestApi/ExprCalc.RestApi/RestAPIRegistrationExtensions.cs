@@ -32,6 +32,12 @@ namespace ExprCalc.RestApi
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 })
                 .AddApplicationPart(typeof(RestAPIRegistrationExtensions).Assembly);
+
+            if (config.UseSwagger)
+            {
+                serviceCollection.AddEndpointsApiExplorer();
+                serviceCollection.AddSwaggerGen();
+            }
         }
 
 

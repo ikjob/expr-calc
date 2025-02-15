@@ -8,6 +8,6 @@ namespace ExprCalc.RestApi.Dto
 {
     public record class CalculationDto
     {
-        public int Id { get; set; }
+        public int IdNum { get; set; }
     }
 }
