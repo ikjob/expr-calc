@@ -1,0 +1,6 @@
+@ExprCalc_HostAddress = http://localhost:8123
+
+GET {{ExprCalc_HostAddress}}/api/v1/calculations
+Accept: application/json
+
+###

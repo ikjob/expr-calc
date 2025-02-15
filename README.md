@@ -1,5 +1,7 @@
 # Expression Calculator
 
+[![codecov](https://codecov.io/github/ikjob/expr-calc/graph/badge.svg?token=6UM2YH20NZ)](https://codecov.io/github/ikjob/expr-calc)
+
 Evaluates expressions in background tasks
 
 #### Repository structure:

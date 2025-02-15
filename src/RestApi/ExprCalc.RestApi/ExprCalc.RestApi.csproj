@@ -8,6 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Common\ExprCalc.Entities\ExprCalc.Entities.csproj" />
     <ProjectReference Include="..\..\CoreLogic\ExprCalc.CoreLogic.Api\ExprCalc.CoreLogic.Api.csproj" />
   </ItemGroup>
