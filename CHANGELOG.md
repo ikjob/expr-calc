@@ -8,7 +8,7 @@ Expression calculator changelog
 - Basic CI added (#12)
 - Expression parsing (#13)
 - Projects for the main components of the system (#14)
-- Main project and Rest API projects initialized(#)
+- Main project and Rest API projects initialized(#20)
 
 #### Changed
 
