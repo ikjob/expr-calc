@@ -1,7 +1,7 @@
-
 using ExprCalc.CommandLine;
 using ExprCalc.Logging;
 using ExprCalc.RestApi;
+using ExprCalc.Telemetry;
 
 namespace ExprCalc
 {
@@ -43,6 +43,7 @@ namespace ExprCalc
 
 
             builder.Host.SetupSerilog();
+            builder.SetupOpenTelemetry();
 
             // Add services to the container.
             SetupServices(builder.Services, builder.Configuration);
@@ -50,6 +51,7 @@ namespace ExprCalc
             var app = builder.Build();
 
             app.UseRestApiFeatures();
+            app.UseOpenTelemetryFeatures();
 
             return app;
         }

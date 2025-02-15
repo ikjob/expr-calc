@@ -32,5 +32,15 @@ namespace ExprCalc.RestApi.Controllers
                     new CalculationDto { IdNum = 3 }
                 });
         }
+
+
+        [HttpPost]
+        [SwaggerResponse(StatusCodes.Status200OK, Description = "Success")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails), Description = "Server error")]
+        public Task<ActionResult<int>> AddCalculationAsync(CalculationDto calculation, CancellationToken token)
+        {
+            _logger.LogDebug("Add calculation called");
+            return Task.FromResult<ActionResult<int>>(calculation.IdNum);
+        }
     }
 }

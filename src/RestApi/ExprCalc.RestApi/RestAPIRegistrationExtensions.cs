@@ -61,7 +61,7 @@ namespace ExprCalc.RestApi
             if (config.CorsAllowAny)
                 app.UseCors();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
 
             app.MapControllers();
         }
