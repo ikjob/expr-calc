@@ -1,0 +1,39 @@
+name: Code Coverage
+
+on:
+  pull_request:
+      types: [ opened, synchronize, reopened, ready_for_review, labeled, unlabeled ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checks-out repository 
+        uses: actions/checkout@v4
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: Build
+        run: |
+          dotnet build ./src/
+      - name: Test
+        run: |
+          dotnet test ./src/ --no-build -f "net9.0" --blame-hang --blame-hang-timeout 15m --collect:"XPlat Code Coverage"
+
+      - name: Code Coverage Report
+        run: |
+          find src/*/*.Tests/TestResults/*/ -name 'coverage.cobertura.xml' -execdir head -n 5 {} \; -execdir echo -e '\n\n' \;
+      - uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true 
