@@ -8,6 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\ExprCalc.Common\ExprCalc.Common.csproj" />
     <ProjectReference Include="..\..\Common\ExprCalc.Entities\ExprCalc.Entities.csproj" />
     <ProjectReference Include="..\..\Storage\ExprCalc.Storage.Api\ExprCalc.Storage.Api.csproj" />
     <ProjectReference Include="..\ExprCalc.CoreLogic.Api\ExprCalc.CoreLogic.Api.csproj" />

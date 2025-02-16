@@ -1,4 +1,5 @@
-﻿using ExprCalc.RestApi.Dto;
+﻿using ExprCalc.CoreLogic.Api.UseCases;
+using ExprCalc.RestApi.Dto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -14,33 +15,30 @@ namespace ExprCalc.RestApi.Controllers
     [ApiController]
     [Route("api/v1/calculations")]
     public class CalcullationsController(
+        ICalculationUseCases calculationUseCases,
         ILogger<CalcullationsController> logger) : ControllerBase
     {
+        private readonly ICalculationUseCases _calculationUseCases = calculationUseCases;
         private readonly ILogger<CalcullationsController> _logger = logger;
 
 
         [HttpGet]
         [SwaggerResponse(StatusCodes.Status200OK, Description = "Calculations list")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails), Description = "Server error")]
-        public Task<ActionResult<IEnumerable<CalculationDto>>> GetCalculationsListAsync(CancellationToken token)
+        public async Task<ActionResult<IEnumerable<CalculationGetDto>>> GetCalculationsListAsync(CancellationToken token)
         {
-            _logger.LogDebug("Get calculations list called");
-            return Task.FromResult<ActionResult<IEnumerable<CalculationDto>>>(
-                new CalculationDto[] {
-                    new CalculationDto { IdNum = 1 },
-                    new CalculationDto { IdNum = 2 },
-                    new CalculationDto { IdNum = 3 }
-                });
+            var result = await _calculationUseCases.GetCalculationsListAsync(token);
+            return Ok(result.Select(CalculationGetDto.FromEntity));
         }
 
 
         [HttpPost]
         [SwaggerResponse(StatusCodes.Status200OK, Description = "Success")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails), Description = "Server error")]
-        public Task<ActionResult<int>> AddCalculationAsync(CalculationDto calculation, CancellationToken token)
+        public async Task<ActionResult<CalculationGetDto>> CreateCalculationAsync(CalculationCreateDto calculation, CancellationToken token)
         {
-            _logger.LogDebug("Add calculation called");
-            return Task.FromResult<ActionResult<int>>(calculation.IdNum);
+            var result = await _calculationUseCases.CreateCalculationAsync(calculation.IntoEntity(), token);
+            return Ok(CalculationGetDto.FromEntity(result));
         }
     }
 }

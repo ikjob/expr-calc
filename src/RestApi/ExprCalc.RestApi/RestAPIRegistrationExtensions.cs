@@ -1,4 +1,5 @@
 ﻿using ExprCalc.RestApi.Configuration;
+using ExprCalc.RestApi.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +39,9 @@ namespace ExprCalc.RestApi
                 serviceCollection.AddEndpointsApiExplorer();
                 serviceCollection.AddSwaggerGen();
             }
+
+            serviceCollection.AddProblemDetails();
+            serviceCollection.AddExceptionHandler<ExceptionToProblemDetailsHandler>();
         }
 
 
@@ -52,6 +56,8 @@ namespace ExprCalc.RestApi
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseExceptionHandler();
 
             //app.UseDefaultFiles();
             //app.UseStaticFiles();

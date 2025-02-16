@@ -1,4 +1,5 @@
 using ExprCalc.CommandLine;
+using ExprCalc.CoreLogic;
 using ExprCalc.Logging;
 using ExprCalc.RestApi;
 using ExprCalc.Telemetry;
@@ -59,6 +60,7 @@ namespace ExprCalc
         private static void SetupServices(IServiceCollection services, ConfigurationManager configurationManager)
         {
             services.AddRestApiServices(configurationManager);
+            services.AddCoreLogicServices();
         }
     }
 }

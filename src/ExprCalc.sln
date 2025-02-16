@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.Storage.Api", "Sto
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.Entities", "Common\ExprCalc.Entities\ExprCalc.Entities.csproj", "{13BBF498-3D1C-482A-B893-71853A774616}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.Common", "Common\ExprCalc.Common\ExprCalc.Common.csproj", "{894933AD-347F-4908-B0F1-1270F19408CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +81,10 @@ Global
 		{13BBF498-3D1C-482A-B893-71853A774616}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13BBF498-3D1C-482A-B893-71853A774616}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13BBF498-3D1C-482A-B893-71853A774616}.Release|Any CPU.Build.0 = Release|Any CPU
+		{894933AD-347F-4908-B0F1-1270F19408CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{894933AD-347F-4908-B0F1-1270F19408CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{894933AD-347F-4908-B0F1-1270F19408CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{894933AD-347F-4908-B0F1-1270F19408CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -93,5 +99,6 @@ Global
 		{BB33269B-29FC-4115-9307-FDBC14E4D9CA} = {1E92E21C-8E38-4618-AC93-F7BB53075FEC}
 		{E8DAA39A-3856-4E70-AC3F-8A7CC5BF901D} = {1E92E21C-8E38-4618-AC93-F7BB53075FEC}
 		{13BBF498-3D1C-482A-B893-71853A774616} = {C26B41A7-CF23-4B98-BCD8-834CC46124BE}
+		{894933AD-347F-4908-B0F1-1270F19408CA} = {C26B41A7-CF23-4B98-BCD8-834CC46124BE}
 	EndGlobalSection
 EndGlobal
