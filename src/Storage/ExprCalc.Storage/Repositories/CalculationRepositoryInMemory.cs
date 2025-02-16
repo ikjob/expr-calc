@@ -34,11 +34,11 @@ namespace ExprCalc.Storage.Repositories
 
         private static void FillInitialData(Dictionary<Guid, Calculation> data)
         {
-            var c = new Calculation(id: Guid.CreateVersion7(), expression: "1 + 2", createdAt: DateTime.UtcNow);
+            var c = new Calculation(id: Guid.CreateVersion7(), expression: "1 + 2", createdBy: new User("user1"), createdAt: DateTime.UtcNow, CalculationStatus.CreatePending());
             data.Add(c.Id, c);
-            c = new Calculation(id: Guid.CreateVersion7(), expression: "1 * 2", createdAt: DateTime.UtcNow);
+            c = new Calculation(id: Guid.CreateVersion7(), expression: "1 * 2", createdBy: new User("user1"), createdAt: DateTime.UtcNow, CalculationStatus.CreatePending());
             data.Add(c.Id, c);
-            c = new Calculation(id: Guid.CreateVersion7(), expression: "1 / 2", createdAt: DateTime.UtcNow);
+            c = new Calculation(id: Guid.CreateVersion7(), expression: "1 / 2", createdBy: new User("user2"), createdAt: DateTime.UtcNow, CalculationStatus.CreatePending());
             data.Add(c.Id, c);
         }
 
@@ -64,7 +64,7 @@ namespace ExprCalc.Storage.Repositories
                     throw new StorageDuplicateEntityException("Calculation with the same key is already existed");
                 }
 
-                _data.Add(calculation.Id, new Calculation(calculation));
+                _data.Add(calculation.Id, calculation.DeepClone());
                 return calculation;
             }
         }
@@ -76,7 +76,7 @@ namespace ExprCalc.Storage.Repositories
 
             lock (_lock)
             {
-                return _data.Values.Select(o => new Calculation(o)).ToList();
+                return _data.Values.Select(o => o.DeepClone()).ToList();
             }
         }
 

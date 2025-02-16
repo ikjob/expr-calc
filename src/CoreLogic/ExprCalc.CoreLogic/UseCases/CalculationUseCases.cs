@@ -56,7 +56,7 @@ namespace ExprCalc.CoreLogic.UseCases
 
             try
             {
-                calculation.Initialize(Guid.CreateVersion7(), DateTime.UtcNow);
+                calculation.Initialize(Guid.CreateVersion7());
                 return await _calculationRepository.CreateCalculationAsync(calculation, token);
             }
             catch (Exception exc)

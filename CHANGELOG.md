@@ -15,7 +15,7 @@ Expression calculator changelog
 - Storage project initialized (#23)
 
 #### Changed
-
+- Entities updated according to database schema (#23)
 
 #### Fixed
 
