@@ -30,9 +30,9 @@ namespace ExprCalc.CoreLogic.UseCases
             {
                 return Task.FromResult(new List<Calculation>()
                 {
-                    new Calculation() { Id = Guid.CreateVersion7(), Expression = "1 + 2", CreatedAt = DateTime.UtcNow },
-                    new Calculation() { Id = Guid.CreateVersion7(), Expression = "1 * 2", CreatedAt = DateTime.UtcNow },
-                    new Calculation() { Id = Guid.CreateVersion7(), Expression = "1 / 2", CreatedAt = DateTime.UtcNow },
+                    new Calculation(id: Guid.CreateVersion7(), expression: "1 + 2", createdAt: DateTime.UtcNow),
+                    new Calculation(id: Guid.CreateVersion7(), expression: "1 * 2", createdAt: DateTime.UtcNow),
+                    new Calculation(id: Guid.CreateVersion7(), expression: "1 / 2", createdAt: DateTime.UtcNow),
                 });
             }
             catch
@@ -50,9 +50,7 @@ namespace ExprCalc.CoreLogic.UseCases
 
             try
             {
-                calculation.Id = Guid.CreateVersion7();
-                calculation.CreatedAt = DateTime.UtcNow;
-
+                calculation.Initialize(Guid.CreateVersion7(), DateTime.UtcNow);
                 return Task.FromResult(calculation);
             }
             catch

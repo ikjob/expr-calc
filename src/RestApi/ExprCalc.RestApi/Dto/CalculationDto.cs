@@ -35,12 +35,7 @@ namespace ExprCalc.RestApi.Dto
     {
         public Entities.Calculation IntoEntity()
         {
-            return new Entities.Calculation()
-            {
-                Id = Guid.Empty,
-                Expression = Expression,
-                CreatedAt = DateTime.UtcNow
-            };
+            return Entities.Calculation.CreateUninitialized(Expression);
         }
     }
 }

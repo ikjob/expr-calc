@@ -1,5 +1,6 @@
 # Expression Calculator
-
+[![build](https://github.com/ikjob/expr-calc/actions/workflows/build.yaml/badge.svg)](https://github.com/ikjob/expr-calc/actions/workflows/build.yaml)
+[![tests](https://github.com/ikjob/expr-calc/actions/workflows/test.yaml/badge.svg)](https://github.com/ikjob/expr-calc/actions/workflows/test.yaml)
 [![codecov](https://codecov.io/github/ikjob/expr-calc/graph/badge.svg?token=6UM2YH20NZ)](https://codecov.io/github/ikjob/expr-calc)
 
 Evaluates expressions in background tasks
