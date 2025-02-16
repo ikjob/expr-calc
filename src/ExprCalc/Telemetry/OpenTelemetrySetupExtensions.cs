@@ -1,4 +1,6 @@
-﻿using OpenTelemetry;
+﻿using ExprCalc.Common.Instrumentation;
+using ExprCalc.CoreLogic;
+using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -29,6 +31,11 @@ namespace ExprCalc.Telemetry
                     });
 
                     omBuilder.AddAspNetCoreInstrumentation();
+
+                    var registry = new MetricsRegistry();
+                    registry.AddCoreLogicMetrics();
+
+                    omBuilder.AddMeter(registry.MetricNames.ToArray());
                 });
             }
         }
@@ -44,6 +51,12 @@ namespace ExprCalc.Telemetry
                 {
                     tBuilder.AddAspNetCoreInstrumentation();
                     tBuilder.AddHttpClientInstrumentation();
+
+                    var registry = new ActivitySourcesRegistry();
+                    registry.AddCoreLogicActivitySources();
+
+                    tBuilder.AddSource(registry.ActivitySourceNames.ToArray());
+
 
                     if (tracingConfig.EnableConsoleExporter)
                         tBuilder.AddConsoleExporter();

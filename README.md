@@ -14,6 +14,7 @@ Evaluates expressions in background tasks
 #### Project structure (inside `src` folder):
 1. `Common`:
    - `ExprCalc.Entities` - shared domain entities
+   - `ExprCalc.Common` - common types shared between all projects
 2. `CoreLogic` - business logic:
    - `ExprCalc.CoreLogic` - implementation of the business logic (use-cases for requests processing, status checks and so on)
    - `ExprCalc.CoreLogic.Api` - api to access use-cases of business logic (interfaces, types, exceptions)

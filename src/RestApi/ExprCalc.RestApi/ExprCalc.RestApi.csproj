@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\ExprCalc.Common\ExprCalc.Common.csproj" />
     <ProjectReference Include="..\..\Common\ExprCalc.Entities\ExprCalc.Entities.csproj" />
     <ProjectReference Include="..\..\CoreLogic\ExprCalc.CoreLogic.Api\ExprCalc.CoreLogic.Api.csproj" />
   </ItemGroup>
