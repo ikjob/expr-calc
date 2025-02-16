@@ -2,6 +2,7 @@ using ExprCalc.CommandLine;
 using ExprCalc.CoreLogic;
 using ExprCalc.Logging;
 using ExprCalc.RestApi;
+using ExprCalc.Storage;
 using ExprCalc.Telemetry;
 
 namespace ExprCalc
@@ -61,6 +62,7 @@ namespace ExprCalc
         {
             services.AddRestApiServices(configurationManager);
             services.AddCoreLogicServices();
+            services.AddStorageServices();
         }
     }
 }

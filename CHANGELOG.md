@@ -12,9 +12,10 @@ Expression calculator changelog
 - Code coverage reports uploading to codecov.io (#20)
 - Core logic project intitialized (#21)
 - Database schemas in dbml format (#22)
+- Storage project initialized (#23)
 
 #### Changed
-
+- Entities updated according to database schema (#23)
 
 #### Fixed
 

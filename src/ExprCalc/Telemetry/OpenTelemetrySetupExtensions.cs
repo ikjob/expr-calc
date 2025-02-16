@@ -1,5 +1,6 @@
 ﻿using ExprCalc.Common.Instrumentation;
 using ExprCalc.CoreLogic;
+using ExprCalc.Storage;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -34,6 +35,7 @@ namespace ExprCalc.Telemetry
 
                     var registry = new MetricsRegistry();
                     registry.AddCoreLogicMetrics();
+                    registry.AddStorageMetrics();
 
                     omBuilder.AddMeter(registry.MetricNames.ToArray());
                 });
@@ -54,6 +56,7 @@ namespace ExprCalc.Telemetry
 
                     var registry = new ActivitySourcesRegistry();
                     registry.AddCoreLogicActivitySources();
+                    registry.AddStorageActivitySources();
 
                     tBuilder.AddSource(registry.ActivitySourceNames.ToArray());
 

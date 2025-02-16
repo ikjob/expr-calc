@@ -11,8 +11,4 @@
     <ProjectReference Include="..\..\Common\ExprCalc.Entities\ExprCalc.Entities.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Exceptions\" />
-  </ItemGroup>
-
 </Project>
