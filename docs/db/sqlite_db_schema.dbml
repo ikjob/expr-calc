@@ -1,0 +1,46 @@
+// Database schema that is specific for SQLite
+
+
+Table Users {
+    note: 'Store users'
+
+    Id      INT     [PK, NOT NULL]
+    Login   TEXT    [NOT NULL, UNIQUE, note: 'User unique identifier in latin characters with limited length']
+}
+
+Table Calculations {
+    note: 'Store math expression calculations'
+
+    Id              UUID                [PK, NOT NULL, note: 'Use UUID to make partitioning simplier']
+    Expression      TEXT                [NOT NULL, note: 'Mathematical expression to be calculated']
+    CreatedAt       BIGINT              [NOT NULL, note: 'Time when the calculation was created as unix timestamp']
+    CreatedBy       INT                 [NOT NULL, ref: > Users.Id, note: 'The user created this record']
+
+    State           CalculationState    [NOT NULL, note: 'Current state of the calculation']
+    CalcResult      DOUBLE              [NULL, note: 'Calculation result']
+    ErrorCode       ErrorCode           [NULL, note: 'Error code that can be used inside filters']
+    ErrorDetails    TEXT                [NULL, note: '''Json that contains different details about the error.
+                                                        Possible fields are:
+                                                            - code - extended error code as a string with latin characters
+                                                            - offset - if applicable, contains the possition within expression, where problem was found
+                                                            - length - if applicable, contains the length relative to the offset, where problem was found
+                                                     ''']
+
+    UpdatedAt       BIGINT              [NOT NULL, note: 'The time when state was updated as unix timestamp']
+    CancelledBy     INT                 [NULL, ref: > Users.Id, note: 'The user who cancelled the calculations']
+}
+
+
+Enum CalculationState {
+    "Pending"
+    "InProgress"
+    "Cancelled"
+    "Failed"
+    "Success"
+}
+
+Enum ErrorCode {
+    "UnexpectedError"       // Unexpected error that does not specific error code
+    "BadExpressionSyntax"   // Expression is incorrectly written (e.g. has unbalanced brackets)
+    "ArithmeticError"       // Error when arithmetic operation has invalid arguments (e.g. division by zero)
+}

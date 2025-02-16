@@ -11,6 +11,7 @@ Expression calculator changelog
 - Main project and Rest API projects initialized (#20)
 - Code coverage reports uploading to codecov.io (#20)
 - Core logic project intitialized (#21)
+- Database schemas in dbml format (#22)
 
 #### Changed
 
