@@ -18,6 +18,11 @@ namespace ExprCalc.CoreLogic.Configuration
         /// '-1' has special meaning: it starts the number of processors, equals to the number of cores
         /// </remarks>
         public int CalculationProcessorsCount { get; init; } = -1;
+        /// <summary>
+        /// Max number of pending calculations. New ones will be discarded on overflow.
+        /// </summary>
+        [Range(1, int.MaxValue)]
+        public int MaxPendingCalculationsCount { get; init; } = 20000;
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

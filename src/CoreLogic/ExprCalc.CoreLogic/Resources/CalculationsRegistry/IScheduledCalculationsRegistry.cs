@@ -12,6 +12,8 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
     internal interface IScheduledCalculationsRegistry : IDisposable
     {
         bool TryAdd(Calculation calculation, DateTime availableAfter);
+        CalculationRegistryReservedSlot TryReserveSlot();
+
         Task<Calculation> TakeNext(CancellationToken cancellationToken);
         Task<CalculationProcessingGuard> TakeNextForProcessing(CancellationToken cancellationToken);
 

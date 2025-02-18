@@ -1,6 +1,8 @@
-﻿using ExprCalc.CoreLogic.Api.UseCases;
+﻿using ExprCalc.CoreLogic.Api.Exceptions;
+using ExprCalc.CoreLogic.Api.UseCases;
 using ExprCalc.CoreLogic.Helpers;
 using ExprCalc.CoreLogic.Instrumentation;
+using ExprCalc.CoreLogic.Resources.CalculationsRegistry;
 using ExprCalc.Entities;
 using ExprCalc.Storage.Api.Exceptions;
 using ExprCalc.Storage.Api.Repositories;
@@ -16,10 +18,12 @@ namespace ExprCalc.CoreLogic.UseCases
 {
     internal class CalculationUseCases(
         ICalculationRepository calculationRepository,
+        IScheduledCalculationsRegistry calculationsRegistry,
         ILogger<CalculationUseCases> logger,
         InstrumentationContainer instrumentation) : ICalculationUseCases
     {
         private readonly ICalculationRepository _calculationRepository = calculationRepository;
+        private readonly IScheduledCalculationsRegistry _calculationsRegistry = calculationsRegistry;
 
         private readonly ILogger<CalculationUseCases> _logger = logger;
         private readonly CalculationUseCasesMetrics _metrics = instrumentation.CalculationUseCasesMetrics;
@@ -59,7 +63,15 @@ namespace ExprCalc.CoreLogic.UseCases
 
             try
             {
-                return await _calculationRepository.CreateCalculationAsync(calculation, token);
+                using (var slot = _calculationsRegistry.TryReserveSlot())
+                {
+                    if (!slot.IsAvailable)
+                        throw new TooManyPendingCalculationsException("Too many pending calculations in registry");
+
+                    var createdCalculation = await _calculationRepository.CreateCalculationAsync(calculation, token);
+                    slot.Fill(createdCalculation, DateTime.UtcNow);
+                    return createdCalculation;
+                }
             }
             catch (Exception exc)
             {

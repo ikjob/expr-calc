@@ -1,5 +1,6 @@
 ﻿using ExprCalc.CoreLogic.Configuration;
 using ExprCalc.CoreLogic.Instrumentation;
+using ExprCalc.CoreLogic.Resources.CalculationsRegistry;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,15 +18,20 @@ namespace ExprCalc.CoreLogic.Services.CalculationsProcessor
     /// </summary>
     internal class CalculationsProcessingService : BackgroundService
     {
+        private readonly IScheduledCalculationsRegistry _calculationsRegistry;
+
         private readonly CoreLogicConfig _config;
         private readonly ActivitySource _activitySource;
         private readonly ILogger<CalculationsProcessingService> _logger;
 
         public CalculationsProcessingService(
+            IScheduledCalculationsRegistry calculationsRegistry,
             IOptions<CoreLogicConfig> config,
             ILogger<CalculationsProcessingService> logger,
             InstrumentationContainer instrumentation)
         {
+            _calculationsRegistry = calculationsRegistry;
+
             _config = config.Value;
             _logger = logger;
             _activitySource = instrumentation.ActivitySource;
@@ -74,8 +80,14 @@ namespace ExprCalc.CoreLogic.Services.CalculationsProcessor
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                //_logger.LogInformation("Background service tick");
-                await Task.Delay(500, stoppingToken);
+                using var newCalculation = await _calculationsRegistry.TakeNextForProcessing(stoppingToken);
+                using var activity = _activitySource.StartActivity(nameof(CalculationsProcessingService) + ".NewCalculation");
+                using var linkedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, newCalculation.Token);
+                _logger.LogTrace("New expression taken for processing. Id = {id}, Expression = {expression}", newCalculation.Calculation.Id, newCalculation.Calculation.Expression);
+
+                // Emulate calculation
+                await Task.Delay(1000, linkedCancellationSource.Token);
+                
             }
         }
     }

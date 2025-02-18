@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 {
-    internal class QueueBasedCalculationsRegistry : IScheduledCalculationsRegistry, ICalculationProcessingFinisher
+    internal class QueueBasedCalculationsRegistry : IScheduledCalculationsRegistry, ICalculationProcessingFinisher, ICalculationRegistrySlotFiller
     {
         private readonly struct Item(Calculation calculation, DateTime availableAfter, CancellationTokenSource cancellationTokenSource)
         {
@@ -25,11 +25,18 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
         private readonly ConcurrentDictionary<Guid, Item> _calculations;
         private readonly Channel<Item> _channel;
+        private readonly int _maxCount;
+        private volatile int _count;
 
         public QueueBasedCalculationsRegistry(int maxCount)
         {
+            if (maxCount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(maxCount));
+
             _calculations = new ConcurrentDictionary<Guid, Item>();
-            _channel = Channel.CreateBounded<Item>(maxCount);
+            _channel = Channel.CreateUnbounded<Item>();
+            _maxCount = maxCount;
+            _count = 0;
         }
 
 
@@ -58,7 +65,11 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
                 if (!nextItem.CancellationTokenSource.IsCancellationRequested)
                     return nextItem;
                 
-                if (!_calculations.TryRemove(nextItem.Calculation.Id, out _))
+                if (_calculations.TryRemove(nextItem.Calculation.Id, out _))
+                {
+                    ReleaseReservedSlotCore();
+                }
+                else
                 {
                     Debug.Fail("Dictionary should always contain items that was enqueued");
                 }
@@ -67,7 +78,14 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         public async Task<Calculation> TakeNext(CancellationToken cancellationToken)
         {
             var result = await TakeNextCore(cancellationToken);
-            _calculations.TryRemove(result.Calculation.Id, out _);
+            if (_calculations.TryRemove(result.Calculation.Id, out _))
+            {
+                ReleaseReservedSlotCore();
+            }
+            else
+            {
+                Debug.Fail("Dictionary should always contain items that was enqueued");
+            }
             return result.Calculation;
         }
         public async Task<CalculationProcessingGuard> TakeNextForProcessing(CancellationToken cancellationToken)
@@ -77,12 +95,68 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
         }
 
+        private bool TryReserveSlotCore()
+        {
+            int count = _count;
+            while (count < _maxCount)
+            {
+                if (Interlocked.CompareExchange(ref _count, count + 1, count) == count)
+                    return true;
+                count = _count;
+            }
+
+            return false;
+        }
+        private void ReleaseReservedSlotCore()
+        {
+            Interlocked.Decrement(ref _count);
+        }
+
+        private void AddCore(Calculation calculation, DateTime availableAfter)
+        {
+            bool result = false;
+            try
+            {
+                var item = new Item(calculation, availableAfter, new CancellationTokenSource());
+                if (!_calculations.TryAdd(calculation.Id, item))
+                    throw new DuplicateKeyException("Calculation with the same key is already inside registry");
+                if (!_channel.Writer.TryWrite(item))
+                    throw new UnexpectedRegistryException("Unable to add calculation to unbounded queue. Should never happen");
+
+                result = true;
+            }
+            finally
+            {
+                if (!result)
+                {
+                    ReleaseReservedSlotCore();
+                    _calculations.TryRemove(calculation.Id, out _);
+                }
+            }
+        }
+
         public bool TryAdd(Calculation calculation, DateTime availableAfter)
         {
             if (!calculation.Status.IsPending())
                 throw new ArgumentException("Only calculations in Pending status can be added to the registry", nameof(calculation));
 
-            return _channel.Writer.TryWrite(new Item(calculation, availableAfter, new CancellationTokenSource()));
+            if (!TryReserveSlotCore())
+                return false;
+
+            AddCore(calculation, availableAfter);
+            return true;
+        }
+
+        public CalculationRegistryReservedSlot TryReserveSlot()
+        {
+            if (TryReserveSlotCore())
+            {
+                return new CalculationRegistryReservedSlot(this);
+            }    
+            else
+            {
+                return default;
+            }
         }
 
         public bool TryCancel(Guid id, User cancelledBy)
@@ -98,12 +172,28 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
         void ICalculationProcessingFinisher.FinishCalculation(Guid id)
         {
-            if (!_calculations.TryRemove(id, out _))
+            if (_calculations.TryRemove(id, out _))
+            {
+                ReleaseReservedSlotCore();
+            }
+            else
             {
                 Debug.Fail("Normally FinishCalculation should be called on item inside the registry");
-            }    
+            }
         }
 
+        void ICalculationRegistrySlotFiller.FillSlot(Calculation calculation, DateTime availableAfter)
+        {
+            if (!calculation.Status.IsPending())
+                throw new ArgumentException("Only calculations in Pending status can be added to the registry", nameof(calculation));
+
+            AddCore(calculation, availableAfter);
+        }
+
+        void ICalculationRegistrySlotFiller.ReleaseSlot()
+        {
+            ReleaseReservedSlotCore();
+        }
 
 
         protected virtual void Dispose(bool isUserCall)
