@@ -24,15 +24,12 @@ namespace ExprCalc.RestApi.Dto
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? CancelledBy { get; set; }
 
-        public required DateTime UpdatedAt { get; set; }
 
-
-        public static CalculationStatusDto FromEntity(CalculationStatus status, DateTime updatedAt)
+        public static CalculationStatusDto FromEntity(CalculationStatus status)
         {
             var result = new CalculationStatusDto()
             {
-                State = status.State,
-                UpdatedAt = updatedAt
+                State = status.State
             };
 
             switch (status.State)

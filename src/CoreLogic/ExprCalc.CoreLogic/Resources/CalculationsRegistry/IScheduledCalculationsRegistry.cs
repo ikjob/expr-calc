@@ -9,10 +9,13 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 {
-    internal interface IScheduledCalculationsRegistry : IDisposable
+    /// <summary>
+    /// Calculations registry that stores and provides calculation for processors
+    /// </summary>
+    internal interface IScheduledCalculationsRegistry
     {
         bool TryAdd(Calculation calculation, DateTime availableAfter);
-        CalculationRegistryReservedSlot TryReserveSlot();
+        CalculationRegistryReservedSlot TryReserveSlot(Calculation calculation);
 
         Task<Calculation> TakeNext(CancellationToken cancellationToken);
         Task<CalculationProcessingGuard> TakeNextForProcessing(CancellationToken cancellationToken);

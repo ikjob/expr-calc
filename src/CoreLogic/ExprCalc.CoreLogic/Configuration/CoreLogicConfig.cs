@@ -19,10 +19,10 @@ namespace ExprCalc.CoreLogic.Configuration
         /// </remarks>
         public int CalculationProcessorsCount { get; init; } = -1;
         /// <summary>
-        /// Max number of pending calculations. New ones will be discarded on overflow.
+        /// Max number of registered calculations (pending or in progress ones). New ones will be rejected on overflow.
         /// </summary>
         [Range(1, int.MaxValue)]
-        public int MaxPendingCalculationsCount { get; init; } = 20000;
+        public int MaxRegisteredCalculationsCount { get; init; } = 20000;
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

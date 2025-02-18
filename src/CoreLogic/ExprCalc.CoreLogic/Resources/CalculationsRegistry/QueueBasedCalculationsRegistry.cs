@@ -1,4 +1,5 @@
-﻿using ExprCalc.Entities;
+﻿using ExprCalc.CoreLogic.Instrumentation;
+using ExprCalc.Entities;
 using ExprCalc.Entities.Enums;
 using System;
 using System.Collections.Concurrent;
@@ -28,7 +29,9 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         private readonly int _maxCount;
         private volatile int _count;
 
-        public QueueBasedCalculationsRegistry(int maxCount)
+        private readonly ScheduledCalculationsRegistryMetrics _metrics;
+
+        public QueueBasedCalculationsRegistry(int maxCount, ScheduledCalculationsRegistryMetrics metrics)
         {
             if (maxCount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(maxCount));
@@ -37,8 +40,10 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             _channel = Channel.CreateUnbounded<Item>();
             _maxCount = maxCount;
             _count = 0;
-        }
 
+            _metrics = metrics;
+            _metrics.SetInitialValues(_maxCount);
+        }
 
         public bool Contains(Guid id)
         {
@@ -101,7 +106,10 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             while (count < _maxCount)
             {
                 if (Interlocked.CompareExchange(ref _count, count + 1, count) == count)
+                {
+                    _metrics.CurrentCount.Add(1);
                     return true;
+                }
                 count = _count;
             }
 
@@ -109,7 +117,10 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         }
         private void ReleaseReservedSlotCore()
         {
-            Interlocked.Decrement(ref _count);
+            int valueAfter = Interlocked.Decrement(ref _count);
+            Debug.Assert(valueAfter >= 0);
+
+            _metrics.CurrentCount.Add(-1);
         }
 
         private void AddCore(Calculation calculation, DateTime availableAfter)
@@ -147,7 +158,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             return true;
         }
 
-        public CalculationRegistryReservedSlot TryReserveSlot()
+        public CalculationRegistryReservedSlot TryReserveSlot(Calculation calculation)
         {
             if (TryReserveSlotCore())
             {
@@ -193,16 +204,6 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         void ICalculationRegistrySlotFiller.ReleaseSlot()
         {
             ReleaseReservedSlotCore();
-        }
-
-
-        protected virtual void Dispose(bool isUserCall)
-        {
-        }
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
     }
 }

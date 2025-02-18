@@ -63,7 +63,7 @@ namespace ExprCalc.CoreLogic.UseCases
 
             try
             {
-                using (var slot = _calculationsRegistry.TryReserveSlot())
+                using (var slot = _calculationsRegistry.TryReserveSlot(calculation))
                 {
                     if (!slot.IsAvailable)
                         throw new TooManyPendingCalculationsException("Too many pending calculations in registry");

@@ -28,8 +28,16 @@ namespace ExprCalc.RestApi.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails), Description = "Server error")]
         public async Task<ActionResult<IEnumerable<CalculationGetDto>>> GetCalculationsListAsync(CancellationToken token)
         {
-            var result = await _calculationUseCases.GetCalculationsListAsync(token);
-            return Ok(result.Select(CalculationGetDto.FromEntity));
+            try
+            {
+                var result = await _calculationUseCases.GetCalculationsListAsync(token);
+                return Ok(result.Select(CalculationGetDto.FromEntity));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected excpetion in {methodName}", nameof(GetCalculationsListAsync));
+                throw;
+            }
         }
 
 
@@ -53,6 +61,11 @@ namespace ExprCalc.RestApi.Controllers
                         type: "overflow",
                         title: "Server overloaded",
                         detail: "Too many pending calculations");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected excpetion in {methodName}", nameof(CreateCalculationAsync));
+                throw;
             }
         }
     }

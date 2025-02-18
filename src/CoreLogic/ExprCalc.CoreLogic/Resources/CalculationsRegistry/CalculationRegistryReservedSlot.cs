@@ -16,7 +16,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             _slotFiller = slotFiller;
         }
 
-        public bool IsAvailable => _slotFiller != null;
+        public readonly bool IsAvailable => _slotFiller != null;
 
         public void Fill(Calculation calculation, DateTime availableAfter)
         {

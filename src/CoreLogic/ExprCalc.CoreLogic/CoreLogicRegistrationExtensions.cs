@@ -1,7 +1,9 @@
 ﻿using ExprCalc.Common.Instrumentation;
 using ExprCalc.CoreLogic.Api.UseCases;
 using ExprCalc.CoreLogic.Configuration;
+using ExprCalc.CoreLogic.Instrumentation;
 using ExprCalc.CoreLogic.Resources.CalculationsRegistry;
+using ExprCalc.CoreLogic.Resources.ExpressionCalculation;
 using ExprCalc.CoreLogic.Services.CalculationsProcessor;
 using ExprCalc.CoreLogic.UseCases;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,8 +24,14 @@ namespace ExprCalc.CoreLogic
 
             serviceCollection.AddSingleton<ICalculationUseCases, CalculationUseCases>();
 
-            serviceCollection.AddSingleton<IScheduledCalculationsRegistry>((provider) => new QueueBasedCalculationsRegistry(ResolveConfig(provider).MaxPendingCalculationsCount));
+            serviceCollection.AddSingleton<IExpressionCalculator, ExpressionCalculator>();
+            serviceCollection.AddSingleton<IScheduledCalculationsRegistry>(
+                (provider) => new QueueBasedCalculationsRegistry(
+                    ResolveConfig(provider).MaxRegisteredCalculationsCount, 
+                    provider.GetRequiredService<InstrumentationContainer>().CalculationsRegistryMetrics));
+
             serviceCollection.AddHostedService<CalculationsProcessingService>();
+            
         }
 
         private static CoreLogicConfig ResolveConfig(IServiceProvider provider)
