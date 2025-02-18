@@ -34,11 +34,11 @@ namespace ExprCalc.Storage.Repositories
 
         private static void FillInitialData(Dictionary<Guid, Calculation> data)
         {
-            var c = new Calculation(id: Guid.CreateVersion7(), expression: "1 + 2", createdBy: new User("user1"), createdAt: DateTime.UtcNow, CalculationStatus.CreatePending());
+            var c = new Calculation(id: Guid.CreateVersion7(), expression: "1 + 2", createdBy: new User("user1"), createdAt: DateTime.UtcNow, updatedAt: DateTime.UtcNow, CalculationStatus.Pending);
             data.Add(c.Id, c);
-            c = new Calculation(id: Guid.CreateVersion7(), expression: "1 * 2", createdBy: new User("user1"), createdAt: DateTime.UtcNow, CalculationStatus.CreatePending());
+            c = new Calculation(id: Guid.CreateVersion7(), expression: "1 * 2", createdBy: new User("user1"), createdAt: DateTime.UtcNow, updatedAt: DateTime.UtcNow, CalculationStatus.Pending);
             data.Add(c.Id, c);
-            c = new Calculation(id: Guid.CreateVersion7(), expression: "1 / 2", createdBy: new User("user2"), createdAt: DateTime.UtcNow, CalculationStatus.CreatePending());
+            c = new Calculation(id: Guid.CreateVersion7(), expression: "1 / 2", createdBy: new User("user2"), createdAt: DateTime.UtcNow, updatedAt: DateTime.UtcNow, CalculationStatus.Pending);
             data.Add(c.Id, c);
         }
 
@@ -47,13 +47,6 @@ namespace ExprCalc.Storage.Repositories
         {
             _logger.LogTrace(nameof(CreateCalculation) + " started");
             using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInMemory) + "." + nameof(CreateCalculation));
-
-            if (!calculation.IsInitialized)
-            {
-                _logger.LogDebug("Unable to create uninitialized calculation");
-                activity?.SetStatus(ActivityStatusCode.Error, "Unable to create uninitialized calculation");
-                throw new UnspecifiedStorageException("Unable to create uninitialized calculation");
-            }
 
             lock (_lock)
             {
@@ -64,7 +57,7 @@ namespace ExprCalc.Storage.Repositories
                     throw new StorageDuplicateEntityException("Calculation with the same key is already existed");
                 }
 
-                _data.Add(calculation.Id, calculation.DeepClone());
+                _data.Add(calculation.Id, calculation.Clone());
                 return calculation;
             }
         }
@@ -76,7 +69,7 @@ namespace ExprCalc.Storage.Repositories
 
             lock (_lock)
             {
-                return _data.Values.Select(o => o.DeepClone()).ToList();
+                return _data.Values.Select(o => o.Clone()).ToList();
             }
         }
 

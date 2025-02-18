@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ExprCalc.Entities.ValueObjects
+namespace ExprCalc.Entities
 {
     public record class CalculationErrorDetails
     {

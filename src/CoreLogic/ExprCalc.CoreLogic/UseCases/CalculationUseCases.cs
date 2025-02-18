@@ -50,13 +50,15 @@ namespace ExprCalc.CoreLogic.UseCases
 
         public async Task<Calculation> CreateCalculationAsync(Calculation calculation, CancellationToken token)
         {
+            if (!calculation.Status.IsPending())
+                throw new ArgumentException("Only calculations in Pending status allowed", nameof(calculation));
+
             _logger.LogTrace(nameof(CreateCalculationAsync) + " started");
             _metrics.CreateCalculation.AddCall();
             using var activity = _activitySource.StartActivity(nameof(CalculationUseCases) + "." + nameof(CreateCalculationAsync));
 
             try
             {
-                calculation.Initialize(Guid.CreateVersion7());
                 return await _calculationRepository.CreateCalculationAsync(calculation, token);
             }
             catch (Exception exc)

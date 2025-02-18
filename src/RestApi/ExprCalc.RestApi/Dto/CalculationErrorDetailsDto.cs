@@ -1,4 +1,4 @@
-﻿using ExprCalc.Entities.ValueObjects;
+﻿using ExprCalc.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

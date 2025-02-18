@@ -16,7 +16,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         Task<CalculationProcessingGuard> TakeNextForProcessing(CancellationToken cancellationToken);
 
         bool Contains(Guid id);
-        bool TryGetState(Guid id, [NotNullWhen(true)] out CalculationState? state);
+        bool TryGetStatus(Guid id, [NotNullWhen(true)] out CalculationStatus? status);
         bool TryCancel(Guid id, User cancelledBy);
     }
 }

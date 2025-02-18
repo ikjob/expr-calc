@@ -1,143 +1,116 @@
 ﻿using ExprCalc.Entities.Enums;
-using ExprCalc.Entities.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ExprCalc.Entities
 {
-    /// <summary>
-    /// Contains calculation status that is updated during the calculation lifetime
-    /// </summary>
     public class CalculationStatus
     {
-        public static CalculationStatus CreatePending()
+        public static CalculationStatus Pending { get; } = new CalculationStatus(CalculationState.Pending);
+        public static CalculationStatus InProgress { get; } = new CalculationStatus(CalculationState.InProgress);
+        public static SuccessCalculationStatus CreateSuccess(double calculationResult) => new SuccessCalculationStatus(calculationResult);
+        public static FailedCalculationStatus CreateFailed(CalculationErrorCode errorCode, CalculationErrorDetails errorDetails) => new FailedCalculationStatus(errorCode, errorDetails);
+        public static CancelledCalculationStatus CreateCancelled(User cancelledBy) => new CancelledCalculationStatus(cancelledBy);
+
+        protected CalculationStatus(CalculationState state)
         {
-            return new CalculationStatus(CalculationState.Pending, null, null, null, null, DateTime.UtcNow);
+            State = state;
         }
 
-        // ===========
+        public CalculationState State { get; }
 
-        private volatile CalculationState _state;
-
-        public CalculationStatus(
-            CalculationState state,
-            double? calculationResult,
-            CalculationErrorCode? errorCode,
-            CalculationErrorDetails? errorDetails,
-            User? cancelledBy,
-            DateTime updatedAt)
+        public bool IsPending()
         {
-            switch (state)
+            return State == CalculationState.Pending;
+        }
+        public bool IsInProgress()
+        {
+            return State == CalculationState.InProgress;
+        }
+        public bool IsSuccess([NotNullWhen(true)] out SuccessCalculationStatus? successStatus)
+        {
+            if (this is SuccessCalculationStatus result)
             {
-                case CalculationState.Pending when (calculationResult != null || errorCode != null || errorDetails != null || cancelledBy != null):
-                case CalculationState.InProgress when (calculationResult != null || errorCode != null || errorDetails != null || cancelledBy != null):
-                case CalculationState.Success when (calculationResult == null || errorCode != null || errorDetails != null || cancelledBy != null):
-                case CalculationState.Failed when (calculationResult != null || errorCode == null || errorDetails == null || cancelledBy != null):
-                case CalculationState.Cancelled when (calculationResult != null || errorCode != null || errorDetails != null || cancelledBy == null):
-                    throw new ArgumentException($"Provided set of values does not match the specified state ({state})");
+                Debug.Assert(State == CalculationState.Success);
+                successStatus = result;
+                return true;
             }
-
-            _state = state;
-            CalculationResult = calculationResult;
-            ErrorCode = errorCode;
-            ErrorDetails = errorDetails;
-            CancelledBy = cancelledBy;
-            UpdatedAt = updatedAt;
+            else
+            {
+                successStatus = null;
+                return false;
+            }
         }
-        public CalculationStatus(CalculationStatus src)
+        public bool IsFailed([NotNullWhen(true)] out FailedCalculationStatus? failedStatus)
         {
-            _state = src.State;
-            CalculationResult = src.CalculationResult;
-            ErrorCode = src.ErrorCode;
-            ErrorDetails = src.ErrorDetails;
-            CancelledBy = src.CancelledBy;
-            UpdatedAt = src.UpdatedAt;
+            if (this is FailedCalculationStatus result)
+            {
+                Debug.Assert(State == CalculationState.Failed);
+                failedStatus = result;
+                return true;
+            }
+            else
+            {
+                failedStatus = null;
+                return false;
+            }
         }
-
-
-        public CalculationState State { get { return _state; } }
-
-        public double? CalculationResult { get; private set; }
-
-        public CalculationErrorCode? ErrorCode { get; private set; }
-        public CalculationErrorDetails? ErrorDetails { get; private set; }
-
-        public User? CancelledBy { get; private set; }
-
-        public DateTime UpdatedAt { get; private set; }
-
-
-        public void SetInProgress()
+        public bool IsCancelled([NotNullWhen(true)] out CancelledCalculationStatus? cancelledStatus)
         {
-            if (!State.IsValidTransition(CalculationState.InProgress))
-                throw new InvalidOperationException($"Unable to transit calculation state from {State} to {CalculationState.InProgress}");
-
-            _state = CalculationState.InProgress;
-            UpdatedAt = DateTime.UtcNow;
-
-            CalculationResult = null;
-            ErrorCode = null;
-            ErrorDetails = null;
-            CancelledBy = null;
+            if (this is CancelledCalculationStatus result)
+            {
+                Debug.Assert(State == CalculationState.Cancelled);
+                cancelledStatus = result;
+                return true;
+            }
+            else
+            {
+                cancelledStatus = null;
+                return false;
+            }
         }
-
-        public void SetSuccess(double calculationResult)
-        {
-            if (!State.IsValidTransition(CalculationState.Success))
-                throw new InvalidOperationException($"Unable to transit calculation state from {State} to {CalculationState.Success}");
-
-            _state = CalculationState.Success;
-            CalculationResult = calculationResult;
-            UpdatedAt = DateTime.UtcNow;
-
-            ErrorCode = null;
-            ErrorDetails = null;
-            CancelledBy = null;
-        }
-
-        public void SetFailed(CalculationErrorCode errorCode, CalculationErrorDetails errorDetails)
-        {
-            if (!State.IsValidTransition(CalculationState.Failed))
-                throw new InvalidOperationException($"Unable to transit calculation state from {State} to {CalculationState.Failed}");
-
-            _state = CalculationState.Failed;
-            ErrorCode = errorCode;
-            ErrorDetails = errorDetails;
-            UpdatedAt = DateTime.UtcNow;
-
-            CalculationResult = null;
-            CancelledBy = null;
-        }
-
-        public void SetCancelled(User cancelledBy)
-        {
-            if (!State.IsValidTransition(CalculationState.Cancelled))
-                throw new InvalidOperationException($"Unable to transit calculation state from {State} to {CalculationState.Cancelled}");
-
-            _state = CalculationState.Cancelled;
-            CancelledBy = cancelledBy;
-            UpdatedAt = DateTime.UtcNow;
-
-            CalculationResult = null;
-            ErrorCode = null;
-            ErrorDetails = null;
-        }
-
 
         public override string ToString()
         {
-            return State switch
-            {
-                CalculationState.Pending => "[Pending]",
-                CalculationState.InProgress => "[InProgress]",
-                CalculationState.Success => $"[Success. Result = {CalculationResult}]",
-                CalculationState.Failed => $"[Failed, ErrorCode = {ErrorCode}]",
-                CalculationState.Cancelled => $"[Cancelled, By = {CancelledBy}]",
-                _ => throw new InvalidOperationException("Unknown state: " + State.ToString())
-            };
+            return $"[{State}]";
+        }
+    }
+
+    public sealed class SuccessCalculationStatus(double calculationResult) : CalculationStatus(CalculationState.Success)
+    {
+        public double CalculationResult { get; } = calculationResult;
+
+        public override string ToString()
+        {
+            return $"[Success. Result = {CalculationResult}]";
+        }
+    }
+
+    public sealed class FailedCalculationStatus(
+        CalculationErrorCode errorCode,
+        CalculationErrorDetails errorDetails) : CalculationStatus(CalculationState.Failed)
+    {
+        public CalculationErrorCode ErrorCode { get; } = errorCode;
+        public CalculationErrorDetails ErrorDetails { get; } = errorDetails;
+
+        public override string ToString()
+        {
+            return $"[Failed. ErrorCode = {ErrorCode}]";
+        }
+    }
+
+    public sealed class CancelledCalculationStatus(User cancelledBy) : CalculationStatus(CalculationState.Cancelled)
+    {
+        public User CancelledBy { get; } = cancelledBy;
+
+        public override string ToString()
+        {
+            return $"[Cancelled, By = {CancelledBy}]";
         }
     }
 }

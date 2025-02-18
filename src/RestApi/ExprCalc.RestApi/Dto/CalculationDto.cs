@@ -34,7 +34,7 @@ namespace ExprCalc.RestApi.Dto
                 Expression = entity.Expression,
                 CreatedBy = entity.CreatedBy.Login,
                 CreatedAt = entity.CreatedAt,
-                Status = entity.Status != null ? CalculationStatusDto.FromEntity(entity.Status) : null
+                Status = entity.Status != null ? CalculationStatusDto.FromEntity(entity.Status, entity.UpdatedAt) : null
             };
         }
     }
@@ -43,7 +43,7 @@ namespace ExprCalc.RestApi.Dto
     {
         public Entities.Calculation IntoEntity()
         {
-            return Entities.Calculation.CreateUninitialized(Expression, new Entities.User(CreatedBy));
+            return Entities.Calculation.CreateInitial(Expression, new Entities.User(CreatedBy));
         }
     }
 }

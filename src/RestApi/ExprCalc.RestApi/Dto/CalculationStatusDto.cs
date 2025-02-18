@@ -1,5 +1,4 @@
 ﻿using ExprCalc.Entities.Enums;
-using ExprCalc.Entities.ValueObjects;
 using ExprCalc.Entities;
 using System;
 using System.Collections.Generic;
@@ -28,17 +27,34 @@ namespace ExprCalc.RestApi.Dto
         public required DateTime UpdatedAt { get; set; }
 
 
-        public static CalculationStatusDto FromEntity(Entities.CalculationStatus status)
+        public static CalculationStatusDto FromEntity(CalculationStatus status, DateTime updatedAt)
         {
-            return new CalculationStatusDto()
+            var result = new CalculationStatusDto()
             {
                 State = status.State,
-                CalculationResult = status.CalculationResult,
-                ErrorCode = status.ErrorCode,
-                ErrorDetails = status.ErrorDetails != null ? CalculationErrorDetailsDto.FromEntity(status.ErrorDetails) : null,
-                CancelledBy = status.CancelledBy?.Login,
-                UpdatedAt = status.UpdatedAt
+                UpdatedAt = updatedAt
             };
+
+            switch (status.State)
+            {
+                case CalculationState.Pending:
+                case CalculationState.InProgress:
+                    break;
+                case CalculationState.Success when status.IsSuccess(out var success):
+                    result.CalculationResult = success.CalculationResult;
+                    break;
+                case CalculationState.Failed when status.IsFailed(out var failed):
+                    result.ErrorCode = failed.ErrorCode;
+                    result.ErrorDetails = CalculationErrorDetailsDto.FromEntity(failed.ErrorDetails);
+                    break;
+                case CalculationState.Cancelled when status.IsCancelled(out var cancelled):
+                    result.CancelledBy = cancelled.CancelledBy.Login;
+                    break;
+                default:
+                    throw new ArgumentException("Unknwon or malformed status: " + status.ToString());
+            }
+
+            return result;
         }
     }
 }

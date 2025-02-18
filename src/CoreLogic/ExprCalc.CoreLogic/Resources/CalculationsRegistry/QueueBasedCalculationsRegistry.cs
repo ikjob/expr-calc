@@ -38,16 +38,15 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             return _calculations.ContainsKey(id);
         }
 
-        public bool TryGetState(Guid id, [NotNullWhen(true)] out CalculationState? state)
+        public bool TryGetStatus(Guid id, [NotNullWhen(true)] out CalculationStatus? status)
         {
             if (_calculations.TryGetValue(id, out Item item))
             {
-                Debug.Assert(item.Calculation.Status != null);
-                state = item.Calculation.Status.State;
+                status = item.Calculation.Status;
                 return true;
             }
 
-            state = null;
+            status = null;
             return false;
         }
 
@@ -80,8 +79,8 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
         public bool TryAdd(Calculation calculation, DateTime availableAfter)
         {
-            if (!calculation.IsInitialized || calculation.Status == null)
-                throw new ArgumentException("Only initialized calculations can be stored in the registry", nameof(calculation));
+            if (!calculation.Status.IsPending())
+                throw new ArgumentException("Only calculations in Pending status can be added to the registry", nameof(calculation));
 
             return _channel.Writer.TryWrite(new Item(calculation, availableAfter, new CancellationTokenSource()));
         }
@@ -91,11 +90,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             if (_calculations.TryGetValue(id, out var item))
             {
                 item.CancellationTokenSource.Cancel();
-
-                Debug.Assert(item.Calculation.Status != null);
-                item.Calculation.Status.SetCancelled(cancelledBy); // TODO: not thread safe
-
-                return true;
+                return item.Calculation.TryMakeCancelled(cancelledBy);
             }
 
             return false;
