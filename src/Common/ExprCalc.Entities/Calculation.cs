@@ -5,7 +5,7 @@
     /// </summary>
     public class Calculation
     {
-        public const int MaxExpressionLength = 65535;
+        public const int MaxExpressionLength = 25000;
 
         public static Calculation CreateUninitialized(string expression, User createdBy)
         {

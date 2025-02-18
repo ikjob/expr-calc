@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.CoreLogic.Helpers
 {
-    internal static class ExcpetionTranslation
+    internal static class ExceptionTranslation
     {
         public static bool TryTranslateStorageException(this StorageException storageException, [NotNullWhen(true)] out Exception? translatedException)
         {

@@ -1,7 +1,7 @@
 ﻿using ExprCalc.Common.Instrumentation;
 using ExprCalc.CoreLogic.Api.UseCases;
 using ExprCalc.CoreLogic.Configuration;
-using ExprCalc.CoreLogic.Services;
+using ExprCalc.CoreLogic.Services.CalculationsProcessor;
 using ExprCalc.CoreLogic.UseCases;
 using Microsoft.Extensions.DependencyInjection;
 

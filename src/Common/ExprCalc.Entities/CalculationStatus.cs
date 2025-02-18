@@ -18,6 +18,10 @@ namespace ExprCalc.Entities
             return new CalculationStatus(CalculationState.Pending, null, null, null, null, DateTime.UtcNow);
         }
 
+        // ===========
+
+        private volatile CalculationState _state;
+
         public CalculationStatus(
             CalculationState state,
             double? calculationResult,
@@ -36,7 +40,7 @@ namespace ExprCalc.Entities
                     throw new ArgumentException($"Provided set of values does not match the specified state ({state})");
             }
 
-            State = state;
+            _state = state;
             CalculationResult = calculationResult;
             ErrorCode = errorCode;
             ErrorDetails = errorDetails;
@@ -45,7 +49,7 @@ namespace ExprCalc.Entities
         }
         public CalculationStatus(CalculationStatus src)
         {
-            State = src.State;
+            _state = src.State;
             CalculationResult = src.CalculationResult;
             ErrorCode = src.ErrorCode;
             ErrorDetails = src.ErrorDetails;
@@ -54,7 +58,7 @@ namespace ExprCalc.Entities
         }
 
 
-        public CalculationState State { get; private set; }
+        public CalculationState State { get { return _state; } }
 
         public double? CalculationResult { get; private set; }
 
@@ -71,7 +75,7 @@ namespace ExprCalc.Entities
             if (!State.IsValidTransition(CalculationState.InProgress))
                 throw new InvalidOperationException($"Unable to transit calculation state from {State} to {CalculationState.InProgress}");
 
-            State = CalculationState.InProgress;
+            _state = CalculationState.InProgress;
             UpdatedAt = DateTime.UtcNow;
 
             CalculationResult = null;
@@ -85,7 +89,7 @@ namespace ExprCalc.Entities
             if (!State.IsValidTransition(CalculationState.Success))
                 throw new InvalidOperationException($"Unable to transit calculation state from {State} to {CalculationState.Success}");
 
-            State = CalculationState.Success;
+            _state = CalculationState.Success;
             CalculationResult = calculationResult;
             UpdatedAt = DateTime.UtcNow;
 
@@ -99,7 +103,7 @@ namespace ExprCalc.Entities
             if (!State.IsValidTransition(CalculationState.Failed))
                 throw new InvalidOperationException($"Unable to transit calculation state from {State} to {CalculationState.Failed}");
 
-            State = CalculationState.Failed;
+            _state = CalculationState.Failed;
             ErrorCode = errorCode;
             ErrorDetails = errorDetails;
             UpdatedAt = DateTime.UtcNow;
@@ -113,7 +117,7 @@ namespace ExprCalc.Entities
             if (!State.IsValidTransition(CalculationState.Cancelled))
                 throw new InvalidOperationException($"Unable to transit calculation state from {State} to {CalculationState.Cancelled}");
 
-            State = CalculationState.Cancelled;
+            _state = CalculationState.Cancelled;
             CancelledBy = cancelledBy;
             UpdatedAt = DateTime.UtcNow;
 

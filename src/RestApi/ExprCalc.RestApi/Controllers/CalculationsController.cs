@@ -14,12 +14,12 @@ namespace ExprCalc.RestApi.Controllers
 {
     [ApiController]
     [Route("api/v1/calculations")]
-    public class CalcullationsController(
+    public class CalculationsController(
         ICalculationUseCases calculationUseCases,
-        ILogger<CalcullationsController> logger) : ControllerBase
+        ILogger<CalculationsController> logger) : ControllerBase
     {
         private readonly ICalculationUseCases _calculationUseCases = calculationUseCases;
-        private readonly ILogger<CalcullationsController> _logger = logger;
+        private readonly ILogger<CalculationsController> _logger = logger;
 
 
         [HttpGet]

@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ExprCalc.CoreLogic.Services
+namespace ExprCalc.CoreLogic.Services.CalculationsProcessor
 {
     /// <summary>
     /// Background service that runs calculations
@@ -47,6 +47,20 @@ namespace ExprCalc.CoreLogic.Services
             for (int i = 0; i < processorsCount; i++)
                 processors[i] = WorkerLoop(i, stoppingToken);
 
+            var completed = await Task.WhenAny(processors);
+            if (completed.IsFaulted)
+            {
+                _logger.LogError(completed.Exception, "One of the background calculations workers has completed with exception");
+                await completed; // Task is faulted => propagate its exception
+            }
+
+            if (!stoppingToken.IsCancellationRequested)
+            {
+                _logger.LogError("One of the background calculations workers has stopped unexpectedly");
+                throw new BackgroundWorkerStoppedUnexpectedlyException("One of the background calculations workers has stopped unexpectedly"); // Task stopped unexpectedly
+            }
+
+            // Wait for completion of all other tasks
             await Task.WhenAll(processors);
         }
 
@@ -56,6 +70,7 @@ namespace ExprCalc.CoreLogic.Services
         {
             await Task.Yield();
             _logger.LogDebug("Calculations processing background worker #{workerIndex} has started", workerIndex);
+
 
             while (!stoppingToken.IsCancellationRequested)
             {
