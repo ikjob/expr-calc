@@ -21,6 +21,8 @@ namespace ExprCalc.CoreLogic.Instrumentation
             Meter = meterFactory.Create(new MeterOptions(MeterName));
 
             CalculationUseCasesMetrics = new CalculationUseCasesMetrics(Meter);
+            CalculationsRegistryMetrics = new ScheduledCalculationsRegistryMetrics(Meter);
+            CalculationsProcessingMetrics = new CalculationsProcessingMetrics(Meter);
         }
 
         internal ActivitySource ActivitySource { get; }
@@ -29,5 +31,7 @@ namespace ExprCalc.CoreLogic.Instrumentation
         // ======= Metrics ==========
 
         public CalculationUseCasesMetrics CalculationUseCasesMetrics { get; }
+        public ScheduledCalculationsRegistryMetrics CalculationsRegistryMetrics { get; }
+        public CalculationsProcessingMetrics CalculationsProcessingMetrics { get; }
     }
 }

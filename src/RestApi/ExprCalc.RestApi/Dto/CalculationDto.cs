@@ -23,6 +23,7 @@ namespace ExprCalc.RestApi.Dto
     {
         public required Guid Id { get; set; }
         public required DateTime CreatedAt { get; set; }
+        public required DateTime UpdatedAt { get; set; }
         public CalculationStatusDto? Status { get; set; }
 
 
@@ -34,7 +35,8 @@ namespace ExprCalc.RestApi.Dto
                 Expression = entity.Expression,
                 CreatedBy = entity.CreatedBy.Login,
                 CreatedAt = entity.CreatedAt,
-                Status = entity.Status != null ? CalculationStatusDto.FromEntity(entity.Status) : null
+                UpdatedAt = entity.UpdatedAt,
+                Status = CalculationStatusDto.FromEntity(entity.Status)
             };
         }
     }
@@ -43,7 +45,7 @@ namespace ExprCalc.RestApi.Dto
     {
         public Entities.Calculation IntoEntity()
         {
-            return Entities.Calculation.CreateUninitialized(Expression, new Entities.User(CreatedBy));
+            return Entities.Calculation.CreateInitial(Expression, new Entities.User(CreatedBy));
         }
     }
 }

@@ -14,21 +14,25 @@ namespace ExprCalc.ExpressionParsing.Parser
     {
         public ExpressionParserException() : base("Invalid expression") { }
 
-        public ExpressionParserException(int offset) : base("Invalid expression") 
+        public ExpressionParserException(int offset, int? length) : base("Invalid expression")
         {
             Offset = offset;
+            Length = length;
         }
-        public ExpressionParserException(string? message, int offset) : base(message) 
+        public ExpressionParserException(string? message, int offset, int? length) : base(message) 
         {
             Offset = offset;
+            Length = length;
         }
 
-        public ExpressionParserException(string? message, int offset, Exception? innerException) : base(message, innerException)
+        public ExpressionParserException(string? message, int offset, int? length, Exception? innerException) : base(message, innerException)
         {
             Offset = offset;
+            Length = length;
         }
 
         public int Offset { get; }
+        public int? Length { get; }
     }
 
     /// <summary>
@@ -36,8 +40,8 @@ namespace ExprCalc.ExpressionParsing.Parser
     /// </summary>
     public class InvalidLexemaException : ExpressionParserException
     {
-        public InvalidLexemaException(string? message, int offset) : base(message, offset) { }
-        public InvalidLexemaException(string? message, int offset, Exception? innerException) : base(message, offset, innerException) { }
+        public InvalidLexemaException(string? message, int offset, int length) : base(message, offset, length) { }
+        public InvalidLexemaException(string? message, int offset, int length, Exception? innerException) : base(message, offset, length, innerException) { }
     }
 
     /// <summary>
@@ -45,8 +49,8 @@ namespace ExprCalc.ExpressionParsing.Parser
     /// </summary>
     public class InvalidNumberException : InvalidLexemaException
     {
-        public InvalidNumberException(string? message, int offset) : base(message, offset) { }
-        public InvalidNumberException(string? message, int offset, Exception? innerException) : base(message, offset, innerException) { }
+        public InvalidNumberException(string? message, int offset, int length) : base(message, length, offset) { }
+        public InvalidNumberException(string? message, int offset, int length, Exception? innerException) : base(message, offset, length, innerException) { }
     }
 
     /// <summary>
@@ -54,8 +58,8 @@ namespace ExprCalc.ExpressionParsing.Parser
     /// </summary>
     public class UnknownIdentifierException : ExpressionParserException
     {
-        public UnknownIdentifierException(string? message, int offset) : base(message, offset) { }
-        public UnknownIdentifierException(string? message, int offset, Exception? innerException) : base(message, offset, innerException) { }
+        public UnknownIdentifierException(string? message, int offset, int length) : base(message, offset, length) { }
+        public UnknownIdentifierException(string? message, int offset, int length, Exception? innerException) : base(message, offset, length, innerException) { }
     }
 
     /// <summary>
@@ -63,8 +67,8 @@ namespace ExprCalc.ExpressionParsing.Parser
     /// </summary>
     public class InvalidExpressionException : ExpressionParserException
     {
-        public InvalidExpressionException(string? message, int offset) : base(message, offset) { }
-        public InvalidExpressionException(string? message, int offset, Exception? innerException) : base(message, offset, innerException) { }
+        public InvalidExpressionException(string? message, int offset) : base(message, offset, null) { }
+        public InvalidExpressionException(string? message, int offset, Exception? innerException) : base(message, offset, null, innerException) { }
     }
 
     /// <summary>

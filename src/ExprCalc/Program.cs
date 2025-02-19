@@ -50,6 +50,12 @@ namespace ExprCalc
             // Add services to the container.
             SetupServices(builder.Services, builder.Configuration);
 
+
+            if (OperatingSystem.IsWindows())
+                builder.Host.UseWindowsService();
+            else if (OperatingSystem.IsLinux())
+                builder.Host.UseSystemd();
+
             var app = builder.Build();
 
             app.UseRestApiFeatures();

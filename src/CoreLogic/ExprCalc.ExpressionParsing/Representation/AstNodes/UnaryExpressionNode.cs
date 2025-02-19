@@ -24,8 +24,8 @@ namespace ExprCalc.ExpressionParsing.Representation.AstNodes
 
         public override double Calculate(NumberValidationBehaviour numberValidationBehaviour = NumberValidationBehaviour.Strict)
         {
-            var calc = new CalculationExpressionNodesFactory(numberValidationBehaviour);
-            return calc.UnaryOp(OperationType, Arg.Calculate(numberValidationBehaviour));
+            var calc = new MathOperationsCalculator(numberValidationBehaviour);
+            return calc.UnaryOp(OperationType, Arg.Calculate(numberValidationBehaviour), null);
         }
 
         public override IEnumerable<ExpressionNode> EnumerateChildNodes()

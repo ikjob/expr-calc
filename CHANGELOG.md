@@ -13,6 +13,7 @@ Expression calculator changelog
 - Core logic project intitialized (#21)
 - Database schemas in dbml format (#22)
 - Storage project initialized (#23)
+- Background calculations processor (#26)
 
 #### Changed
 - Entities updated according to database schema (#23)
