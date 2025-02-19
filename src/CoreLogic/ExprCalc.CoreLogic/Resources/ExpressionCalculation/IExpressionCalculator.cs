@@ -10,6 +10,6 @@ namespace ExprCalc.CoreLogic.Resources.ExpressionCalculation
 {
     internal interface IExpressionCalculator
     {
-        Task<CalculationStatus> Calculate(Calculation calculation, CancellationToken cancellationToken);
+        Task<CalculationStatus> Calculate(Calculation calculation, CancellationToken softCancellationToken, CancellationToken hardCancellationToken);
     }
 }

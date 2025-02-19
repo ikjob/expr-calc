@@ -64,14 +64,14 @@ namespace ExprCalc.Entities
 
 
 
-        private bool TryChangeStatus(CalculationStatus newStatus, out CalculationStatus prevStatus)
+        public bool TryChangeStatus(CalculationStatus newStatus, DateTime? updatedAt, out CalculationStatus prevStatus)
         {
             var curStatus = _status;
             while (curStatus.State.IsValidTransition(newStatus.State))
             {
                 if (Interlocked.CompareExchange(ref _status, newStatus, curStatus) == curStatus)
                 {
-                    UpdatedAt = DateTime.UtcNow;
+                    UpdatedAt = updatedAt ?? DateTime.UtcNow;
                     prevStatus = curStatus;
                     return true;
                 }
@@ -81,6 +81,10 @@ namespace ExprCalc.Entities
 
             prevStatus = curStatus;
             return false;
+        }
+        public bool TryChangeStatus(CalculationStatus newStatus, out CalculationStatus prevStatus)
+        {
+            return TryChangeStatus(newStatus, null, out prevStatus);
         }
 
         public bool TryMakeInProgress()

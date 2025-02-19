@@ -20,7 +20,7 @@ namespace ExprCalc.ExpressionParsing.Representation
         public double ParseNumber(ReadOnlySpan<char> numberText, int offsetInExpression)
         {
             double result = ExpressionParser.ParseNumberAsDouble(numberText, offsetInExpression, allowInf: true);
-            if (!NumberValidationBehaviour.IsInfAllowed())
+            if (!NumberValidationBehaviour.IsInfAllowed() && double.IsInfinity(result))
                 throw new ExpressionCalculationException("Found number that is too large to be parsed", ExpressionCalculationErrorType.NumberTooLarge, null, offsetInExpression, numberText.Length);
 
             return result;

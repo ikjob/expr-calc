@@ -62,6 +62,23 @@ namespace ExprCalc.Storage.Repositories
             }
         }
 
+        public bool UpdateCalculationStatus(CalculationStatusUpdate calculationStatusUpdate)
+        {
+            _logger.LogTrace(nameof(UpdateCalculationStatus) + " started");
+            using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInMemory) + "." + nameof(UpdateCalculationStatus));
+
+            lock (_lock)
+            {
+                if (_data.TryGetValue(calculationStatusUpdate.Id, out var calculation))
+                {
+                    if (!calculation.TryChangeStatus(calculationStatusUpdate.Status, calculationStatusUpdate.UpdatedAt, out _))
+                        throw new InvalidOperationException("Unexpected status change received by InMemoryStorage");
+                    return true;
+                }
+                return false;
+            }
+        }
+
         public List<Calculation> GetCalculationsList()
         {
             _logger.LogTrace(nameof(GetCalculationsList) + " started");
@@ -96,6 +113,18 @@ namespace ExprCalc.Storage.Repositories
             catch (Exception ex)
             {
                 return Task.FromException<List<Calculation>>(ex);
+            }
+        }
+
+        public Task<bool> UpdateCalculationStatusAsync(CalculationStatusUpdate calculationStatusUpdate, CancellationToken token)
+        {
+            try
+            {
+                return Task.FromResult(UpdateCalculationStatus(calculationStatusUpdate));
+            }
+            catch (Exception ex)
+            {
+                return Task.FromException<bool>(ex);
             }
         }
     }

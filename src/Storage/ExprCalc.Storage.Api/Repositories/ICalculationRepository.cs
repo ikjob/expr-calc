@@ -14,5 +14,6 @@ namespace ExprCalc.Storage.Api.Repositories
     {
         Task<List<Calculation>> GetCalculationsListAsync(CancellationToken token);
         Task<Calculation> CreateCalculationAsync(Calculation calculation, CancellationToken token);
+        Task<bool> UpdateCalculationStatusAsync(CalculationStatusUpdate calculationStatusUpdate, CancellationToken token);
     }
 }

@@ -55,16 +55,16 @@ namespace ExprCalc.ExpressionParsing.Parser
             catch (FormatException fmtExc)
             {
                 // If the number came from Lexer then this exception cannot happen
-                throw new InvalidNumberException($"Found number with incorrect format. Offset = {offsetInExpression}. Value = '{numberText.Slice(0, Math.Min(numberText.Length, MaxTokenDebugInfoLength))}{(numberText.Length <= MaxTokenDebugInfoLength ? "" : "..")}'", offsetInExpression, fmtExc);
+                throw new InvalidNumberException($"Found number with incorrect format. Offset = {offsetInExpression}. Value = '{numberText.Slice(0, Math.Min(numberText.Length, MaxTokenDebugInfoLength))}{(numberText.Length <= MaxTokenDebugInfoLength ? "" : "..")}'", offsetInExpression, numberText.Length, fmtExc);
             }
             catch (OverflowException ovfExc)
             {
                 // Should never happen in the modern versions of .NET
-                throw new InvalidNumberException($"Found number which is too large to be parsed. Offset = {offsetInExpression}. Value = '{numberText.Slice(0, Math.Min(numberText.Length, MaxTokenDebugInfoLength))}{(numberText.Length <= MaxTokenDebugInfoLength ? "" : "..")}'", offsetInExpression, ovfExc);
+                throw new InvalidNumberException($"Found number which is too large to be parsed. Offset = {offsetInExpression}. Value = '{numberText.Slice(0, Math.Min(numberText.Length, MaxTokenDebugInfoLength))}{(numberText.Length <= MaxTokenDebugInfoLength ? "" : "..")}'", offsetInExpression, numberText.Length, ovfExc);
             }
 
             if (!allowInf && double.IsInfinity(result))
-                throw new InvalidNumberException($"Found number which is too large to be parsed. Offset = {offsetInExpression}. Value = '{numberText.Slice(0, Math.Min(numberText.Length, MaxTokenDebugInfoLength))}{(numberText.Length <= MaxTokenDebugInfoLength ? "" : "..")}'", offsetInExpression);
+                throw new InvalidNumberException($"Found number which is too large to be parsed. Offset = {offsetInExpression}. Value = '{numberText.Slice(0, Math.Min(numberText.Length, MaxTokenDebugInfoLength))}{(numberText.Length <= MaxTokenDebugInfoLength ? "" : "..")}'", offsetInExpression, numberText.Length);
 
             return result;
         }
@@ -81,7 +81,7 @@ namespace ExprCalc.ExpressionParsing.Parser
                     return new ExpressionOperationExt(func, token.Offset);
             }
 
-            throw new UnknownIdentifierException($"Found unknown identifier. Offset = {token.Offset}. Value = '{token.GetTokenTextDebug()}'", token.Offset);
+            throw new UnknownIdentifierException($"Found unknown identifier. Offset = {token.Offset}. Value = '{token.GetTokenTextDebug()}'", token.Offset, token.Length);
         }
 
         private static TNode ApplyOperator<TNodeFactory, TNode>(TNodeFactory nodeFactory, Stack<TNode> args, ExpressionOperationExt oper, string expression)
@@ -128,7 +128,7 @@ namespace ExprCalc.ExpressionParsing.Parser
             foreach (var token in TokenStream.EnumerateTokens(expression, allowErrors: true))
             {
                 if (token.IsError)
-                    throw new InvalidLexemaException($"{token.ErrorDescription}. Offset = {token.Offset}. Value = '{token.GetTokenTextDebug()}'", token.Offset);
+                    throw new InvalidLexemaException($"{token.ErrorDescription}. Offset = {token.Offset}. Value = '{token.GetTokenTextDebug()}'", token.Offset, token.Length);
 
                 ExpressionOperationExt operatorFromStack;
 
@@ -274,7 +274,7 @@ namespace ExprCalc.ExpressionParsing.Parser
             foreach (var token in TokenStream.EnumerateTokens(expression, allowErrors: true))
             {
                 if (token.IsError)
-                    throw new InvalidLexemaException($"{token.ErrorDescription}. Offset = {token.Offset}. Value = '{token.GetTokenTextDebug()}'", token.Offset);
+                    throw new InvalidLexemaException($"{token.ErrorDescription}. Offset = {token.Offset}. Value = '{token.GetTokenTextDebug()}'", token.Offset, token.Length);
 
                 ExpressionOperationExt operatorFromStack;
 

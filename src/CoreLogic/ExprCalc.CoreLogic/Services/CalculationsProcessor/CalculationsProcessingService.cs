@@ -87,13 +87,12 @@ namespace ExprCalc.CoreLogic.Services.CalculationsProcessor
                 _metrics.ProcessedTotal.Add(1);
                 
                 using var activity = _activitySource.StartActivity(nameof(CalculationsProcessingService) + ".NewCalculation");
-                using var linkedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, newCalculation.Token);
                 _logger.LogTrace("New expression taken for processing. Id = {id}, Expression = {expression}", newCalculation.Calculation.Id, newCalculation.Calculation.Expression);
                 var stopwatch = Stopwatch.StartNew();
 
                 try
                 {
-                    var finalState = await _calculator.Calculate(newCalculation.Calculation, linkedCancellationSource.Token);
+                    var finalState = await _calculator.Calculate(newCalculation.Calculation, newCalculation.Token, stoppingToken);
 
                     if (finalState.IsSuccess(out _))
                     {

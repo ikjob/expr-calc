@@ -174,8 +174,11 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         {
             if (_calculations.TryGetValue(id, out var item))
             {
-                item.CancellationTokenSource.Cancel();
-                return item.Calculation.TryMakeCancelled(cancelledBy);
+                if (item.Calculation.TryMakeCancelled(cancelledBy))
+                {
+                    item.CancellationTokenSource.Cancel();
+                    return true;
+                }
             }
 
             return false;
