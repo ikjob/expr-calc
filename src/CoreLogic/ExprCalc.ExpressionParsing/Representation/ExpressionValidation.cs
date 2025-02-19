@@ -28,13 +28,11 @@ namespace ExprCalc.ExpressionParsing.Representation
         public EmptyNode UnaryOp(ExpressionOperationType opType, int offsetInExpression, EmptyNode value) => default;
 
 
-        private ValueTask<EmptyNode> ParseNumberSlow(ReadOnlySpan<char> numberText, int offsetInExpression)
+        private static ValueTask<EmptyNode> ParseNumberSlow(ReadOnlySpan<char> numberText, int offsetInExpression)
         {
             try
             {
-                if (ValidateNumbersCanBeRepresentedAsDouble)
-                    ExpressionParser.ParseNumberAsDouble(numberText, offsetInExpression);
-
+                ExpressionParser.ParseNumberAsDouble(numberText, offsetInExpression);
                 return new ValueTask<EmptyNode>(new EmptyNode());
             }
             catch (Exception ex)

@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.CoreLogic.Resources.ExpressionCalculation
 {
+    /// <summary>
+    /// Responsible for actual calculation within the business logic
+    /// </summary>
     internal class ExpressionCalculator : IExpressionCalculator
     {
         private readonly IExternalCalculationStatusUpdater _externalStatusUpdater;
@@ -25,6 +28,9 @@ namespace ExprCalc.CoreLogic.Resources.ExpressionCalculation
         }
 
 
+        /// <summary>
+        /// Creates <see cref="FailedCalculationStatus"/> from <see cref="ExpressionParserException"/>
+        /// </summary>
         private static FailedCalculationStatus CreateFailedStatusFromExpressionParserException(ExpressionParserException parserExc)
         {
             var errorCode = parserExc switch
@@ -42,6 +48,9 @@ namespace ExprCalc.CoreLogic.Resources.ExpressionCalculation
                 Length = parserExc.Length
             });
         }
+        /// <summary>
+        /// Creates <see cref="FailedCalculationStatus"/> from <see cref="ExpressionCalculationException"/>
+        /// </summary>
         private static FailedCalculationStatus CreateFailedStatusFromExpressionCalculationException(ExpressionCalculationException calcExc)
         {
             var errorCode = calcExc.ErrorType switch

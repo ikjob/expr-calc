@@ -75,6 +75,13 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
 
         [Theory]
         [MemberData(nameof(ValidExpressions))]
+        public void ExpressionValidationForValidExpressionsWithNumbersCheckTest(string expression)
+        {
+            MathExpression.ValidateExpression(expression, validateNumbersCanBeRepresentedAsDouble: true);
+        }
+
+        [Theory]
+        [MemberData(nameof(ValidExpressions))]
         public async Task ExpressionValidationForValidExpressionsTestAsync(string expression)
         {
             await MathExpression.ValidateExpressionAsync(expression);
