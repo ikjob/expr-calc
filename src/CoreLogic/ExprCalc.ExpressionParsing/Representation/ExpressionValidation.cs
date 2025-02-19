@@ -10,13 +10,46 @@ namespace ExprCalc.ExpressionParsing.Representation
     internal readonly struct EmptyNode { }
     internal readonly struct ValidationExpressionNodesFactory : IExpressionNodesFactory<EmptyNode>, IAsyncExpressionNodesFactory<EmptyNode>
     {
-        public EmptyNode BinaryOp(ExpressionOperationType opType, EmptyNode left, EmptyNode right) => default;
-        public EmptyNode Number(double value) => default;
-        public EmptyNode UnaryOp(ExpressionOperationType opType, EmptyNode value) => default;
+        public ValidationExpressionNodesFactory(bool validateNumbersCanBeRepresentedAsDouble)
+        {
+            ValidateNumbersCanBeRepresentedAsDouble = validateNumbersCanBeRepresentedAsDouble;
+        }
+
+        public bool ValidateNumbersCanBeRepresentedAsDouble { get; }
+
+        public EmptyNode Number(ReadOnlySpan<char> numberText, int offsetInExpression)
+        {
+            if (ValidateNumbersCanBeRepresentedAsDouble)
+                ExpressionParser.ParseNumberAsDouble(numberText, offsetInExpression);
+
+            return default;
+        }
+        public EmptyNode BinaryOp(ExpressionOperationType opType, int offsetInExpression, EmptyNode left, EmptyNode right) => default;
+        public EmptyNode UnaryOp(ExpressionOperationType opType, int offsetInExpression, EmptyNode value) => default;
 
 
-        public ValueTask<EmptyNode> NumberAsync(double value) => new ValueTask<EmptyNode>(new EmptyNode());
-        public ValueTask<EmptyNode> BinaryOpAsync(ExpressionOperationType opType, EmptyNode left, EmptyNode right) => new ValueTask<EmptyNode>(new EmptyNode());
-        public ValueTask<EmptyNode> UnaryOpAsync(ExpressionOperationType opType, EmptyNode value) => new ValueTask<EmptyNode>(new EmptyNode());
+        private ValueTask<EmptyNode> ParseNumberSlow(ReadOnlySpan<char> numberText, int offsetInExpression)
+        {
+            try
+            {
+                if (ValidateNumbersCanBeRepresentedAsDouble)
+                    ExpressionParser.ParseNumberAsDouble(numberText, offsetInExpression);
+
+                return new ValueTask<EmptyNode>(new EmptyNode());
+            }
+            catch (Exception ex)
+            {
+                return ValueTask.FromException<EmptyNode>(ex);
+            }
+        }
+        public ValueTask<EmptyNode> NumberAsync(ReadOnlySpan<char> numberText, int offsetInExpression)
+        {
+            if (ValidateNumbersCanBeRepresentedAsDouble)
+                return ParseNumberSlow(numberText, offsetInExpression);
+
+            return new ValueTask<EmptyNode>(new EmptyNode());
+        }
+        public ValueTask<EmptyNode> BinaryOpAsync(ExpressionOperationType opType, int offsetInExpression, EmptyNode left, EmptyNode right) => new ValueTask<EmptyNode>(new EmptyNode());
+        public ValueTask<EmptyNode> UnaryOpAsync(ExpressionOperationType opType, int offsetInExpression, EmptyNode value) => new ValueTask<EmptyNode>(new EmptyNode());
     }
 }

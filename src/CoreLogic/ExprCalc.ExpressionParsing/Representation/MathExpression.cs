@@ -14,18 +14,20 @@ namespace ExprCalc.ExpressionParsing.Representation
         /// Runs expression validation. If expression is invalid, throws <see cref="ExpressionParserException"/> or its subtypes
         /// </summary>
         /// <param name="expression">Math expression</param>
-        public static void ValidateExpression(string expression)
+        /// <param name="validateNumbersCanBeRepresentedAsDouble">If true then additionally validates that the number is not too large to be represented as double</param>
+        public static void ValidateExpression(string expression, bool validateNumbersCanBeRepresentedAsDouble = false)
         {
-            ExpressionParser.ParseExpression< ValidationExpressionNodesFactory, EmptyNode>(expression, new ValidationExpressionNodesFactory());
+            ExpressionParser.ParseExpression< ValidationExpressionNodesFactory, EmptyNode>(expression, new ValidationExpressionNodesFactory(validateNumbersCanBeRepresentedAsDouble));
         }
 
         /// <summary>
         /// Runs expression validation. If expression is invalid, throws <see cref="ExpressionParserException"/> or its subtypes
         /// </summary>
         /// <param name="expression">Math expression</param>
-        internal static async ValueTask ValidateExpressionAsync(string expression)
+        /// <param name="validateNumbersCanBeRepresentedAsDouble">If true then additionally validates that the number is not too large to be represented as double</param>
+        internal static async ValueTask ValidateExpressionAsync(string expression, bool validateNumbersCanBeRepresentedAsDouble = false)
         {
-            await ExpressionParser.ParseExpressionAsync<ValidationExpressionNodesFactory, EmptyNode>(expression, new ValidationExpressionNodesFactory());
+            await ExpressionParser.ParseExpressionAsync<ValidationExpressionNodesFactory, EmptyNode>(expression, new ValidationExpressionNodesFactory(validateNumbersCanBeRepresentedAsDouble));
         }
 
         /// <summary>

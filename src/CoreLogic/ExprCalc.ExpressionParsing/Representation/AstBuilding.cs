@@ -10,17 +10,17 @@ namespace ExprCalc.ExpressionParsing.Representation
 {
     internal readonly struct AstBuildingExpressionNodesFactory : IExpressionNodesFactory<ExpressionNode>
     {
-        public ExpressionNode Number(double value)
+        public ExpressionNode Number(ReadOnlySpan<char> numberText, int offsetInExpression)
         {
-            return new NumberExpressionNode(value);
+            return new NumberExpressionNode(ExpressionParser.ParseNumberAsDouble(numberText, offsetInExpression));
         }
 
-        public ExpressionNode BinaryOp(ExpressionOperationType opType, ExpressionNode left, ExpressionNode right)
+        public ExpressionNode BinaryOp(ExpressionOperationType opType, int offsetInExpression, ExpressionNode left, ExpressionNode right)
         {
             return new BinaryExpressionNode(opType, left, right);
         }
 
-        public ExpressionNode UnaryOp(ExpressionOperationType opType, ExpressionNode value)
+        public ExpressionNode UnaryOp(ExpressionOperationType opType, int offsetInExpression, ExpressionNode value)
         {
             return new UnaryExpressionNode(opType, value);
         }

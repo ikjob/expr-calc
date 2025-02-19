@@ -9,17 +9,17 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
 {
     internal class StringBuildingExpressionNodeFactory : IExpressionNodesFactory<string>
     {
-        public string BinaryOp(ExpressionOperationType opType, string left, string right)
+        public string BinaryOp(ExpressionOperationType opType, int offsetInExpression, string left, string right)
         {
             return $"({left} {opType.GetStringRepr()} {right})";
         }
 
-        public string Number(double value)
+        public string Number(ReadOnlySpan<char> numberText, int offsetInExpression)
         {
-            return value.ToString();
+            return numberText.ToString();
         }
 
-        public string UnaryOp(ExpressionOperationType opType, string value)
+        public string UnaryOp(ExpressionOperationType opType, int offsetInExpression, string value)
         {
             if (opType == ExpressionOperationType.UnaryPlus || opType == ExpressionOperationType.UnaryMinus) 
                 return $"({opType.GetStringRepr()}{value})";
