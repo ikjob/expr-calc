@@ -68,5 +68,35 @@ namespace ExprCalc.RestApi.Controllers
                 throw;
             }
         }
+
+
+        [HttpPut("{id}/status")]
+        [SwaggerOperation("Allow to cancel the calculation")]
+        [SwaggerResponse(StatusCodes.Status200OK, Description = "Success")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails), Description = "Calculation not found or already finished")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails), Description = "Server error")]
+        public async Task<ActionResult<CalculationStatusUpdateDto>> CancelCalculationAsync(Guid id, CalculationStatusPutDto status, CancellationToken token)
+        {
+            try
+            {
+                var result = await _calculationUseCases.CancelCalculationAsync(id, new Entities.User(status.CancelledBy), token);
+                return Ok(CalculationStatusUpdateDto.FromEntity(result));
+            }
+            catch (EntityNotFoundException notFoundExc)
+            {
+                _logger.LogDebug(notFoundExc, "Cannot cancel calculation due to its state");
+
+                return Problem(
+                        statusCode: StatusCodes.Status404NotFound,
+                        type: "not_found",
+                        title: "Not found",
+                        detail: "Calculation not found or already finished");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected excpetion in {methodName}", nameof(CancelCalculationAsync));
+                throw;
+            }
+        }
     }
 }

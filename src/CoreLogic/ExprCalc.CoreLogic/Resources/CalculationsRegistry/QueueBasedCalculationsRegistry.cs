@@ -165,17 +165,19 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             }
         }
 
-        public bool TryCancel(Guid id, User cancelledBy)
+        public bool TryCancel(Guid id, User cancelledBy, [NotNullWhen(true)] out CalculationStatusUpdate? status)
         {
             if (_calculations.TryGetValue(id, out var item))
             {
                 if (item.Calculation.TryMakeCancelled(cancelledBy))
                 {
                     item.CancellationTokenSource.Cancel();
+                    status = new CalculationStatusUpdate(id, item.Calculation.UpdatedAt, item.Calculation.Status);
                     return true;
                 }
             }
 
+            status = null;
             return false;
         }
 

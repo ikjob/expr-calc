@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 
 namespace ExprCalc.RestApi.Dto
 {
@@ -53,5 +54,21 @@ namespace ExprCalc.RestApi.Dto
 
             return result;
         }
+    }
+
+
+    public enum CalculationStateAllowedForPut
+    {
+        Cancelled
+    }
+    public record class CalculationStatusPutDto
+    {
+        [Required]
+        public required CalculationStateAllowedForPut State { get; set; }
+
+        [Required]
+        [StringLength(Entities.User.MaxLoginLength, MinimumLength = 1)]
+        [RegularExpression(@"[a-zA-Z0-9_]+")]
+        public required string CancelledBy { get; set; }
     }
 }

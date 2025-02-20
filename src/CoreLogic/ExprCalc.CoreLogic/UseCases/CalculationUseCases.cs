@@ -84,5 +84,31 @@ namespace ExprCalc.CoreLogic.UseCases
                 throw;
             }
         }
+
+        public async Task<CalculationStatusUpdate> CancelCalculationAsync(Guid id, User cancelledBy, CancellationToken token)
+        {
+            _logger.LogTrace(nameof(CancelCalculationAsync) + " started");
+            _metrics.CancelCalculation.AddCall();
+            using var activity = _activitySource.StartActivity(nameof(CalculationUseCases) + "." + nameof(CancelCalculationAsync));
+
+            try
+            {
+                if (!_calculationsRegistry.TryCancel(id, cancelledBy, out var statusUpdate))
+                    throw new EntityNotFoundException($"Calculation for sepcified id = {id} is not exists or not processed now");
+
+                await _calculationRepository.UpdateCalculationStatusAsync(statusUpdate.Value, token);
+                return statusUpdate.Value;
+            }
+            catch (Exception exc)
+            {
+                _metrics.CancelCalculation.AddFail();
+                activity?.SetStatus(ActivityStatusCode.Error, "Excpetion: " + exc.Message);
+
+                if (exc is StorageException storageExc && storageExc.TryTranslateStorageException(out var translatedException))
+                    throw translatedException;
+
+                throw;
+            }
+        }
     }
 }
