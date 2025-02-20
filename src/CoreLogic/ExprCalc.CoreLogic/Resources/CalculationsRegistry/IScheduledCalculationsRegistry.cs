@@ -30,6 +30,10 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         CalculationRegistryReservedSlot TryReserveSlot(Calculation calculation);
 
         /// <summary>
+        /// Attempts to take next item, when it is available
+        /// </summary>
+        bool TryTakeNext([NotNullWhen(true)] out Calculation? calculation);
+        /// <summary>
         /// Removes and returns next available calculation from the registry
         /// </summary>
         Task<Calculation> TakeNext(CancellationToken cancellationToken);
