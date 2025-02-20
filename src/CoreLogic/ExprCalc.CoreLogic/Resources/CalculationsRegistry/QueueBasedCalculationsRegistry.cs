@@ -54,6 +54,8 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         {
         }
 
+        public bool IsEmpty { get { return _count == 0; } }
+
         public bool Contains(Guid id)
         {
             return _calculations.ContainsKey(id);
@@ -118,25 +120,28 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             _metrics.CurrentCount.Add(-1);
         }
 
-        private void AddCore(Calculation calculation, DateTime availableAfter)
+        private void AddForAlreadyReservedSlot(Calculation calculation, DateTime availableAfter)
         {
-            bool result = false;
+            bool fullSuccess = false;
+            bool addedToDictionary = false;
             try
             {
                 var item = new Item(calculation, availableAfter, new CancellationTokenSource());
                 if (!_calculations.TryAdd(calculation.Id, item))
                     throw new DuplicateKeyException("Calculation with the same key is already inside registry");
+                addedToDictionary = true;
+
                 if (!_channel.Writer.TryWrite(item))
                     throw new UnexpectedRegistryException("Unable to add calculation to unbounded queue. Should never happen");
-
-                result = true;
+                fullSuccess = true;
             }
             finally
             {
-                if (!result)
+                if (!fullSuccess)
                 {
                     ReleaseReservedSlotCore();
-                    _calculations.TryRemove(calculation.Id, out _);
+                    if (addedToDictionary)
+                        _calculations.TryRemove(calculation.Id, out _);
                 }
             }
         }
@@ -149,7 +154,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             if (!TryReserveSlotCore())
                 return false;
 
-            AddCore(calculation, availableAfter);
+            AddForAlreadyReservedSlot(calculation, availableAfter);
             return true;
         }
 
@@ -198,7 +203,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             if (!calculation.Status.IsPending())
                 throw new ArgumentException("Only calculations in Pending status can be added to the registry", nameof(calculation));
 
-            AddCore(calculation, availableAfter);
+            AddForAlreadyReservedSlot(calculation, availableAfter);
         }
 
         void ICalculationRegistrySlotFiller.ReleaseSlot()

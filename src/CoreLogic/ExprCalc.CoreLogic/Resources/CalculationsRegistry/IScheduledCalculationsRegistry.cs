@@ -15,6 +15,11 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
     internal interface IScheduledCalculationsRegistry
     {
         /// <summary>
+        /// Returns true when registry contains 0 calculation
+        /// </summary>
+        bool IsEmpty { get; }
+
+        /// <summary>
         /// Attempts to add new calculation to the registry. Can be rejected if registry is overflowed.
         /// </summary>
         bool TryAdd(Calculation calculation, DateTime availableAfter);
