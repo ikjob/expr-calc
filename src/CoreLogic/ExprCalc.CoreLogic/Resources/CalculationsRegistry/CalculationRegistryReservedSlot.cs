@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 {
+    /// <summary>
+    /// Guard to safely release slot back to the <see cref="IScheduledCalculationsRegistry"/>.
+    /// Designed to be used with `using` statement
+    /// </summary>
     internal struct CalculationRegistryReservedSlot : IDisposable
     {
         private ICalculationRegistrySlotFiller? _slotFiller;

@@ -230,7 +230,7 @@ namespace ExprCalc.ExpressionParsing.Parser
 
 
 
-        private static ValueTask<TNode> ApplyOperatorAsync<TNodeFactory, TNode>(TNodeFactory nodeFactory, Stack<TNode> args, ExpressionOperationExt oper, string expression)
+        private static ValueTask<TNode> ApplyOperatorAsync<TNodeFactory, TNode>(TNodeFactory nodeFactory, Stack<TNode> args, ExpressionOperationExt oper, string expression, CancellationToken cancellationToken)
             where TNodeFactory : IAsyncExpressionNodesFactory<TNode>
         {
             Debug.Assert(oper.Op.OperationType != null);
@@ -241,13 +241,13 @@ namespace ExprCalc.ExpressionParsing.Parser
                     if (args.Count < 1)
                         return ValueTask.FromException<TNode>(new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 1 operand which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", 0));
                     var lastArg = args.Pop();
-                    return nodeFactory.UnaryOpAsync(oper.Op.OperationType.Value, oper.Offset, lastArg);
+                    return nodeFactory.UnaryOpAsync(oper.Op.OperationType.Value, lastArg, oper.Offset, cancellationToken);
                 case 2:
                     if (args.Count < 2)
                         return ValueTask.FromException<TNode>(new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 2 operands which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", 0));
                     var arg2 = args.Pop();
                     var arg1 = args.Pop();
-                    return nodeFactory.BinaryOpAsync(oper.Op.OperationType.Value, oper.Offset, arg1, arg2);
+                    return nodeFactory.BinaryOpAsync(oper.Op.OperationType.Value, arg1, arg2, oper.Offset, cancellationToken);
                 default:
                     return ValueTask.FromException<TNode>(new UncatchableParserException("Unsupported number of operands: " + oper.Op.OperandCount.ToString()));
             }
@@ -258,13 +258,14 @@ namespace ExprCalc.ExpressionParsing.Parser
         /// </summary>
         /// <param name="expression">String with expression</param>
         /// <param name="nodeFactory">Factory to create nodes</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
         /// <exception cref="InvalidLexemaException">Invalid lexema found</exception>
         /// <exception cref="InvalidExpressionException">General problems with passed expression</exception>
         /// <exception cref="UnbalancedExpressionException">Opening closing braces mimatch, or operator arguments mismatch</exception>
         /// <exception cref="InvalidNumberException">Found number that cannot be parsed</exception>
         /// <exception cref="UnknownIdentifierException">Found unknown function identifier</exception>
-        public static async ValueTask<TNode> ParseExpressionAsync<TNodeFactory, TNode>(string expression, TNodeFactory nodeFactory)
+        public static async ValueTask<TNode> ParseExpressionAsync<TNodeFactory, TNode>(string expression, TNodeFactory nodeFactory, CancellationToken cancellationToken)
             where TNodeFactory : IAsyncExpressionNodesFactory<TNode>
         {
             Stack<TNode> outputNodes = new Stack<TNode>();
@@ -273,6 +274,8 @@ namespace ExprCalc.ExpressionParsing.Parser
 
             foreach (var token in TokenStream.EnumerateTokens(expression, allowErrors: true))
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (token.IsError)
                     throw new InvalidLexemaException($"{token.ErrorDescription}. Offset = {token.Offset}. Value = '{token.GetTokenTextDebug()}'", token.Offset, token.Length);
 
@@ -292,7 +295,7 @@ namespace ExprCalc.ExpressionParsing.Parser
                         if (trackingState != TrackingState.OperandExpected)
                             throw new InvalidExpressionException($"Operator expected, but number is found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
 
-                        var node = await nodeFactory.NumberAsync(token.GetTokenText(), token.Offset);
+                        var node = await nodeFactory.NumberAsync(token.GetTokenText(), token.Offset, cancellationToken);
                         outputNodes.Push(node);
                         break;
                     case TokenType.Identifier:
@@ -321,7 +324,7 @@ namespace ExprCalc.ExpressionParsing.Parser
                             (operatorFromStack.Op.Priority > newOperator.Priority || (operatorFromStack.Op.Priority == newOperator.Priority && newOperator.Associativity == OperatorAssociativity.Left)))
                         {
                             operatorFromStack = operatorStack.Pop();
-                            outputNodes.Push(await ApplyOperatorAsync(nodeFactory, outputNodes, operatorFromStack, expression));
+                            outputNodes.Push(await ApplyOperatorAsync(nodeFactory, outputNodes, operatorFromStack, expression, cancellationToken));
                         }
                         operatorStack.Push(new ExpressionOperationExt(newOperator, token.Offset));
                         break;
@@ -339,7 +342,7 @@ namespace ExprCalc.ExpressionParsing.Parser
                                operatorFromStack.Op != ExpressionOperation.OpeningBracket)
                         {
                             operatorFromStack = operatorStack.Pop();
-                            outputNodes.Push(await ApplyOperatorAsync(nodeFactory, outputNodes, operatorFromStack, expression));
+                            outputNodes.Push(await ApplyOperatorAsync(nodeFactory, outputNodes, operatorFromStack, expression, cancellationToken));
                         }
 
                         if (!operatorStack.TryPeek(out operatorFromStack) || operatorFromStack.Op != ExpressionOperation.OpeningBracket)
@@ -350,7 +353,7 @@ namespace ExprCalc.ExpressionParsing.Parser
                         if (operatorStack.TryPeek(out operatorFromStack) && operatorFromStack.Op.IsFunction)
                         {
                             operatorFromStack = operatorStack.Pop();
-                            outputNodes.Push(await ApplyOperatorAsync(nodeFactory, outputNodes, operatorFromStack, expression));
+                            outputNodes.Push(await ApplyOperatorAsync(nodeFactory, outputNodes, operatorFromStack, expression, cancellationToken));
                         }
                         break;
                     default:
@@ -362,7 +365,8 @@ namespace ExprCalc.ExpressionParsing.Parser
 
             while (operatorStack.TryPop(out var operatorFromStack))
             {
-                outputNodes.Push(await ApplyOperatorAsync(nodeFactory, outputNodes, operatorFromStack, expression));
+                cancellationToken.ThrowIfCancellationRequested();
+                outputNodes.Push(await ApplyOperatorAsync(nodeFactory, outputNodes, operatorFromStack, expression, cancellationToken));
             }
 
             if (outputNodes.Count == 0)

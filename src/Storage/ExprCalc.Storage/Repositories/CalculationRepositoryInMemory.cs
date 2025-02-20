@@ -28,20 +28,7 @@ namespace ExprCalc.Storage.Repositories
             _activitySource = instrumentation.ActivitySource;
             _data = new Dictionary<Guid, Calculation>();
             _lock = new Lock();
-
-            FillInitialData(_data);
         }
-
-        private static void FillInitialData(Dictionary<Guid, Calculation> data)
-        {
-            var c = new Calculation(id: Guid.CreateVersion7(), expression: "1 + 2", createdBy: new User("user1"), createdAt: DateTime.UtcNow, updatedAt: DateTime.UtcNow, CalculationStatus.Pending);
-            data.Add(c.Id, c);
-            c = new Calculation(id: Guid.CreateVersion7(), expression: "1 * 2", createdBy: new User("user1"), createdAt: DateTime.UtcNow, updatedAt: DateTime.UtcNow, CalculationStatus.Pending);
-            data.Add(c.Id, c);
-            c = new Calculation(id: Guid.CreateVersion7(), expression: "1 / 2", createdBy: new User("user2"), createdAt: DateTime.UtcNow, updatedAt: DateTime.UtcNow, CalculationStatus.Pending);
-            data.Add(c.Id, c);
-        }
-
 
         public Calculation CreateCalculation(Calculation calculation)
         {

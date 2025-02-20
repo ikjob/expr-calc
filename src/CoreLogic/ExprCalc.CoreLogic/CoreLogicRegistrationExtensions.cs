@@ -26,25 +26,13 @@ namespace ExprCalc.CoreLogic
 
             serviceCollection.AddSingleton<ICalculationUseCases, CalculationUseCases>();
 
-            serviceCollection.AddSingleton<IExpressionCalculator, ExpressionCalculator>(
-                provider => new ExpressionCalculator(
-                    new StatusUpdaterInStorage(provider.GetRequiredService<ICalculationRepository>()),
-                    provider.GetRequiredService<ILogger< ExpressionCalculator>>()));
-
-            serviceCollection.AddSingleton<IScheduledCalculationsRegistry>(
-                provider => new QueueBasedCalculationsRegistry(
-                    ResolveConfig(provider).MaxRegisteredCalculationsCount, 
-                    provider.GetRequiredService<InstrumentationContainer>().CalculationsRegistryMetrics));
+            serviceCollection.AddSingleton<IExternalCalculationStatusUpdater, StatusUpdaterInStorage>();
+            serviceCollection.AddSingleton<IExpressionCalculator, ExpressionCalculator>();
+            serviceCollection.AddSingleton<IScheduledCalculationsRegistry, QueueBasedCalculationsRegistry>();
 
             serviceCollection.AddHostedService<CalculationsProcessingService>();
             
         }
-
-        private static CoreLogicConfig ResolveConfig(IServiceProvider provider)
-        {
-            return provider.GetRequiredService<IOptions<CoreLogicConfig>>().Value;
-        }
-
 
         public static void AddCoreLogicMetrics(this MetricsRegistry registry)
         {

@@ -40,14 +40,14 @@ namespace ExprCalc.ExpressionParsing.Representation
                 return ValueTask.FromException<EmptyNode>(ex);
             }
         }
-        public ValueTask<EmptyNode> NumberAsync(ReadOnlySpan<char> numberText, int offsetInExpression)
+        public ValueTask<EmptyNode> NumberAsync(ReadOnlySpan<char> numberText, int offsetInExpression, CancellationToken cancellationToken)
         {
             if (ValidateNumbersCanBeRepresentedAsDouble)
                 return ParseNumberSlow(numberText, offsetInExpression);
 
             return new ValueTask<EmptyNode>(new EmptyNode());
         }
-        public ValueTask<EmptyNode> BinaryOpAsync(ExpressionOperationType opType, int offsetInExpression, EmptyNode left, EmptyNode right) => new ValueTask<EmptyNode>(new EmptyNode());
-        public ValueTask<EmptyNode> UnaryOpAsync(ExpressionOperationType opType, int offsetInExpression, EmptyNode value) => new ValueTask<EmptyNode>(new EmptyNode());
+        public ValueTask<EmptyNode> BinaryOpAsync(ExpressionOperationType opType, EmptyNode left, EmptyNode right, int offsetInExpression, CancellationToken cancellationToken) => new ValueTask<EmptyNode>(new EmptyNode());
+        public ValueTask<EmptyNode> UnaryOpAsync(ExpressionOperationType opType, EmptyNode value, int offsetInExpression, CancellationToken cancellationToken) => new ValueTask<EmptyNode>(new EmptyNode());
     }
 }

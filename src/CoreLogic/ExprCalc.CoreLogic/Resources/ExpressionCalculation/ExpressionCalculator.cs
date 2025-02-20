@@ -1,8 +1,10 @@
-﻿using ExprCalc.Entities;
+﻿using ExprCalc.CoreLogic.Configuration;
+using ExprCalc.Entities;
 using ExprCalc.Entities.Enums;
 using ExprCalc.ExpressionParsing.Parser;
 using ExprCalc.ExpressionParsing.Representation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,13 +19,16 @@ namespace ExprCalc.CoreLogic.Resources.ExpressionCalculation
     internal class ExpressionCalculator : IExpressionCalculator
     {
         private readonly IExternalCalculationStatusUpdater _externalStatusUpdater;
+        private readonly CalculatingNodesFactoryWithDelays _calculatingNodesFactory;
         private readonly ILogger<ExpressionCalculator> _logger;
 
         public ExpressionCalculator(
             IExternalCalculationStatusUpdater externalStatusUpdater,
+            IOptions<CoreLogicConfig> config,
             ILogger<ExpressionCalculator> logger)
         {
             _externalStatusUpdater = externalStatusUpdater;
+            _calculatingNodesFactory = new CalculatingNodesFactoryWithDelays(config.Value.OperationsTime);
             _logger = logger;
         }
 
@@ -92,12 +97,11 @@ namespace ExprCalc.CoreLogic.Resources.ExpressionCalculation
         /// <summary>
         /// Runs actual expression calculation
         /// </summary>
-        private static async Task<CalculationStatus> CalculateExpression(Calculation calculation, CancellationToken token)
+        private async Task<CalculationStatus> CalculateExpression(Calculation calculation, CancellationToken token)
         {
             try
             {
-                // TODO: introduce delays
-                double result = await MathExpression.CalculateExpressionAsync(calculation.Expression, NumberValidationBehaviour.Strict);
+                double result = await ExpressionParser.ParseExpressionAsync<CalculatingNodesFactoryWithDelays, double>(calculation.Expression, _calculatingNodesFactory, token);
                 return CalculationStatus.CreateSuccess(result);
             }
             catch (ExpressionParserException parserExc)

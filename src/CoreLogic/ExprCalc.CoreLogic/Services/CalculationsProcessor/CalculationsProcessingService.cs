@@ -74,7 +74,9 @@ namespace ExprCalc.CoreLogic.Services.CalculationsProcessor
         }
 
 
-
+        /// <summary>
+        /// Core processing loop for <see cref="ExprCalc.Entities.Calculation"/> taken from <see cref="IScheduledCalculationsRegistry"/>
+        /// </summary>
         private async Task WorkerLoop(int workerIndex, CancellationToken stoppingToken)
         {
             await Task.Yield();

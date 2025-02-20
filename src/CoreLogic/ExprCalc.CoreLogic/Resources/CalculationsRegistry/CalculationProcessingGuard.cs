@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 {
+    /// <summary>
+    /// Guard to safely remove <see cref="ExprCalc.Entities.Calculation"/> from <see cref="IScheduledCalculationsRegistry"/> when processing finishes.
+    /// Designed to be used with `using` statement
+    /// </summary>
     internal struct CalculationProcessingGuard : IDisposable
     {
         private ICalculationProcessingFinisher? _finisher;

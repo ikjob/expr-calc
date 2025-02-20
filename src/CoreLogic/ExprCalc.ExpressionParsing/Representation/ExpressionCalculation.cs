@@ -32,7 +32,7 @@ namespace ExprCalc.ExpressionParsing.Representation
             return _calculator.UnaryOp(opType, value, offsetInExpression);
         }
 
-        public ValueTask<double> NumberAsync(ReadOnlySpan<char> numberText, int offsetInExpression)
+        public ValueTask<double> NumberAsync(ReadOnlySpan<char> numberText, int offsetInExpression, CancellationToken cancellationToken)
         {
             try
             {
@@ -44,7 +44,7 @@ namespace ExprCalc.ExpressionParsing.Representation
             }
         }
 
-        public ValueTask<double> UnaryOpAsync(ExpressionOperationType opType, int offsetInExpression, double value)
+        public ValueTask<double> UnaryOpAsync(ExpressionOperationType opType, double value, int offsetInExpression, CancellationToken cancellationToken)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace ExprCalc.ExpressionParsing.Representation
             }
         }
 
-        public ValueTask<double> BinaryOpAsync(ExpressionOperationType opType, int offsetInExpression, double left, double right)
+        public ValueTask<double> BinaryOpAsync(ExpressionOperationType opType, double left, double right, int offsetInExpression, CancellationToken cancellationToken)
         {
             try
             {

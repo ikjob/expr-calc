@@ -8,12 +8,18 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.CoreLogic.Resources.ExpressionCalculation
 {
+    /// <summary>
+    /// Provides a way to inject the status update logic inside external systems into <see cref="ExpressionCalculator"/>
+    /// </summary>
     internal interface IExternalCalculationStatusUpdater
     {
         Task UpdateStatus(Calculation calculation, CancellationToken cancellationToken);
     }
 
-
+    /// <summary>
+    /// Implements <see cref="IExternalCalculationStatusUpdater"/> and performs status update in storage
+    /// </summary>
+    /// <param name="storageRepo">Storage repositry to update the status</param>
     internal class StatusUpdaterInStorage(ICalculationRepository storageRepo) : IExternalCalculationStatusUpdater
     {
         private readonly ICalculationRepository _storageRepo = storageRepo;

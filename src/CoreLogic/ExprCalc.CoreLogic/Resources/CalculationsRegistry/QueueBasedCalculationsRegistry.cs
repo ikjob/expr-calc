@@ -1,6 +1,9 @@
-﻿using ExprCalc.CoreLogic.Instrumentation;
+﻿using ExprCalc.CoreLogic.Configuration;
+using ExprCalc.CoreLogic.Instrumentation;
 using ExprCalc.Entities;
 using ExprCalc.Entities.Enums;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -45,6 +48,12 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             _metrics.SetInitialValues(_maxCount);
         }
 
+        [ActivatorUtilitiesConstructor]
+        public QueueBasedCalculationsRegistry(IOptions<CoreLogicConfig> config, InstrumentationContainer instrumentation)
+            : this(config.Value.MaxRegisteredCalculationsCount, instrumentation.CalculationsRegistryMetrics)
+        {
+        }
+
         public bool Contains(Guid id)
         {
             return _calculations.ContainsKey(id);
@@ -62,23 +71,9 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             return false;
         }
 
-        private async Task<Item> TakeNextCore(CancellationToken cancellationToken)
+        private ValueTask<Item> TakeNextCore(CancellationToken cancellationToken)
         {
-            while (true)
-            {
-                var nextItem = await _channel.Reader.ReadAsync(cancellationToken);
-                if (!nextItem.CancellationTokenSource.IsCancellationRequested)
-                    return nextItem;
-                
-                if (_calculations.TryRemove(nextItem.Calculation.Id, out _))
-                {
-                    ReleaseReservedSlotCore();
-                }
-                else
-                {
-                    Debug.Fail("Dictionary should always contain items that was enqueued");
-                }
-            }
+            return _channel.Reader.ReadAsync(cancellationToken);
         }
         public async Task<Calculation> TakeNext(CancellationToken cancellationToken)
         {

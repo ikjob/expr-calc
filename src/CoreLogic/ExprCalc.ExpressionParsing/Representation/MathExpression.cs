@@ -25,9 +25,9 @@ namespace ExprCalc.ExpressionParsing.Representation
         /// </summary>
         /// <param name="expression">Math expression</param>
         /// <param name="validateNumbersCanBeRepresentedAsDouble">If true then additionally validates that the number is not too large to be represented as double</param>
-        internal static async ValueTask ValidateExpressionAsync(string expression, bool validateNumbersCanBeRepresentedAsDouble = false)
+        internal static async ValueTask ValidateExpressionAsync(string expression, bool validateNumbersCanBeRepresentedAsDouble = false, CancellationToken cancellationToken = default)
         {
-            await ExpressionParser.ParseExpressionAsync<ValidationExpressionNodesFactory, EmptyNode>(expression, new ValidationExpressionNodesFactory(validateNumbersCanBeRepresentedAsDouble));
+            await ExpressionParser.ParseExpressionAsync<ValidationExpressionNodesFactory, EmptyNode>(expression, new ValidationExpressionNodesFactory(validateNumbersCanBeRepresentedAsDouble), cancellationToken);
         }
 
         /// <summary>
@@ -47,9 +47,9 @@ namespace ExprCalc.ExpressionParsing.Representation
         /// <param name="expression">Math expression</param>
         /// <param name="numberValidationBehaviour">Number validation behaviour</param>
         /// <returns>Calculated value</returns>
-        public static ValueTask<double> CalculateExpressionAsync(string expression, NumberValidationBehaviour numberValidationBehaviour = NumberValidationBehaviour.Strict)
+        public static ValueTask<double> CalculateExpressionAsync(string expression, NumberValidationBehaviour numberValidationBehaviour = NumberValidationBehaviour.Strict, CancellationToken cancellationToken = default)
         {
-            return ExpressionParser.ParseExpressionAsync<CalculationExpressionNodesFactory, double>(expression, new CalculationExpressionNodesFactory(numberValidationBehaviour));
+            return ExpressionParser.ParseExpressionAsync<CalculationExpressionNodesFactory, double>(expression, new CalculationExpressionNodesFactory(numberValidationBehaviour), cancellationToken);
         }
 
         /// <summary>
