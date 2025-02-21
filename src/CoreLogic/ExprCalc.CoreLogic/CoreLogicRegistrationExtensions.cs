@@ -1,8 +1,15 @@
 ﻿using ExprCalc.Common.Instrumentation;
 using ExprCalc.CoreLogic.Api.UseCases;
 using ExprCalc.CoreLogic.Configuration;
+using ExprCalc.CoreLogic.Instrumentation;
+using ExprCalc.CoreLogic.Resources.CalculationsRegistry;
+using ExprCalc.CoreLogic.Resources.ExpressionCalculation;
+using ExprCalc.CoreLogic.Services.CalculationsProcessor;
 using ExprCalc.CoreLogic.UseCases;
+using ExprCalc.Storage.Api.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ExprCalc.CoreLogic
 {
@@ -10,13 +17,22 @@ namespace ExprCalc.CoreLogic
     {
         public static void AddCoreLogicServices(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddOptions<CoreLogicConfig>().BindConfiguration(CoreLogicConfig.ConfigurationSectionName);
+            serviceCollection.AddOptions<CoreLogicConfig>()
+                .BindConfiguration(CoreLogicConfig.ConfigurationSectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
             serviceCollection.AddSingleton<Instrumentation.InstrumentationContainer>();
 
             serviceCollection.AddSingleton<ICalculationUseCases, CalculationUseCases>();
-        }
 
+            serviceCollection.AddSingleton<IExternalCalculationStatusUpdater, StatusUpdaterInStorage>();
+            serviceCollection.AddSingleton<IExpressionCalculator, ExpressionCalculator>();
+            serviceCollection.AddSingleton<IScheduledCalculationsRegistry, QueueBasedCalculationsRegistry>();
+
+            serviceCollection.AddHostedService<CalculationsProcessingService>();
+            
+        }
 
         public static void AddCoreLogicMetrics(this MetricsRegistry registry)
         {

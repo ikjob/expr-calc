@@ -1,5 +1,4 @@
 ﻿using ExprCalc.Entities.Enums;
-using ExprCalc.Entities.ValueObjects;
 using ExprCalc.Entities;
 using System;
 using System.Collections.Generic;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 
 namespace ExprCalc.RestApi.Dto
 {
@@ -25,20 +25,50 @@ namespace ExprCalc.RestApi.Dto
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? CancelledBy { get; set; }
 
-        public required DateTime UpdatedAt { get; set; }
 
-
-        public static CalculationStatusDto FromEntity(Entities.CalculationStatus status)
+        public static CalculationStatusDto FromEntity(CalculationStatus status)
         {
-            return new CalculationStatusDto()
+            var result = new CalculationStatusDto()
             {
-                State = status.State,
-                CalculationResult = status.CalculationResult,
-                ErrorCode = status.ErrorCode,
-                ErrorDetails = status.ErrorDetails != null ? CalculationErrorDetailsDto.FromEntity(status.ErrorDetails) : null,
-                CancelledBy = status.CancelledBy?.Login,
-                UpdatedAt = status.UpdatedAt
+                State = status.State
             };
+
+            switch (status.State)
+            {
+                case CalculationState.Pending:
+                case CalculationState.InProgress:
+                    break;
+                case CalculationState.Success when status.IsSuccess(out var success):
+                    result.CalculationResult = success.CalculationResult;
+                    break;
+                case CalculationState.Failed when status.IsFailed(out var failed):
+                    result.ErrorCode = failed.ErrorCode;
+                    result.ErrorDetails = CalculationErrorDetailsDto.FromEntity(failed.ErrorDetails);
+                    break;
+                case CalculationState.Cancelled when status.IsCancelled(out var cancelled):
+                    result.CancelledBy = cancelled.CancelledBy.Login;
+                    break;
+                default:
+                    throw new ArgumentException("Unknwon or malformed status: " + status.ToString());
+            }
+
+            return result;
         }
+    }
+
+
+    public enum CalculationStateAllowedForPut
+    {
+        Cancelled
+    }
+    public record class CalculationStatusPutDto
+    {
+        [Required]
+        public required CalculationStateAllowedForPut State { get; set; }
+
+        [Required]
+        [StringLength(Entities.User.MaxLoginLength, MinimumLength = 1)]
+        [RegularExpression(@"[a-zA-Z0-9_]+")]
+        public required string CancelledBy { get; set; }
     }
 }

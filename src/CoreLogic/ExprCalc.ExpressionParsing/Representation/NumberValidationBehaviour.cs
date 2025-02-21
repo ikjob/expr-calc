@@ -16,6 +16,15 @@ namespace ExprCalc.ExpressionParsing.Representation
 
     public static class NumberValidationBehaviourExtensions
     {
+        public static bool IsInfAllowed(this NumberValidationBehaviour behaviour)
+        {
+            return behaviour != NumberValidationBehaviour.Strict;
+        }
+        public static bool IsNaNAllowed(this NumberValidationBehaviour behaviour)
+        {
+            return behaviour == NumberValidationBehaviour.AllowInfAndNaN;
+        }
+
         public static bool IsValidNumber(this NumberValidationBehaviour behaviour, double val)
         {
             return behaviour switch

@@ -23,6 +23,7 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
                 { "33 / 55", 0.6 },
                 { "(5 ^ 2 - 3 ^ 2) * 2 - 4 ^ 2", 16 },
                 { "-2.5 * -2", 5 },
+                { "1.E2 + 1.1E+2 - 100e-2", 209.0 },
             };
 
         public static TheoryData<string> ValidExpressions => new TheoryData<string>(ValidExpressionsWithResults.Select(o => (string)o[0]));
@@ -36,19 +37,18 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
                 { "ln 10" },
                 { "+" },
                 { "1 1 +" },
-                { "1E99999999999999999999999999999999999999999999" },
                 { "1E+" },
                 { "!" },
             };
 
-        public static TheoryData<string> InvalidCalculationsExpressions => new()
+        public static TheoryData<string, ExpressionCalculationErrorType> InvalidCalculationsExpressions => new()
             {
-                { "ln(1 - 5)" },
-                { "1 / 0" },
-                { "0 ^ 0" },
-                { "-1 ^ 0.3333" },
-                { "9999999999999 ^ 99999999999999 ^ 9999999999999" },
-                { "ln(-9)" },
+                { "ln(1 - 5)", ExpressionCalculationErrorType.LnFromNegative },
+                { "1 / 0", ExpressionCalculationErrorType.DivisionByZero },
+                { "0 ^ 0", ExpressionCalculationErrorType.PowZeroZero },
+                { "-1 ^ 0.3333", ExpressionCalculationErrorType.NegativeBaseFractionalExponent },
+                { "9999999999999 ^ 99999999999999 ^ 9999999999999", ExpressionCalculationErrorType.Overflow },
+                { "ln(-9)", ExpressionCalculationErrorType.LnFromNegative },
             };
 
 
@@ -75,6 +75,13 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
 
         [Theory]
         [MemberData(nameof(ValidExpressions))]
+        public void ExpressionValidationForValidExpressionsWithNumbersCheckTest(string expression)
+        {
+            MathExpression.ValidateExpression(expression, validateNumbersCanBeRepresentedAsDouble: true);
+        }
+
+        [Theory]
+        [MemberData(nameof(ValidExpressions))]
         public async Task ExpressionValidationForValidExpressionsTestAsync(string expression)
         {
             await MathExpression.ValidateExpressionAsync(expression);
@@ -90,6 +97,19 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
             });
         }
 
+        [Fact]
+        public void ExpressionValidationForExpressionsWithInfNumbersTest()
+        {
+            Assert.ThrowsAny<ExpressionParserException>(() =>
+            {
+                MathExpression.ValidateExpression("1E99999999999999999999999999999999999999999999", validateNumbersCanBeRepresentedAsDouble: true);
+            });
+            Assert.ThrowsAny<ExpressionParserException>(() =>
+            {
+                MathExpression.ValidateExpression("-1E99999999999999999999999999999999999999999999", validateNumbersCanBeRepresentedAsDouble: true);
+            });
+        }
+
         [Theory]
         [MemberData(nameof(InvalidExpressions))]
         public async Task ExpressionValidationForInvalidExpressionsTestAsync(string expression)
@@ -97,6 +117,19 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
             await Assert.ThrowsAnyAsync<ExpressionParserException>(async () =>
             {
                 await MathExpression.ValidateExpressionAsync(expression);
+            });
+        }
+
+        [Fact]
+        public async Task ExpressionValidationForExpressionsWithInfNumbersTestAsync()
+        {
+            await Assert.ThrowsAnyAsync<ExpressionParserException>(async () =>
+            {
+                await MathExpression.ValidateExpressionAsync("1E99999999999999999999999999999999999999999999", validateNumbersCanBeRepresentedAsDouble: true);
+            });
+            await Assert.ThrowsAnyAsync<ExpressionParserException>(async () =>
+            {
+                await MathExpression.ValidateExpressionAsync("-1E99999999999999999999999999999999999999999999", validateNumbersCanBeRepresentedAsDouble: true);
             });
         }
 
@@ -122,22 +155,26 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
 
         [Theory]
         [MemberData(nameof(InvalidCalculationsExpressions))]
-        public void ExpressionCalculationForInvalidExpressionsTest(string expression)
+        public void ExpressionCalculationForInvalidExpressionsTest(string expression, ExpressionCalculationErrorType errorType)
         {
-            Assert.ThrowsAny<ExpressionCalculationException>(() =>
+            var err = Assert.ThrowsAny<ExpressionCalculationException>(() =>
             {
                 MathExpression.CalculateExpression(expression, NumberValidationBehaviour.Strict);
             });
+
+            Assert.Equal(errorType, err.ErrorType);
         }
 
         [Theory]
         [MemberData(nameof(InvalidCalculationsExpressions))]
-        public async Task ExpressionCalculationForInvalidExpressionsTestAsync(string expression)
+        public async Task ExpressionCalculationForInvalidExpressionsTestAsync(string expression, ExpressionCalculationErrorType errorType)
         {
-            await Assert.ThrowsAnyAsync<ExpressionCalculationException>(async () =>
+            var err = await Assert.ThrowsAnyAsync<ExpressionCalculationException>(async () =>
             {
                 await MathExpression.CalculateExpressionAsync(expression, NumberValidationBehaviour.Strict);
             });
+
+            Assert.Equal(errorType, err.ErrorType);
         }
 
 
@@ -155,13 +192,15 @@ namespace ExprCalc.ExpressionParsing.Tests.Parser
 
         [Theory]
         [MemberData(nameof(InvalidCalculationsExpressions))]
-        public void ExpressionAstBuildingAndCalculationForInvalidExpressionsTest(string expression)
+        public void ExpressionAstBuildingAndCalculationForInvalidExpressionsTest(string expression, ExpressionCalculationErrorType errorType)
         {
-            Assert.ThrowsAny<ExpressionCalculationException>(() =>
+            var err = Assert.ThrowsAny<ExpressionCalculationException>(() =>
             {
                 var ast = MathExpression.BuildExpressionAst(expression);
                 ast.Calculate(NumberValidationBehaviour.Strict);
             });
+
+            Assert.Equal(errorType, err.ErrorType);
         }
 
 

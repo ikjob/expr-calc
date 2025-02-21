@@ -9,61 +9,34 @@ namespace ExprCalc.ExpressionParsing.Representation
 {
     internal readonly struct CalculationExpressionNodesFactory : IExpressionNodesFactory<double>, IAsyncExpressionNodesFactory<double>
     {
+        private readonly MathOperationsCalculator _calculator;
+
         public CalculationExpressionNodesFactory(NumberValidationBehaviour numberValidationBehaviour)
         {
-            NumberValidationBehaviour = numberValidationBehaviour;
+            _calculator = new MathOperationsCalculator(numberValidationBehaviour);
         }
-        public NumberValidationBehaviour NumberValidationBehaviour { get; }
+        public NumberValidationBehaviour NumberValidationBehaviour => _calculator.NumberValidationBehaviour;
 
-        public double Number(double value)
+        public double Number(ReadOnlySpan<char> numberText, int offsetInExpression)
         {
-            NumberValidationBehaviour.ValidateNumber(value);
-            return value;
+            return _calculator.ParseNumber(numberText, offsetInExpression);
         }
 
-        private static double StrictPow(double a, double b)
+        public double BinaryOp(ExpressionOperationType opType, int offsetInExpression, double left, double right)
         {
-            if (a == 0 && b == 0)
-                return double.NaN;
-
-            return Math.Pow(a, b);
+            return _calculator.BinaryOp(opType, left, right, offsetInExpression);
         }
 
-        public double BinaryOp(ExpressionOperationType opType, double left, double right)
+        public double UnaryOp(ExpressionOperationType opType, int offsetInExpression, double value)
         {
-            var result = opType switch
-            {
-                ExpressionOperationType.Add => left + right,
-                ExpressionOperationType.Subtract => left - right,
-                ExpressionOperationType.Multiply => left * right,
-                ExpressionOperationType.Divide => left / right,
-                ExpressionOperationType.Exponent => StrictPow(left, right),
-                _ => throw new Exception()
-            };
-
-            NumberValidationBehaviour.ValidateNumber(result, opType);
-            return result;
+            return _calculator.UnaryOp(opType, value, offsetInExpression);
         }
 
-        public double UnaryOp(ExpressionOperationType opType, double value)
-        {
-            var result = opType switch
-            {
-                ExpressionOperationType.UnaryPlus => value,
-                ExpressionOperationType.UnaryMinus => -value,
-                ExpressionOperationType.Ln => Math.Log(value),
-                _ => throw new Exception()
-            };
-
-            NumberValidationBehaviour.ValidateNumber(result, opType);
-            return result;
-        }
-
-        public ValueTask<double> NumberAsync(double value)
+        public ValueTask<double> NumberAsync(ReadOnlySpan<char> numberText, int offsetInExpression, CancellationToken cancellationToken)
         {
             try
             {
-                return new ValueTask<double>(Number(value));
+                return new ValueTask<double>(_calculator.ParseNumber(numberText, offsetInExpression));
             }
             catch (ExpressionCalculationException ex)
             {
@@ -71,11 +44,11 @@ namespace ExprCalc.ExpressionParsing.Representation
             }
         }
 
-        public ValueTask<double> UnaryOpAsync(ExpressionOperationType opType, double value)
+        public ValueTask<double> UnaryOpAsync(ExpressionOperationType opType, double value, int offsetInExpression, CancellationToken cancellationToken)
         {
             try
             {
-                return new ValueTask<double>(UnaryOp(opType, value));
+                return new ValueTask<double>(_calculator.UnaryOp(opType, value, offsetInExpression));
             }
             catch (ExpressionCalculationException ex)
             {
@@ -83,11 +56,11 @@ namespace ExprCalc.ExpressionParsing.Representation
             }
         }
 
-        public ValueTask<double> BinaryOpAsync(ExpressionOperationType opType, double left, double right)
+        public ValueTask<double> BinaryOpAsync(ExpressionOperationType opType, double left, double right, int offsetInExpression, CancellationToken cancellationToken)
         {
             try
             {
-                return new ValueTask<double>(BinaryOp(opType, left, right));
+                return new ValueTask<double>(_calculator.BinaryOp(opType, left, right, offsetInExpression));
             }
             catch (ExpressionCalculationException ex)
             {

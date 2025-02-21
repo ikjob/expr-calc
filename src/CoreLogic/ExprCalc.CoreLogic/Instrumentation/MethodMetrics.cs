@@ -13,6 +13,9 @@ namespace ExprCalc.CoreLogic.Instrumentation
         {
             Count = meter.CreateCounter<long>(InstrumentationContainer.MetricsNamePrefix + metricName + "_total", description: $"Number of calls to {methodName} method");
             FailsCount = meter.CreateCounter<long>(InstrumentationContainer.MetricsNamePrefix + metricName + "_fails_total", description: $"Number of calls to {methodName} method ended with error");
+
+            Count.Add(0);
+            FailsCount.Add(0);
         }
 
         internal Counter<long> Count { get; }

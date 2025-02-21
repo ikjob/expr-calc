@@ -12,11 +12,13 @@ namespace ExprCalc.CoreLogic.Instrumentation
     {
         internal CalculationUseCasesMetrics(Meter meter) 
         {
-            CreateCalculation = new MethodMetrics(meter, "create_calculation", nameof(CalculationUseCases.CreateCalculationAsync));
             GetCalculationsList = new MethodMetrics(meter, "get_calculations_list", nameof(CalculationUseCases.GetCalculationsListAsync));
+            CreateCalculation = new MethodMetrics(meter, "create_calculation", nameof(CalculationUseCases.CreateCalculationAsync));
+            CancelCalculation = new MethodMetrics(meter, "cancel_calculation", nameof(CalculationUseCases.CancelCalculationAsync));
         }
 
         public MethodMetrics GetCalculationsList { get; }
         public MethodMetrics CreateCalculation { get; }
+        public MethodMetrics CancelCalculation { get; }
     }
 }
