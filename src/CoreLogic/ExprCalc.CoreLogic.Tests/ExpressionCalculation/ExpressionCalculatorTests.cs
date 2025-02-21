@@ -117,7 +117,7 @@ namespace ExprCalc.CoreLogic.Tests.ExpressionCalculation
                     { ExpressionParsing.Parser.ExpressionOperationType.Add, TimeSpan.FromMilliseconds(500) }
                 });
 
-            var calculation = CreateCalculation("1 + 2 + 3 + 4");
+            var calculation = CreateCalculation("1 + 2 + 3 + 4 + 5 + 6");
             
             Func<Task<CalculationStatus?>> runBackground = async () =>
             {
@@ -135,11 +135,18 @@ namespace ExprCalc.CoreLogic.Tests.ExpressionCalculation
 
             var bckgCalc = runBackground();
 
-            await Task.Delay(30);
+            await Task.Delay(100);
             cancellationSource.Cancel();
 
             await bckgCalc;
             Assert.True(calculation.Status.IsPending() || calculation.Status.IsInProgress());
+
+            if (!updater.Updates.IsEmpty)
+            {
+                Assert.True(updater.Updates.TryGetValue(calculation.Id, out var updatedCalc));
+                Assert.Equal(calculation, updatedCalc);
+                Assert.True(updatedCalc.Status.IsPending() || updatedCalc.Status.IsInProgress());
+            }
         }
     }
 }
