@@ -14,8 +14,23 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
         private struct LinkedListItem
         {
             public T Item;
+            public ulong Timepoint;
             public LinkedListIndex Next;
         }
+
+        private struct LinkedListHeadTail(LinkedListIndex head, LinkedListIndex tail)
+        {
+            public LinkedListIndex Head = head;
+            public LinkedListIndex Tail = tail;
+
+            public readonly bool IsEmpty => Head == LinkedLists.NoNextItem;
+
+            public static LinkedListHeadTail Empty()
+            {
+                return new LinkedListHeadTail(LinkedLists.NoNextItem, LinkedLists.NoNextItem);
+            }
+        }
+
 
         /// <summary>
         /// Efficient storage for multiple lined lists.
@@ -49,39 +64,148 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
             public readonly int Capacity => _items.Length;
             public readonly ref LinkedListItem this[LinkedListIndex index] => ref _items[index];
 
-            public LinkedListIndex AddToListHead(T item, LinkedListIndex currentHead)
+
+            /// <summary>
+            /// Traverse list from <paramref name="headIndex"/> up to its tail.
+            /// Returns head and tail pair inside <see cref="LinkedListHeadTail"/> and items count in that list.
+            /// </summary>
+            public readonly LinkedListHeadTail BuildLinkedListHeadTail(LinkedListIndex headIndex, out int count)
+            {
+                int countLocal = 0;
+                int tailIndex = NoNextItem;
+                int currentIndex = headIndex;
+                while (currentIndex != NoNextItem)
+                {
+                    countLocal++;
+                    (tailIndex, currentIndex) = (currentIndex, _items[currentIndex].Next);
+                }
+
+                count = countLocal;
+                return new LinkedListHeadTail(headIndex, tailIndex);
+            }
+
+
+            /// <summary>
+            /// Adds new item to the head of the list. Previous head is passed in <paramref name="listHead"/>.
+            /// Returns new item index which is also a new list head.
+            /// </summary>
+            public LinkedListIndex AddToListHead(T item, ulong timepoint, LinkedListIndex listHead)
             {
                 if (_count == _items.Length)
                     Grow();
 
-                int index = _nextFreeSlot;
+                int newItemIndex = _nextFreeSlot;
                 bool nextFreeSlotUsed = true;
-                if (index == NoNextItem)
+                if (newItemIndex == NoNextItem)
                 {
-                    index = _count;
+                    newItemIndex = _count;
                     nextFreeSlotUsed = false;
                 }
 
-                ref LinkedListItem result = ref _items[index];
+                ref LinkedListItem result = ref _items[newItemIndex];
                 if (nextFreeSlotUsed)
                     _nextFreeSlot = result.Next;
 
                 result.Item = item;
-                result.Next = currentHead;
+                result.Timepoint = timepoint;
+                result.Next = listHead;
                 _count++;
-                return index;
+                return newItemIndex;
             }
-            public LinkedListIndex AddToNewList(T item)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public LinkedListIndex AddToNewList(T item, ulong timepoint)
             {
-                return AddToListHead(item, NoNextItem);
+                return AddToListHead(item, timepoint, NoNextItem);
             }
-            public LinkedListIndex AddToListTail(T item, LinkedListIndex currentTail)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public LinkedListIndex AddToListTail(T item, ulong timepoint, LinkedListIndex listTail)
             {
-                int result = AddToListHead(item, NoNextItem);
-                if (currentTail != NoNextItem)
-                    _items[currentTail].Next = result;
+                int result = AddToListHead(item, timepoint, NoNextItem);
+                if (listTail != NoNextItem)
+                {
+                    Debug.Assert(_items[listTail].Next == NoNextItem);
+                    _items[listTail].Next = result;
+                }
                 return result;
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void AddToListTail(ref LinkedListHeadTail list, T item, ulong timepoint)
+            {
+                int newItemIndex = AddToListHead(item, timepoint, NoNextItem);
+                if (list.Tail == NoNextItem)
+                {
+                    Debug.Assert(list.Head == NoNextItem);
+                    list.Tail = newItemIndex;
+                    list.Head = newItemIndex;
+                }
+                else
+                {
+                    Debug.Assert(list.Head != NoNextItem);
+                    Debug.Assert(_items[list.Tail].Next == NoNextItem);
+                    _items[list.Tail].Next = newItemIndex;
+                    list.Tail = newItemIndex;
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public readonly void LinkListHeadToListTail(ref LinkedListHeadTail listA, in LinkedListHeadTail listB)
+            {
+                if (listA.Tail == NoNextItem)
+                {
+                    Debug.Assert(listA.Head == NoNextItem);
+
+                    listA.Head = listB.Head;
+                    listA.Tail = listB.Tail;
+                }
+                else
+                {
+                    Debug.Assert(listA.Head != NoNextItem);
+                    Debug.Assert(_items[listA.Tail].Next == NoNextItem);
+
+                    if (listB.Head != NoNextItem)
+                    {
+                        Debug.Assert(listB.Tail != NoNextItem);
+                        Debug.Assert(_items[listB.Tail].Next == NoNextItem);
+
+                        _items[listA.Tail].Next = listB.Head;
+                        listA.Tail = listB.Tail;
+                    }
+                    else
+                    {
+                        Debug.Assert(listB.Tail == NoNextItem);
+                    }
+                }
+            }
+
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public readonly LinkedListIndex RelinkToListHead(LinkedListIndex itemIndex, LinkedListIndex listHead)
+            {
+                Debug.Assert(itemIndex != NoNextItem);
+                _items[itemIndex].Next = listHead;
+                return itemIndex;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public readonly void RelinkToListTail(LinkedListIndex itemIndex, ref LinkedListHeadTail list)
+            {
+                Debug.Assert(itemIndex != NoNextItem);
+                _items[itemIndex].Next = NoNextItem;
+
+                if (list.Tail == NoNextItem)
+                {
+                    Debug.Assert(list.Head == NoNextItem);
+                    list.Head = itemIndex;
+                    list.Tail = itemIndex;
+                }
+                else
+                {
+                    Debug.Assert(list.Head != NoNextItem);
+                    _items[list.Tail].Next = itemIndex;
+                    list.Tail = itemIndex;
+                }
+            }
+
 
             public LinkedListIndex RemoveFromListHead(LinkedListIndex index, out T item)
             {
@@ -99,6 +223,18 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                 }
                 
                 return result;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void RemoveFromListHead(ref LinkedListHeadTail list, out T item)
+            {
+                Debug.Assert(list.Head != NoNextItem);
+                Debug.Assert(list.Tail != NoNextItem);
+
+                int newHead = RemoveFromListHead(list.Head, out item);
+                Debug.Assert(newHead != NoNextItem || (list.Tail == list.Head));
+                list.Head = newHead;
+                if (newHead == NoNextItem)
+                    list.Tail = NoNextItem;
             }
 
             private void Grow()
