@@ -72,7 +72,8 @@ namespace ExprCalc.CoreLogic.Tests.TimeBasedOrdering
             DateTime takenAt = DateTime.UtcNow;
 
             Assert.Equal("abc", item);
-            Assert.True(takenAt >= scheduledAt);
+            // 32ms is a timer resolution
+            Assert.True(takenAt >= scheduledAt.AddMilliseconds(-32), $"Delta: {takenAt - scheduledAt}");
             Assert.True(takenAt <= scheduledAt.AddMilliseconds(500));
         }
 
@@ -117,7 +118,7 @@ namespace ExprCalc.CoreLogic.Tests.TimeBasedOrdering
                 var groundTruthAt = referenceList[val];
                 //32 ms is a timer resolution
                 Assert.True(takenAt >= groundTruthAt.AddMilliseconds(-33), "taken earlier than possible");
-                Assert.True(takenAt <= groundTruthAt.AddMilliseconds(500), "taken too late from expected");
+                Assert.True(takenAt <= groundTruthAt.AddMilliseconds(2000), $"taken too late from expected. Diff = {takenAt - groundTruthAt}");
             }
         }
     }

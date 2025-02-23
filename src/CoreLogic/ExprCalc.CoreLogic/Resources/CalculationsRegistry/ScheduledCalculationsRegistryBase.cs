@@ -19,10 +19,9 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 {
     internal abstract class ScheduledCalculationsRegistryBase : IScheduledCalculationsRegistry, ICalculationProcessingFinisher, ICalculationRegistrySlotFiller, IDisposable
     {
-        protected readonly struct Item(Calculation calculation, DateTime availableAfter, CancellationTokenSource cancellationTokenSource)
+        protected readonly struct Item(Calculation calculation, CancellationTokenSource cancellationTokenSource)
         {
             public readonly Calculation Calculation = calculation;
-            public readonly DateTime AvailableAfter = availableAfter;
             public readonly CancellationTokenSource CancellationTokenSource = cancellationTokenSource;
         }
 
@@ -49,8 +48,8 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
 
         protected abstract bool TryTakeNextScheduledItem(out Item item);
-        protected abstract ValueTask<Item> TakeNextScheduledItem(CancellationToken cancellationToken);
-        protected abstract void AddNewItemToScheduler(Item item);
+        protected abstract Task<Item> TakeNextScheduledItem(CancellationToken cancellationToken);
+        protected abstract void AddNewItemToScheduler(Item item, DateTime availableAfter);
 
 
         public bool IsEmpty { get { return _calculations.IsEmpty; } }
@@ -144,12 +143,12 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
                 if (availableAfter.Kind == DateTimeKind.Local)
                     availableAfter = availableAfter.ToUniversalTime();
 
-                var item = new Item(calculation, availableAfter, new CancellationTokenSource());
+                var item = new Item(calculation, new CancellationTokenSource());
                 if (!_calculations.TryAdd(calculation.Id, item))
                     throw new DuplicateKeyException("Calculation with the same key is already inside registry");
                 addedToDictionary = true;
 
-                AddNewItemToScheduler(item);
+                AddNewItemToScheduler(item, availableAfter);
                 fullSuccess = true;
             }
             finally

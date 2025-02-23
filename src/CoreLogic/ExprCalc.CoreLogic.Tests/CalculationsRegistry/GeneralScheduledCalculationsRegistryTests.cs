@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
@@ -350,7 +351,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
 
 
 
-        public static async Task MultithreadTest(IScheduledCalculationsRegistry registry, int addThreads, int takeThreads, int testItemCount, int addDelay, int takeDelay)
+        public static async Task MultithreadTest(IScheduledCalculationsRegistry registry, int addThreads, int takeThreads, int testItemCount, int addDelay, int takeDelay, int maxItemDelayMs)
         {
             using CancellationTokenSource takeEndTokenSource = new CancellationTokenSource();
             takeEndTokenSource.CancelAfter(TimeSpan.FromSeconds(120));
@@ -381,7 +382,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
                     {
                         if (slot.IsAvailable)
                         {
-                            slot.Fill(calculation, DateTime.UtcNow.AddMilliseconds(localRandom.Next(20)));
+                            slot.Fill(calculation, DateTime.UtcNow.AddMilliseconds(localRandom.Next(maxItemDelayMs)));
                             addedGuids.Add(calculation.Id);
                             avaiable = true;
                         }
@@ -400,7 +401,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
             };
 
 
-            Func<Task> takeAction = async () =>
+            Func<int, Task> takeAction = async (int threadId) =>
             {
                 await Task.Yield();
 
@@ -445,7 +446,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
             List<Task> addTasks = new List<Task>(addThreads);
 
             for (int i = 0; i < takeThreads; i++)
-                takeTasks.Add(takeAction());
+                takeTasks.Add(takeAction(i));
 
             for (int i = 0; i < addThreads; i++)
                 addTasks.Add(addAction());
@@ -453,6 +454,18 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
             await Task.WhenAll(addTasks);
             takeEndTokenSource.Cancel();
             await Task.WhenAll(takeTasks);
+
+            // Take remaining
+            if (!registry.IsEmpty)
+            {
+                using var remainingCancellation = new CancellationTokenSource();
+                remainingCancellation.CancelAfter(maxItemDelayMs * 8);
+
+                while (!registry.IsEmpty)
+                {
+                    combinedTakenGuid.Add((await registry.TakeNext(remainingCancellation.Token)).Id);
+                }
+            }
 
             combinedAddedGuid.Sort();
             combinedTakenGuid.Sort();
