@@ -20,7 +20,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
     {
         private LinkedLists _linkedLists;
         private LinkedListHeadTail _availableItemsList;
-        private int _availableItemsCount;
+        private volatile int _availableItemsCount;
 
         private ulong _currentTimepoint;
         private readonly TimeLevel[] _levels;

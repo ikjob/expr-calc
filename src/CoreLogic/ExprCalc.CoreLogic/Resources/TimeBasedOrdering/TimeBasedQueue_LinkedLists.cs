@@ -48,7 +48,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
             public const LinkedListIndex NoNextItem = -1;
 
             private LinkedListItem[] _items;
-            private int _count;
+            private volatile int _count;
             /// <summary>
             /// Next free slot index
             /// </summary>

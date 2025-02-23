@@ -349,7 +349,7 @@ namespace ExprCalc.CoreLogic.Tests.TimeBasedOrdering
                 var (itemTakenAt, itemVal) = item.Second;
 
                 Assert.Equal(groundTruthVal, itemVal);
-                Assert.True(itemTakenAt >= groundTruthAt, "taken not earlier than possible");
+                Assert.True(itemTakenAt >= groundTruthAt, "taken earlier than possible");
             });
         }
 
