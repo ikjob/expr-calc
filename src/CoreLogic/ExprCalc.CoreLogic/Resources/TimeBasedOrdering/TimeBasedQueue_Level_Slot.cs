@@ -154,24 +154,21 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
         }
 
         /// <summary>
-        /// Calculates the first and last timepoint that lies within the slot
+        /// Calculates the first timepoint that lies within the slot
         /// </summary>
         /// <param name="now">Current time</param>
         /// <param name="levelIndex">Index of level</param>
         /// <param name="slotIndex">Index of slot</param>
-        /// <returns>Timepoints</returns>
+        /// <returns>Timepoint</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static (ulong start, ulong end) GetSlotStartEndTimepoint(ulong now, int levelIndex, int slotIndex)
+        private static ulong GetSlotStartTimepoint(ulong now, int levelIndex, int slotIndex)
         {
             Debug.Assert(levelIndex < LevelsCount);
             Debug.Assert(slotIndex < LevelSize);
 
             int shift = levelIndex * SlotBitsLength;
             // Double shift is to avoid overflow when levelIndex == 10
-            ulong start = (now & ((ulong.MaxValue << shift) << SlotBitsLength)) | ((ulong)slotIndex << shift);
-            ulong end = unchecked(start + (1ul << shift) - 1ul);
-
-            return (start, end);
+            return (now & ((ulong.MaxValue << shift) << SlotBitsLength)) | ((ulong)slotIndex << shift);
         }
 
         /// <summary>

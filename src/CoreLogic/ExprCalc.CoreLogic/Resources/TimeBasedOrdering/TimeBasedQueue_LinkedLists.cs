@@ -204,8 +204,6 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
             /// <summary>
             /// Relink item from the head of one list (<paramref name="itemIndex"/>) to the tail of another list (<paramref name="list"/>)
             /// </summary>
-            /// <param name="itemIndex"></param>
-            /// <param name="list"></param>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly void RelinkToListTail(LinkedListIndex itemIndex, ref LinkedListHeadTail list)
             {
@@ -223,6 +221,79 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                     Debug.Assert(list.Head != NoNextItem);
                     _items[list.Tail].Next = itemIndex;
                     list.Tail = itemIndex;
+                }
+            }
+
+            /// <summary>
+            /// Relink item from the head of one list (<paramref name="itemIndex"/>) to into another list (<paramref name="list"/>).
+            /// This is slow part of the procedure. It search for the best place to insert starting from the list head.
+            /// </summary>
+            private readonly void RelinkToListWithOrderingSlow(LinkedListIndex itemIndex, ref LinkedListHeadTail list)
+            {
+                Debug.Assert(itemIndex != NoNextItem);
+
+                ulong itemTimepoint = _items[itemIndex].Timepoint;
+                LinkedListIndex prev = NoNextItem;
+                LinkedListIndex current = list.Head;
+
+                while (current != NoNextItem && _items[current].Timepoint <= itemTimepoint)
+                {
+                    (prev, current) = (current, _items[current].Next);
+                }
+
+                if (prev == NoNextItem)
+                {
+                    Debug.Assert(current == list.Head);
+                    _items[itemIndex].Next = current;
+                    list.Head = itemIndex;
+                    if (list.Tail == NoNextItem)
+                    {
+                        Debug.Assert(current == NoNextItem);
+                        list.Tail = itemIndex;
+                    }
+                }
+                else
+                {
+                    _items[prev].Next = itemIndex;
+                    _items[itemIndex].Next = current;
+                    if (current == NoNextItem)
+                    {
+                        Debug.Assert(prev == list.Tail);
+                        list.Tail = itemIndex;
+                    }
+                }
+            }
+            /// <summary>
+            /// Relink item from the head of one list (<paramref name="itemIndex"/>) to into another list (<paramref name="list"/>).
+            /// This methods keeps ordering of items by their <see cref="LinkedListItem.Timepoint"/>.
+            /// It is expected that most of the time items will be added to the tail of the list, 
+            /// but when this is not a case it traverse the whole list and looking for the place to insert new item.
+            /// </summary>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public readonly void RelinkToListWithOrdering(LinkedListIndex itemIndex, ref LinkedListHeadTail list)
+            {
+                Debug.Assert(itemIndex != NoNextItem);
+                _items[itemIndex].Next = NoNextItem;
+
+                if (list.Tail == NoNextItem)
+                {
+                    Debug.Assert(list.Head == NoNextItem);
+                    list.Head = itemIndex;
+                    list.Tail = itemIndex;
+                }
+                else
+                {
+                    Debug.Assert(list.Head != NoNextItem);
+                    if (_items[itemIndex].Timepoint >= _items[list.Tail].Timepoint)
+                    {
+                        _items[list.Tail].Next = itemIndex;
+                        list.Tail = itemIndex;
+                    }
+                    else
+                    {
+                        // Normally this should happen rarely
+                        RelinkToListWithOrderingSlow(itemIndex, ref list);
+                    }
                 }
             }
 

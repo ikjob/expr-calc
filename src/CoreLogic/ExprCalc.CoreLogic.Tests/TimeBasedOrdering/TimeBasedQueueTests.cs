@@ -136,7 +136,7 @@ namespace ExprCalc.CoreLogic.Tests.TimeBasedOrdering
             for (int i = 0; i < 1000; i++)
             {
                 Assert.True(queue.TryTake(out var item));
-               // Assert.Equal(i.ToString(), item);
+                Assert.Equal(i.ToString(), item);
 
                 Assert.Equal(1000 - i - 1, queue.AvailableCount);
                 Assert.Equal(1000 - i - 1, queue.Count);
@@ -174,7 +174,7 @@ namespace ExprCalc.CoreLogic.Tests.TimeBasedOrdering
             for (int i = 0; i < 1000; i++)
             {
                 Assert.True(queue.TryTake(out var item));
-               // Assert.Equal(i.ToString(), item);
+                //Assert.Equal(i.ToString(), item);
 
                 Assert.Equal(1000 - i - 1, queue.AvailableCount);
                 Assert.Equal(1000 - i - 1, queue.Count);

@@ -91,20 +91,6 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
 
 
         /// <summary>
-        /// Attaches the whole list from slot into list of available items
-        /// </summary>
-        /// <param name="slotListHead">List head index associated with slot</param>
-        /// <returns>Number of items that became available after this operation</returns>
-        private int MoveWholeSlotListIntoAvailable(LinkedListIndex slotListHead)
-        {
-            var slotListHeadTail = _linkedLists.BuildLinkedListHeadTail(slotListHead, out int count);
-            _linkedLists.LinkListHeadToListTail(ref _availableItemsList, in slotListHeadTail);
-
-            _availableItemsCount += count;
-            return count;
-        }
-
-        /// <summary>
         /// Rebuild slot list by moving its items to the new slots according to <paramref name="newTimepoint"/>.
         /// Some items goes into available items list.
         /// </summary>
@@ -123,7 +109,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
 
                 if (item.Timepoint <= newTimepoint)
                 {
-                    _linkedLists.RelinkToListTail(currentIndex, ref _availableItemsList);
+                    _linkedLists.RelinkToListWithOrdering(currentIndex, ref _availableItemsList);
                     movedToAvailable++;
                 }
                 else
@@ -160,8 +146,8 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                     if (level.IsSlotEmpty(slotIndex))
                         continue;
 
-                    (ulong slotStart, ulong slotEnd) = GetSlotStartEndTimepoint(_currentTimepoint, levelIndex, slotIndex);
-                    if (slotStart > newTimepoint)
+                    ulong slotStartTimepoint = GetSlotStartTimepoint(_currentTimepoint, levelIndex, slotIndex);
+                    if (slotStartTimepoint > newTimepoint)
                     {
                         _currentTimepoint = newTimepoint;
                         return availableDelta;
@@ -170,15 +156,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                     // Advance time
                     _currentTimepoint = newTimepoint;
                     LinkedListIndex slotListHead = level.ResetSlotListHead(slotIndex);
-
-                    if (slotEnd <= newTimepoint)
-                    {
-                        availableDelta += MoveWholeSlotListIntoAvailable(slotListHead);
-                    }
-                    else
-                    {
-                        availableDelta += RebuildTimeSlotForNewTime(newTimepoint, slotListHead);
-                    }
+                    availableDelta += RebuildTimeSlotForNewTime(newTimepoint, slotListHead);
                 }
             }
 
@@ -199,7 +177,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                 int startSlotIndex = GetSlotIndexOnLevelForTimepoint(_currentTimepoint, levelIndex);
                 startSlotIndex = Math.Max(startSlotIndex, _levels[levelIndex].FirstNonEmptySlot);
                 if (startSlotIndex < LevelSize)
-                    return GetSlotStartEndTimepoint(_currentTimepoint, levelIndex, startSlotIndex).start;
+                    return GetSlotStartTimepoint(_currentTimepoint, levelIndex, startSlotIndex);
             }
 
             return null;
