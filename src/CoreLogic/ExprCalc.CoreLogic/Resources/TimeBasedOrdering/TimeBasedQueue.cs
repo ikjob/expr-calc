@@ -115,7 +115,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                 }
                 else
                 {
-                    (int levelIndex, int slotIndex) = GetLevelAndSlotIndexes(newTimepoint, item.Timepoint);
+                    (int levelIndex, int slotIndex) = GetLevelAndSlotIndexes(_currentTimepoint, item.Timepoint);
                     ref TimeLevel newLevel = ref _levels[levelIndex];
                     _linkedLists.RelinkToListTail(ref newLevel.Slots[slotIndex].ListHeadTail, currentIndex);
                     newLevel.SetSlotOccupiedMarker(slotIndex);
@@ -140,6 +140,10 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                 throw new ArgumentException("Only forward advance possible");
 
             int availableDelta = 0;
+
+            ulong initialTimepoint = _currentTimepoint;
+            _currentTimepoint = newTimepoint;
+
             for (int levelIndex = 0; levelIndex < _levels.Length; levelIndex++)
             {
                 ref TimeLevel level = ref _levels[levelIndex];
@@ -148,22 +152,15 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                     if (level.IsSlotEmpty(slotIndex))
                         continue;
 
-                    ulong slotStartTimepoint = GetSlotStartTimepoint(_currentTimepoint, levelIndex, slotIndex);
+                    ulong slotStartTimepoint = GetSlotStartTimepoint(initialTimepoint, levelIndex, slotIndex);
                     if (slotStartTimepoint > newTimepoint)
-                    {
-                        _currentTimepoint = newTimepoint;
                         return availableDelta;
-                    }
 
-                    // Advance time
-                    _currentTimepoint = newTimepoint;
                     LinkedListIndex slotListHead = level.ResetSlot(slotIndex).Head;
                     availableDelta += RebuildTimeSlotForNewTime(newTimepoint, slotListHead);
                 }
             }
 
-
-            _currentTimepoint = newTimepoint;
             return availableDelta;
         }
 
@@ -217,6 +214,12 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                         throw new TimeBasedQueueValidationException("TimeSlot head references non-existed list");
                 }
             }
+
+            var availabelRebuildCheck = _linkedLists.BuildLinkedListHeadTail(_availableItemsList.Head, out int availableCount);
+            if (availabelRebuildCheck.Head != _availableItemsList.Head || availabelRebuildCheck.Tail != _availableItemsList.Tail)
+                throw new TimeBasedQueueValidationException("Available items list broken");
+            if (_availableItemsCount != availableCount)
+                throw new TimeBasedQueueValidationException("Available items count is not correct");
 #endif
         }
     }
