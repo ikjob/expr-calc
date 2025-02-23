@@ -35,9 +35,9 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
         /// </summary>
         private struct TimeSlot
         {
-            public LinkedListIndex ListHead;
+            public LinkedListHeadTail ListHeadTail;
 
-            public readonly bool IsEmpty => ListHead == LinkedLists.NoNextItem;
+            public readonly bool IsEmpty => ListHeadTail.IsEmpty;
         }
 
 
@@ -58,7 +58,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
         /// </summary>
         private struct TimeLevel
         {
-            private TimeSlotsArray _slots;
+            public TimeSlotsArray Slots;
             /// <summary>
             /// Bitmap that contains '1' at offset equal to index in <see cref="_slots"/>, when that slot is not empty
             /// </summary>
@@ -91,7 +91,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
             public void Reset()
             {
                 for (int i = 0; i < LevelSize; i++)
-                    _slots[i].ListHead = LinkedLists.NoNextItem;
+                    Slots[i].ListHeadTail = LinkedListHeadTail.Empty();
                 _occupiedBitmap = 0;
             }
 
@@ -101,29 +101,27 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                 Debug.Assert(slotIndex >= 0 && slotIndex < LevelSize);
 
                 bool result = (_occupiedBitmap & (1ul << slotIndex)) == 0;
-                Debug.Assert(result == _slots[slotIndex].IsEmpty);
+                Debug.Assert(result == Slots[slotIndex].IsEmpty);
                 return result;
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly LinkedListIndex GetSlotListHead(int slotIndex)
+            public void SetSlotOccupiedMarker(int slotIndex)
             {
-                return _slots[slotIndex].ListHead;
-            }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void SetSlotListHead(int slotIndex, LinkedListIndex newListHead)
-            {
-                Debug.Assert(newListHead != LinkedLists.NoNextItem);
-
-                _slots[slotIndex].ListHead = newListHead;
+                Debug.Assert(!Slots[slotIndex].IsEmpty);
                 _occupiedBitmap = _occupiedBitmap | (1ul << slotIndex);
             }
-
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public LinkedListIndex ResetSlotListHead(int slotIndex)
+            public void SetSlotEmptyMarker(int slotIndex)
             {
-                int result = _slots[slotIndex].ListHead;
-                _slots[slotIndex].ListHead = LinkedLists.NoNextItem;
+                Debug.Assert(Slots[slotIndex].IsEmpty);
                 _occupiedBitmap = _occupiedBitmap & ~(1ul << slotIndex);
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public LinkedListHeadTail ResetSlot(int slotIndex)
+            {
+                var result = Slots[slotIndex].ListHeadTail;
+                Slots[slotIndex].ListHeadTail = LinkedListHeadTail.Empty();
+                SetSlotEmptyMarker(slotIndex);
                 return result;
             }
         }

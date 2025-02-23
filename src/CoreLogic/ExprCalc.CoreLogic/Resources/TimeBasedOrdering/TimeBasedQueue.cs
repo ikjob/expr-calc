@@ -65,7 +65,8 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
 
             (int levelIndex, int slotIndex) = GetLevelAndSlotIndexes(_currentTimepoint, availableAfter);
             ref TimeLevel level = ref _levels[levelIndex];
-            level.SetSlotListHead(slotIndex, _linkedLists.AddToListHead(item, availableAfter, level.GetSlotListHead(slotIndex)));
+            _linkedLists.AddToListTail(ref level.Slots[slotIndex].ListHeadTail, item, availableAfter);
+            level.SetSlotOccupiedMarker(slotIndex);
             availableCountDelta = 0;
         }
 
@@ -109,14 +110,15 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
 
                 if (item.Timepoint <= newTimepoint)
                 {
-                    _linkedLists.RelinkToListWithOrdering(currentIndex, ref _availableItemsList);
+                    _linkedLists.RelinkToListWithOrdering(ref _availableItemsList, currentIndex);
                     movedToAvailable++;
                 }
                 else
                 {
                     (int levelIndex, int slotIndex) = GetLevelAndSlotIndexes(newTimepoint, item.Timepoint);
                     ref TimeLevel newLevel = ref _levels[levelIndex];
-                    newLevel.SetSlotListHead(slotIndex, _linkedLists.RelinkToListHead(currentIndex, newLevel.GetSlotListHead(slotIndex)));
+                    _linkedLists.RelinkToListTail(ref newLevel.Slots[slotIndex].ListHeadTail, currentIndex);
+                    newLevel.SetSlotOccupiedMarker(slotIndex);
                 }
 
                 currentIndex = nextIndex;
@@ -155,7 +157,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
 
                     // Advance time
                     _currentTimepoint = newTimepoint;
-                    LinkedListIndex slotListHead = level.ResetSlotListHead(slotIndex);
+                    LinkedListIndex slotListHead = level.ResetSlot(slotIndex).Head;
                     availableDelta += RebuildTimeSlotForNewTime(newTimepoint, slotListHead);
                 }
             }
@@ -200,7 +202,12 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
             {
                 for (int slotIndex = 0; slotIndex < LevelSize; slotIndex++)
                 {
-                    var headIndex = _levels[levelIndex].GetSlotListHead(slotIndex);
+                    var (headIndex, tailIndex) = _levels[levelIndex].Slots[slotIndex].ListHeadTail;
+                    if (headIndex == LinkedLists.NoNextItem && tailIndex != LinkedLists.NoNextItem)
+                        throw new TimeBasedQueueValidationException("Slot head-tail indexes are inconsistent");
+                    if (headIndex != LinkedLists.NoNextItem && tailIndex == LinkedLists.NoNextItem)
+                        throw new TimeBasedQueueValidationException("Slot head-tail indexes are inconsistent");
+
                     if (headIndex == LinkedLists.NoNextItem && !_levels[levelIndex].IsSlotEmpty(slotIndex))
                         throw new TimeBasedQueueValidationException("Slot emptiness check inconsistency");
                     if (headIndex != LinkedLists.NoNextItem && _levels[levelIndex].IsSlotEmpty(slotIndex))

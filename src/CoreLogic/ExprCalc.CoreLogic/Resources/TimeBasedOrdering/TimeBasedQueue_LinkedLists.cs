@@ -26,6 +26,12 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
 
             public readonly bool IsEmpty => Head == LinkedLists.NoNextItem;
 
+            public readonly void Deconstruct(out LinkedListIndex head, out LinkedListIndex tail)
+            {
+                head = Head;
+                tail = Tail;
+            }
+
             public static LinkedListHeadTail Empty()
             {
                 return new LinkedListHeadTail(LinkedLists.NoNextItem, LinkedLists.NoNextItem);
@@ -122,20 +128,6 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                 return AddToListHead(item, timepoint, NoNextItem);
             }
             /// <summary>
-            /// Adds new item to the tail of the list passed in <paramref name="listTail"/>
-            /// </summary>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public LinkedListIndex AddToListTail(T item, ulong timepoint, LinkedListIndex listTail)
-            {
-                int result = AddToListHead(item, timepoint, NoNextItem);
-                if (listTail != NoNextItem)
-                {
-                    Debug.Assert(_items[listTail].Next == NoNextItem);
-                    _items[listTail].Next = result;
-                }
-                return result;
-            }
-            /// <summary>
             /// Adds new item to the tail of the list passed in <paramref name="list"/>
             /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -157,39 +149,6 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                 }
             }
 
-            /// <summary>
-            /// Attaches <paramref name="listB"/> to the tail of <paramref name="listA"/> and 
-            /// updates <paramref name="listA"/> with new head and tail values
-            /// </summary>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly void LinkListHeadToListTail(ref LinkedListHeadTail listA, in LinkedListHeadTail listB)
-            {
-                if (listA.Tail == NoNextItem)
-                {
-                    Debug.Assert(listA.Head == NoNextItem);
-
-                    listA.Head = listB.Head;
-                    listA.Tail = listB.Tail;
-                }
-                else
-                {
-                    Debug.Assert(listA.Head != NoNextItem);
-                    Debug.Assert(_items[listA.Tail].Next == NoNextItem);
-
-                    if (listB.Head != NoNextItem)
-                    {
-                        Debug.Assert(listB.Tail != NoNextItem);
-                        Debug.Assert(_items[listB.Tail].Next == NoNextItem);
-
-                        _items[listA.Tail].Next = listB.Head;
-                        listA.Tail = listB.Tail;
-                    }
-                    else
-                    {
-                        Debug.Assert(listB.Tail == NoNextItem);
-                    }
-                }
-            }
 
             /// <summary>
             /// Relink item from the head of one list (<paramref name="itemIndex"/>) to the head of another list (<paramref name="listHead"/>)
@@ -205,7 +164,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
             /// Relink item from the head of one list (<paramref name="itemIndex"/>) to the tail of another list (<paramref name="list"/>)
             /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly void RelinkToListTail(LinkedListIndex itemIndex, ref LinkedListHeadTail list)
+            public readonly void RelinkToListTail(ref LinkedListHeadTail list, LinkedListIndex itemIndex)
             {
                 Debug.Assert(itemIndex != NoNextItem);
                 _items[itemIndex].Next = NoNextItem;
@@ -228,7 +187,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
             /// Relink item from the head of one list (<paramref name="itemIndex"/>) to into another list (<paramref name="list"/>).
             /// This is slow part of the procedure. It search for the best place to insert starting from the list head.
             /// </summary>
-            private readonly void RelinkToListWithOrderingSlow(LinkedListIndex itemIndex, ref LinkedListHeadTail list)
+            private readonly void RelinkToListWithOrderingSlow(ref LinkedListHeadTail list, LinkedListIndex itemIndex)
             {
                 Debug.Assert(itemIndex != NoNextItem);
 
@@ -270,7 +229,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
             /// but when this is not a case it traverse the whole list and looking for the place to insert new item.
             /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly void RelinkToListWithOrdering(LinkedListIndex itemIndex, ref LinkedListHeadTail list)
+            public readonly void RelinkToListWithOrdering(ref LinkedListHeadTail list, LinkedListIndex itemIndex)
             {
                 Debug.Assert(itemIndex != NoNextItem);
                 _items[itemIndex].Next = NoNextItem;
@@ -292,7 +251,7 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                     else
                     {
                         // Normally this should happen rarely
-                        RelinkToListWithOrderingSlow(itemIndex, ref list);
+                        RelinkToListWithOrderingSlow(ref list, itemIndex);
                     }
                 }
             }
