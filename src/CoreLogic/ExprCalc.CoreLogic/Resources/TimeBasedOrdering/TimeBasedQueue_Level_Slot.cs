@@ -73,12 +73,18 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
                 }
             }
 
+            /// <summary>
+            /// Index of the first non-empty slot.
+            /// Returns value >= <see cref="FullResolutionInBits"/> when all slots are empty.
+            /// </summary>
             public readonly int FirstNonEmptySlot
             {
                 get
                 {
                     Debug.Assert(SlotBitsLength <= 6, "Bitmap optimisation works only when number of slots per level is <= 64");
-                    return BitOperations.TrailingZeroCount(_occupiedBitmap);
+                    int result = BitOperations.TrailingZeroCount(_occupiedBitmap);
+                    Debug.Assert(result >= FullResolutionInBits || !IsSlotEmpty(result));
+                    return result;
                 }
             }
 
@@ -92,7 +98,11 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly bool IsSlotEmpty(int slotIndex)
             {
-                return _slots[slotIndex].IsEmpty;
+                Debug.Assert(slotIndex >= 0 && slotIndex < LevelSize);
+
+                bool result = (_occupiedBitmap & (1ul << slotIndex)) == 0;
+                Debug.Assert(result == _slots[slotIndex].IsEmpty);
+                return result;
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly LinkedListIndex GetSlotListHead(int slotIndex)

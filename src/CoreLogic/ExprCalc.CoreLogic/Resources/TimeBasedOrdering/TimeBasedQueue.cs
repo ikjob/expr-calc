@@ -25,14 +25,14 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
         private ulong _currentTimepoint;
         private readonly TimeLevel[] _levels;
 
-        public TimeBasedQueue(int capacity)
+        public TimeBasedQueue(ulong currentTimepoint, int capacity)
         {
             if (capacity < 0)
                 throw new ArgumentOutOfRangeException(nameof(capacity));
 
             _linkedLists = new LinkedLists(capacity);
             _levels = new TimeLevel[LevelsCount];
-            _currentTimepoint = 0;
+            _currentTimepoint = currentTimepoint;
 
             _availableItemsList = LinkedListHeadTail.Empty();
             _availableItemsCount = 0;
@@ -196,18 +196,43 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
         {
             for (int levelIndex = 0; levelIndex < _levels.Length; levelIndex++)
             {
-                ref TimeLevel level = ref _levels[levelIndex];
-                int start = GetSlotIndexOnLevelForTimepoint(_currentTimepoint, levelIndex);
-                for (int slotIndex = start; slotIndex < LevelSize; slotIndex++)
-                {
-                    if (!level.IsSlotEmpty(slotIndex))
-                    {
-                        return GetSlotStartEndTimepoint(_currentTimepoint, levelIndex, slotIndex).start;
-                    }
-                }
+                int startSlotIndex = GetSlotIndexOnLevelForTimepoint(_currentTimepoint, levelIndex);
+                startSlotIndex = Math.Max(startSlotIndex, _levels[levelIndex].FirstNonEmptySlot);
+                if (startSlotIndex < LevelSize)
+                    return GetSlotStartEndTimepoint(_currentTimepoint, levelIndex, startSlotIndex).start;
             }
 
             return null;
+        }
+
+
+#if INCLUDE_TEST_HELPERS
+        private class TimeBasedQueueValidationException(string message) : Exception(message) { }
+#endif
+
+        /// <summary>
+        /// Correctness validation for tests
+        /// </summary>
+        internal void ValidateInternalCollectionCorrectness()
+        {
+#if INCLUDE_TEST_HELPERS
+            var heads = _linkedLists.ValidateCorrectness();
+
+            for (int levelIndex = 0; levelIndex < _levels.Length; levelIndex++)
+            {
+                for (int slotIndex = 0; slotIndex < LevelSize; slotIndex++)
+                {
+                    var headIndex = _levels[levelIndex].GetSlotListHead(slotIndex);
+                    if (headIndex == LinkedLists.NoNextItem && !_levels[levelIndex].IsSlotEmpty(slotIndex))
+                        throw new TimeBasedQueueValidationException("Slot emptiness check inconsistency");
+                    if (headIndex != LinkedLists.NoNextItem && _levels[levelIndex].IsSlotEmpty(slotIndex))
+                        throw new TimeBasedQueueValidationException("Slot emptiness check inconsistency");
+
+                    if (headIndex != LinkedLists.NoNextItem && !heads.Contains(headIndex))
+                        throw new TimeBasedQueueValidationException("TimeSlot head references non-existed list");
+                }
+            }
+#endif
         }
     }
 }
