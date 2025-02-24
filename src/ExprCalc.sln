@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc", "ExprCalc\ExprCa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{11875CEC-539A-4607-B268-1E6592F094F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.Tests", "Tests\ExprCalc.Tests\ExprCalc.Tests.csproj", "{56A0AA8D-1096-44C7-A804-295A6D733418}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.IntegrationTests", "Tests\ExprCalc.IntegrationTests\ExprCalc.IntegrationTests.csproj", "{56A0AA8D-1096-44C7-A804-295A6D733418}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{C26B41A7-CF23-4B98-BCD8-834CC46124BE}"
 EndProject
