@@ -81,7 +81,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
             if (_calculations.TryRemove(result.Calculation.Id, out _))
             {
-                ReleaseReservedSlotCore();
+                ReleaseReservedSlotCore(result.Calculation.GetOccupiedMemory());
             }
             else
             {
@@ -96,7 +96,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             var result = await TakeNextScheduledItem(cancellationToken);
             if (_calculations.TryRemove(result.Calculation.Id, out _))
             {
-                ReleaseReservedSlotCore();
+                ReleaseReservedSlotCore(result.Calculation.GetOccupiedMemory());
             }
             else
             {
@@ -111,7 +111,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
         }
 
-        private bool TryReserveSlotCore()
+        private bool TryReserveSlotCore(long memoryCount)
         {
             int count = _count;
             while (count < _maxCount)
@@ -119,6 +119,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
                 if (Interlocked.CompareExchange(ref _count, count + 1, count) == count)
                 {
                     _metrics.CurrentCount.Add(1);
+                    _metrics.CurrentMemory.Add(memoryCount);
                     return true;
                 }
                 count = _count;
@@ -126,12 +127,13 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
             return false;
         }
-        private void ReleaseReservedSlotCore()
+        private void ReleaseReservedSlotCore(long memoryCount)
         {
             int valueAfter = Interlocked.Decrement(ref _count);
             Debug.Assert(valueAfter >= 0);
 
             _metrics.CurrentCount.Add(-1);
+            _metrics.CurrentMemory.Add(-memoryCount);
         }
 
         private void AddForAlreadyReservedSlot(Calculation calculation, DateTime availableAfter)
@@ -155,7 +157,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             {
                 if (!fullSuccess)
                 {
-                    ReleaseReservedSlotCore();
+                    ReleaseReservedSlotCore(calculation.GetOccupiedMemory());
                     if (addedToDictionary)
                         _calculations.TryRemove(calculation.Id, out _);
                 }
@@ -167,7 +169,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             if (!calculation.Status.IsPending())
                 throw new ArgumentException("Only calculations in Pending status can be added to the registry", nameof(calculation));
 
-            if (!TryReserveSlotCore())
+            if (!TryReserveSlotCore(calculation.GetOccupiedMemory()))
                 return false;
 
             AddForAlreadyReservedSlot(calculation, availableAfter);
@@ -176,9 +178,10 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
         public CalculationRegistryReservedSlot TryReserveSlot(Calculation calculation)
         {
-            if (TryReserveSlotCore())
+            long occupiedMemory = calculation.GetOccupiedMemory();
+            if (TryReserveSlotCore(occupiedMemory))
             {
-                return new CalculationRegistryReservedSlot(this);
+                return new CalculationRegistryReservedSlot(this, occupiedMemory);
             }    
             else
             {
@@ -204,9 +207,9 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
         void ICalculationProcessingFinisher.FinishCalculation(Guid id)
         {
-            if (_calculations.TryRemove(id, out _))
+            if (_calculations.TryRemove(id, out var calculation))
             {
-                ReleaseReservedSlotCore();
+                ReleaseReservedSlotCore(calculation.Calculation.GetOccupiedMemory());
             }
             else
             {
@@ -222,9 +225,9 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             AddForAlreadyReservedSlot(calculation, availableAfter);
         }
 
-        void ICalculationRegistrySlotFiller.ReleaseSlot()
+        void ICalculationRegistrySlotFiller.ReleaseSlot(long reservedMemory)
         {
-            ReleaseReservedSlotCore();
+            ReleaseReservedSlotCore(reservedMemory);
         }
 
 

@@ -28,6 +28,15 @@ namespace ExprCalc.CoreLogic.Configuration
         /// Contains delays for all operations. If some operation is not presented, then it is executed without delay
         /// </summary>
         public Dictionary<ExpressionOperationType, TimeSpan> OperationsTime { get; init; } = new Dictionary<ExpressionOperationType, TimeSpan>();
+        /// <summary>
+        /// Min delay before the calculation can be taken for processing after it was submitted.
+        /// Actual delay sets randomly between <see cref="MinCalculationAvailabilityDelay"/> and <see cref="MaxCalculationAvailabilityDelay"/>.
+        /// </summary>
+        public TimeSpan MinCalculationAvailabilityDelay { get; init; } = TimeSpan.Zero;
+        /// <summary>
+        /// Max delay before the calculation can be taken for processing after it was submitted.
+        /// Actual delay sets randomly between <see cref="MinCalculationAvailabilityDelay"/> and <see cref="MaxCalculationAvailabilityDelay"/>.
+        public TimeSpan MaxCalculationAvailabilityDelay { get; init; } = TimeSpan.FromSeconds(15);
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
@@ -39,6 +48,13 @@ namespace ExprCalc.CoreLogic.Configuration
                 if (opTime.Value < TimeSpan.Zero)
                     yield return new ValidationResult($"Operation time cannot be negative. Problematic operation: {opTime.Key}", [nameof(OperationsTime)]);
             }
+
+            if (MinCalculationAvailabilityDelay < TimeSpan.Zero)
+                yield return new ValidationResult("Min delay cannot be negative", [nameof(MinCalculationAvailabilityDelay)]);
+            if (MaxCalculationAvailabilityDelay < TimeSpan.Zero)
+                yield return new ValidationResult("Max delay cannot be negative", [nameof(MaxCalculationAvailabilityDelay)]);
+            if (MaxCalculationAvailabilityDelay < MinCalculationAvailabilityDelay)
+                yield return new ValidationResult("Max delay cannot be less than min delay", [nameof(MinCalculationAvailabilityDelay), nameof(MaxCalculationAvailabilityDelay)]);
         }
     }
 }

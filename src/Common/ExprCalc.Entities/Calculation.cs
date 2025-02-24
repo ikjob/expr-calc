@@ -10,6 +10,7 @@ namespace ExprCalc.Entities
     public class Calculation
     {
         public const int MaxExpressionLength = 25000;
+        private static readonly long _fixedSize = Unsafe.SizeOf<Calculation>() + Unsafe.SizeOf<string>();
 
         public static Calculation CreateInitial(string expression, User createdBy)
         {
@@ -133,6 +134,11 @@ namespace ExprCalc.Entities
                 throw new InvalidStatusTransitionException($"Transition from {curStatus.State} to {CalculationState.Cancelled} is not allowed");
         }
 
+
+        public long GetOccupiedMemory()
+        {
+            return _fixedSize + Expression.Length * sizeof(char) + CreatedBy.GetOccupiedMemory();
+        }
 
         public Calculation Clone()
         {

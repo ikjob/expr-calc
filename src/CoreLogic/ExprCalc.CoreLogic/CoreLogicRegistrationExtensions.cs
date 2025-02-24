@@ -28,7 +28,7 @@ namespace ExprCalc.CoreLogic
 
             serviceCollection.AddSingleton<IExternalCalculationStatusUpdater, StatusUpdaterInStorage>();
             serviceCollection.AddSingleton<IExpressionCalculator, ExpressionCalculator>();
-            serviceCollection.AddSingleton<IScheduledCalculationsRegistry, QueueBasedCalculationsRegistry>();
+            serviceCollection.AddSingleton<IScheduledCalculationsRegistry, TimeBasedCalculationRegistry>();
 
             serviceCollection.AddHostedService<CalculationsProcessingService>();
             
