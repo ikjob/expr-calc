@@ -80,7 +80,7 @@ namespace ExprCalc.CoreLogic.UseCases
                         throw new TooManyPendingCalculationsException("Too many pending calculations in registry");
 
                     var createdCalculation = await _calculationRepository.CreateCalculationAsync(calculation, token);
-                    slot.Fill(createdCalculation, availableAfter: DateTime.UtcNow.Add(GenerateRandomDelay()));
+                    slot.Fill(createdCalculation, delayBeforeExecution: GenerateRandomDelay());
                     return createdCalculation;
                 }
             }

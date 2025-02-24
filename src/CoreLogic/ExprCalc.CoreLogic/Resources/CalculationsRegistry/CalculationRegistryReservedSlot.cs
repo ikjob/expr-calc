@@ -24,12 +24,12 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
         public readonly bool IsAvailable => _slotFiller != null;
 
-        public void Fill(Calculation calculation, DateTime availableAfter)
+        public void Fill(Calculation calculation, TimeSpan delayBeforeExecution)
         {
             if (_slotFiller == null)
                 throw new InvalidOperationException("Unable to fill released slot");
 
-            _slotFiller.FillSlot(calculation, availableAfter);
+            _slotFiller.FillSlot(calculation, delayBeforeExecution);
             _slotFiller = null;
         }
 
@@ -43,7 +43,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
     internal interface ICalculationRegistrySlotFiller
     {
-        void FillSlot(Calculation calculation, DateTime availableAfter);
+        void FillSlot(Calculation calculation, TimeSpan delayBeforeExecution);
         void ReleaseSlot(long reservedMemory);
     }
 }

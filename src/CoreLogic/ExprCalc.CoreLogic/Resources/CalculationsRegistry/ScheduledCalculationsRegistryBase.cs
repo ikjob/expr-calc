@@ -49,7 +49,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
         protected abstract bool TryTakeNextScheduledItem(out Item item);
         protected abstract Task<Item> TakeNextScheduledItem(CancellationToken cancellationToken);
-        protected abstract void AddNewItemToScheduler(Item item, DateTime availableAfter);
+        protected abstract void AddNewItemToScheduler(Item item, TimeSpan delayBeforeExecution);
 
 
         public bool IsEmpty { get { return _calculations.IsEmpty; } }
@@ -136,21 +136,18 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             _metrics.CurrentMemory.Add(-memoryCount);
         }
 
-        private void AddForAlreadyReservedSlot(Calculation calculation, DateTime availableAfter)
+        private void AddForAlreadyReservedSlot(Calculation calculation, TimeSpan delayBeforeExecution)
         {
             bool fullSuccess = false;
             bool addedToDictionary = false;
             try
             {
-                if (availableAfter.Kind == DateTimeKind.Local)
-                    availableAfter = availableAfter.ToUniversalTime();
-
                 var item = new Item(calculation, new CancellationTokenSource());
                 if (!_calculations.TryAdd(calculation.Id, item))
                     throw new DuplicateKeyException("Calculation with the same key is already inside registry");
                 addedToDictionary = true;
 
-                AddNewItemToScheduler(item, availableAfter);
+                AddNewItemToScheduler(item, delayBeforeExecution);
                 fullSuccess = true;
             }
             finally
@@ -164,7 +161,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             }
         }
 
-        public bool TryAdd(Calculation calculation, DateTime availableAfter)
+        public bool TryAdd(Calculation calculation, TimeSpan delayBeforeExecution)
         {
             if (!calculation.Status.IsPending())
                 throw new ArgumentException("Only calculations in Pending status can be added to the registry", nameof(calculation));
@@ -172,7 +169,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             if (!TryReserveSlotCore(calculation.GetOccupiedMemory()))
                 return false;
 
-            AddForAlreadyReservedSlot(calculation, availableAfter);
+            AddForAlreadyReservedSlot(calculation, delayBeforeExecution);
             return true;
         }
 
@@ -217,12 +214,12 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             }
         }
 
-        void ICalculationRegistrySlotFiller.FillSlot(Calculation calculation, DateTime availableAfter)
+        void ICalculationRegistrySlotFiller.FillSlot(Calculation calculation, TimeSpan delayBeforeExecution)
         {
             if (!calculation.Status.IsPending())
                 throw new ArgumentException("Only calculations in Pending status can be added to the registry", nameof(calculation));
 
-            AddForAlreadyReservedSlot(calculation, availableAfter);
+            AddForAlreadyReservedSlot(calculation, delayBeforeExecution);
         }
 
         void ICalculationRegistrySlotFiller.ReleaseSlot(long reservedMemory)

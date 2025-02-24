@@ -33,7 +33,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         }
 
 
-        protected override void AddNewItemToScheduler(Item item, DateTime availableAfter)
+        protected override void AddNewItemToScheduler(Item item, TimeSpan delayBeforeExecution)
         {
             if (!_channel.Writer.TryWrite(item))
                 throw new UnexpectedRegistryException("Unable to add calculation to unbounded queue. Should never happen");

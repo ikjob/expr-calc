@@ -22,7 +22,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         /// <summary>
         /// Attempts to add new calculation to the registry. Can be rejected if registry is overflowed.
         /// </summary>
-        bool TryAdd(Calculation calculation, DateTime availableAfter);
+        bool TryAdd(Calculation calculation, TimeSpan delayBeforeExecution);
         /// <summary>
         /// Reserve free space inside registry, that can be filled later. 
         /// Main idea is to allow 2-phase commit strategy between registry and storage.

@@ -29,9 +29,9 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         }
 
 
-        protected override void AddNewItemToScheduler(Item item, DateTime availableAfter)
+        protected override void AddNewItemToScheduler(Item item, TimeSpan delayBeforeExecution)
         {
-            _channel.Add(item, availableAfter);
+            _channel.Add(item, delayBeforeExecution);
         }
 
         protected override Task<Item> TakeNextScheduledItem(CancellationToken cancellationToken)
