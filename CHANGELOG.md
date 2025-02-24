@@ -14,6 +14,7 @@ Expression calculator changelog
 - Database schemas in dbml format (#22)
 - Storage project initialized (#23)
 - Background calculations processor (#26)
+- TimeBasedQueue implementation (#27)
 
 #### Changed
 - Entities updated according to database schema (#23)

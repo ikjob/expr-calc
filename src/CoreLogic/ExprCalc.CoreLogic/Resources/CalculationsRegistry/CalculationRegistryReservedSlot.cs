@@ -14,10 +14,12 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
     internal struct CalculationRegistryReservedSlot : IDisposable
     {
         private ICalculationRegistrySlotFiller? _slotFiller;
+        private readonly long _reservedMemory;
 
-        public CalculationRegistryReservedSlot(ICalculationRegistrySlotFiller slotFiller)
+        public CalculationRegistryReservedSlot(ICalculationRegistrySlotFiller slotFiller, long reservedMemory)
         {
             _slotFiller = slotFiller;
+            _reservedMemory = reservedMemory;
         }
 
         public readonly bool IsAvailable => _slotFiller != null;
@@ -33,7 +35,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
         public void Dispose()
         {
-            _slotFiller?.ReleaseSlot();
+            _slotFiller?.ReleaseSlot(_reservedMemory);
             _slotFiller = null;
         }
     }
@@ -42,6 +44,6 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
     internal interface ICalculationRegistrySlotFiller
     {
         void FillSlot(Calculation calculation, DateTime availableAfter);
-        void ReleaseSlot();
+        void ReleaseSlot(long reservedMemory);
     }
 }

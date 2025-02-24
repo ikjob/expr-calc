@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
 {
-    public class QueueBasedCalcuationRegistryTests
+    public class QueueBasedCalculationRegistryTests
     {
         private static QueueBasedCalculationsRegistry CreateRegistry(int maxCapacity = 100)
         {
@@ -83,7 +83,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
         [InlineData(3, 1, 500000, 0, 0)]
         public static async Task MultithreadTest(int addThreads, int takeThreads, int testItemCount, int addDelay, int takeDelay)
         {
-            await GeneralScheduledCalculationsRegistryTests.MultithreadTest(CreateRegistry(), addThreads, takeThreads, testItemCount, addDelay, takeDelay);
+            await GeneralScheduledCalculationsRegistryTests.MultithreadTest(CreateRegistry(), addThreads, takeThreads, testItemCount, addDelay, takeDelay, maxItemDelayMs: 0);
         }
     }
 }

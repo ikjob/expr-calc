@@ -1,5 +1,6 @@
 ﻿using ExprCalc.CoreLogic.Api.Exceptions;
 using ExprCalc.CoreLogic.Api.UseCases;
+using ExprCalc.CoreLogic.Configuration;
 using ExprCalc.CoreLogic.Helpers;
 using ExprCalc.CoreLogic.Instrumentation;
 using ExprCalc.CoreLogic.Resources.CalculationsRegistry;
@@ -7,6 +8,7 @@ using ExprCalc.Entities;
 using ExprCalc.Storage.Api.Exceptions;
 using ExprCalc.Storage.Api.Repositories;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,12 +21,14 @@ namespace ExprCalc.CoreLogic.UseCases
     internal class CalculationUseCases(
         ICalculationRepository calculationRepository,
         IScheduledCalculationsRegistry calculationsRegistry,
+        IOptions<CoreLogicConfig> config,
         ILogger<CalculationUseCases> logger,
         InstrumentationContainer instrumentation) : ICalculationUseCases
     {
         private readonly ICalculationRepository _calculationRepository = calculationRepository;
         private readonly IScheduledCalculationsRegistry _calculationsRegistry = calculationsRegistry;
 
+        private readonly CoreLogicConfig _config = config.Value;
         private readonly ILogger<CalculationUseCases> _logger = logger;
         private readonly CalculationUseCasesMetrics _metrics = instrumentation.CalculationUseCasesMetrics;
         private readonly ActivitySource _activitySource = instrumentation.ActivitySource;
@@ -52,6 +56,13 @@ namespace ExprCalc.CoreLogic.UseCases
             }
         }
 
+
+        private TimeSpan GenerateRandomDelay()
+        {
+            long millisecondsMax = (long)_config.MaxCalculationAvailabilityDelay.TotalMilliseconds;
+            long millisecondsMin = (long)_config.MinCalculationAvailabilityDelay.TotalMilliseconds;
+            return TimeSpan.FromMilliseconds(Random.Shared.NextInt64(millisecondsMin, millisecondsMax));
+        }
         public async Task<Calculation> CreateCalculationAsync(Calculation calculation, CancellationToken token)
         {
             if (!calculation.Status.IsPending())
@@ -69,7 +80,7 @@ namespace ExprCalc.CoreLogic.UseCases
                         throw new TooManyPendingCalculationsException("Too many pending calculations in registry");
 
                     var createdCalculation = await _calculationRepository.CreateCalculationAsync(calculation, token);
-                    slot.Fill(createdCalculation, DateTime.UtcNow);
+                    slot.Fill(createdCalculation, availableAfter: DateTime.UtcNow.Add(GenerateRandomDelay()));
                     return createdCalculation;
                 }
             }

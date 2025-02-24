@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,6 +16,8 @@ namespace ExprCalc.Entities
     /// </remarks>
     public readonly record struct User
     {
+        private static readonly long _fixedSize = Unsafe.SizeOf<string>();
+
         public const int MaxLoginLength = 32;
 
         public User(string login)
@@ -28,5 +31,10 @@ namespace ExprCalc.Entities
         }
 
         public string Login { get; }
+
+        public long GetOccupiedMemory()
+        {
+            return _fixedSize + Login.Length * sizeof(char);
+        }
     }
 }
