@@ -2,6 +2,7 @@
 using ExprCalc.CoreLogic.Api.UseCases;
 using ExprCalc.Entities.MetadataParams;
 using ExprCalc.RestApi.Dto;
+using ExprCalc.RestApi.Dto.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -27,12 +28,17 @@ namespace ExprCalc.RestApi.Controllers
         [HttpGet]
         [SwaggerResponse(StatusCodes.Status200OK, Description = "Calculations list")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails), Description = "Server error")]
-        public async Task<ActionResult<IEnumerable<CalculationGetDto>>> GetCalculationsListAsync(CancellationToken token)
+        public async Task<ActionResult<PaginatedResultDto<CalculationGetDto>>> GetCalculationsListAsync(CalculationFiltersDto filters, PaginationParamsDto pagination, CancellationToken token)
         {
             try
             {
-                var result = await _calculationUseCases.GetCalculationsListAsync(CalculationFilters.NoFilters, PaginationParams.AllData, token);
-                return Ok(result.Items.Select(CalculationGetDto.FromEntity));
+                var result = await _calculationUseCases.GetCalculationsListAsync(filters.IntoEntity(), pagination.IntoEntity(), token);
+                return Ok(
+                    new PaginatedResultDto<CalculationGetDto>()
+                    {
+                        Data = result.Items.Select(CalculationGetDto.FromEntity),
+                        Metadata = PaginationMetadataDto.FromEntity(result)
+                    });
             }
             catch (Exception ex)
             {
@@ -45,12 +51,12 @@ namespace ExprCalc.RestApi.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, Description = "Signle calculation")]
         [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails), Description = "Calculation for specified id does not exist")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails), Description = "Server error")]
-        public async Task<ActionResult<CalculationGetDto>> GetCalculationByIdAsync(Guid id, CancellationToken token)
+        public async Task<ActionResult<DataBodyDto<CalculationGetDto>>> GetCalculationByIdAsync(Guid id, CancellationToken token)
         {
             try
             {
                 var result = await _calculationUseCases.GetCalculationByIdAsync(id, token);
-                return Ok(CalculationGetDto.FromEntity(result));
+                return Ok(new DataBodyDto<CalculationGetDto>(CalculationGetDto.FromEntity(result)));
             }
             catch (EntityNotFoundException notFound)
             {

@@ -31,5 +31,16 @@ namespace ExprCalc.Entities.MetadataParams
             }
         }
         public uint PageSize => Limit;
+        public uint? TotalPagesCount
+        {
+            get
+            {
+                if (!TotalItemsCount.HasValue)
+                    return null;
+                if (Limit == 0)
+                    return null;
+                return (TotalItemsCount.Value / Limit) + ((TotalItemsCount % Limit > 0) ? 1u : 0u);
+            }
+        }
     }
 }
