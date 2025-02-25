@@ -79,7 +79,7 @@ namespace ExprCalc.CoreLogic.UseCases
                     if (!slot.IsAvailable)
                         throw new TooManyPendingCalculationsException("Too many pending calculations in registry");
 
-                    var createdCalculation = await _calculationRepository.CreateCalculationAsync(calculation, token);
+                    var createdCalculation = await _calculationRepository.AddCalculationAsync(calculation, token);
                     slot.Fill(createdCalculation, delayBeforeExecution: GenerateRandomDelay());
                     return createdCalculation;
                 }

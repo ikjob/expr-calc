@@ -210,8 +210,8 @@ namespace ExprCalc.Storage.Tests.DatabaseManagement
             Assert.Equivalent(calculation, calc);
 
             var statusUpdateToSuccess = new CalculationStatusUpdate(calculation.Id, RoundTime(DateTime.UtcNow), CalculationStatus.CreateSuccess(3));
-            Assert.True(await controller.TryUpdateCalculationStatusAsync(statusUpdateToInProgress, deadlockProtection.Token));
-            Assert.True(calculation.TryChangeStatus(statusUpdateToInProgress.Status, statusUpdateToInProgress.UpdatedAt, out _));
+            Assert.True(await controller.TryUpdateCalculationStatusAsync(statusUpdateToSuccess, deadlockProtection.Token));
+            Assert.True(calculation.TryChangeStatus(statusUpdateToSuccess.Status, statusUpdateToSuccess.UpdatedAt, out _));
             calc = await controller.GetCalculationByIdAsync(calculation.Id, deadlockProtection.Token);
 
             Assert.Equivalent(calculation, calc);

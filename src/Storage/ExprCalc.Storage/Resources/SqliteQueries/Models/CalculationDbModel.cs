@@ -126,7 +126,7 @@ namespace ExprCalc.Storage.Resources.SqliteQueries.Models
                 case CalculationState.InProgress:
                     if (CalcResult != null || ErrorCode != null || ErrorDetails != null || CancelledById != null || CancelledBy != null)
                         throw new EntityCorruptedException($"Calculation in {nameof(CalculationState.InProgress)} state has fields setted that should not be");
-                    return CalculationStatus.Pending;
+                    return CalculationStatus.InProgress;
                 case CalculationState.Success:
                     if (CalcResult == null)
                         throw new EntityCorruptedException($"Calculation in {nameof(CalculationState.Success)} does not have calculation result attached");
