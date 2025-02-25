@@ -84,7 +84,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsProcessor
                 for (int i = 0; i < 100; i++)
                 {
                     var calculation = CreateCalculation("10 / 2");
-                    while (!registry.TryAdd(calculation, DateTime.UtcNow))
+                    while (!registry.TryAdd(calculation, TimeSpan.Zero))
                         await Task.Delay(10, deadlockProtection.Token);
                 }
 

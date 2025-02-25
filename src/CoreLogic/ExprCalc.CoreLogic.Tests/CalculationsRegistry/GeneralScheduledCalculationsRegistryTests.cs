@@ -34,7 +34,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
 
             var calculation = CreateCalculation();
 
-            bool success = registry.TryAdd(calculation, DateTime.UtcNow);
+            bool success = registry.TryAdd(calculation, TimeSpan.Zero);
             Assert.True(success);
             Assert.False(registry.IsEmpty);
 
@@ -50,7 +50,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
 
             Assert.False(registry.TryTakeNext(out _));
 
-            bool success = registry.TryAdd(calculation, DateTime.UtcNow);
+            bool success = registry.TryAdd(calculation, TimeSpan.Zero);
             Assert.True(success);
             Assert.False(registry.IsEmpty);
 
@@ -72,19 +72,19 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
             for (int i = 0; i < maxCount; i++)
             {
                 calculation = CreateCalculation(expression: i.ToString());
-                success = registry.TryAdd(calculation, DateTime.UtcNow);
+                success = registry.TryAdd(calculation, TimeSpan.Zero);
                 Assert.True(success);
             }
 
             calculation = CreateCalculation();
-            success = registry.TryAdd(calculation, DateTime.UtcNow);
+            success = registry.TryAdd(calculation, TimeSpan.Zero);
             Assert.False(success);
 
             calculation = await registry.TakeNext(deadlockProtection.Token);
             Assert.InRange(int.Parse(calculation.Expression), 0, maxCount);
 
             calculation = CreateCalculation("0");
-            success = registry.TryAdd(calculation, DateTime.UtcNow);
+            success = registry.TryAdd(calculation, TimeSpan.Zero);
             Assert.True(success);
 
             for (int i = 0; i < maxCount; i++)
@@ -106,7 +106,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
             Assert.False(registry.Contains(nonUniqueGuid));
 
             Calculation calculation = CreateCalculationWithId(nonUniqueGuid);
-            bool success = registry.TryAdd(calculation, DateTime.UtcNow);
+            bool success = registry.TryAdd(calculation, TimeSpan.Zero);
             Assert.True(success);
 
             Assert.True(registry.Contains(nonUniqueGuid));
@@ -114,7 +114,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
             Assert.Throws<DuplicateKeyException>(() =>
             {
                 calculation = CreateCalculationWithId(nonUniqueGuid);
-                registry.TryAdd(calculation, DateTime.UtcNow);
+                registry.TryAdd(calculation, TimeSpan.Zero);
             });
 
             Assert.True(registry.Contains(nonUniqueGuid));
@@ -133,7 +133,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
             Assert.False(registry.TryGetStatus(Guid.NewGuid(), out var status));
 
             var calculation = CreateCalculation();
-            bool success = registry.TryAdd(calculation, DateTime.UtcNow);
+            bool success = registry.TryAdd(calculation, TimeSpan.Zero);
             Assert.True(success);
 
             Assert.True(registry.TryGetStatus(calculation.Id, out status));
@@ -168,7 +168,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
 
                 Assert.False(registry.TryTakeNext(out _));
 
-                slot.Fill(calculation, DateTime.UtcNow);
+                slot.Fill(calculation, TimeSpan.Zero);
             }
 
             Assert.False(registry.IsEmpty);
@@ -190,7 +190,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
                 using (var slot = registry.TryReserveSlot(calculation))
                 {
                     Assert.True(slot.IsAvailable);
-                    slot.Fill(calculation, DateTime.UtcNow);
+                    slot.Fill(calculation, TimeSpan.Zero);
                 }
             }
 
@@ -212,10 +212,10 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
                     Assert.False(slot2.IsAvailable);
                     Assert.ThrowsAny<InvalidOperationException>(() =>
                     {
-                        slot2.Fill(calculation2, DateTime.UtcNow);
+                        slot2.Fill(calculation2, TimeSpan.Zero);
                     });
                 }
-                slot.Fill(calculation, DateTime.UtcNow);
+                slot.Fill(calculation, TimeSpan.Zero);
             }
 
 
@@ -243,7 +243,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
             for (int i = 0; i < maxCount; i++)
             {
                 calculation = CreateCalculation(i.ToString());
-                success = registry.TryAdd(calculation, DateTime.UtcNow);
+                success = registry.TryAdd(calculation, TimeSpan.Zero);
                 Assert.True(success);
             }
 
@@ -254,7 +254,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
                 Assert.InRange(int.Parse(itemForProcessing.Calculation.Expression), 0, maxCount);
 
                 var tmpCalculation = CreateCalculation("-1");
-                bool tmpSuccess = registry.TryAdd(tmpCalculation, DateTime.UtcNow);
+                bool tmpSuccess = registry.TryAdd(tmpCalculation, TimeSpan.Zero);
                 Assert.False(tmpSuccess);
 
                 using (var itemForProcessing2 = await registry.TakeNextForProcessing(deadlockProtection.Token))
@@ -270,12 +270,12 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
                 }
 
                 tmpCalculation = CreateCalculation("0");
-                tmpSuccess = registry.TryAdd(tmpCalculation, DateTime.UtcNow);
+                tmpSuccess = registry.TryAdd(tmpCalculation, TimeSpan.Zero);
                 Assert.True(tmpSuccess);
             }
 
             calculation = CreateCalculation("0");
-            success = registry.TryAdd(calculation, DateTime.UtcNow);
+            success = registry.TryAdd(calculation, TimeSpan.Zero);
             Assert.True(success);
 
             for (int i = 0; i < maxCount; i++)
@@ -295,7 +295,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
             Assert.True(registry.IsEmpty);
 
             var calculation = CreateCalculation();
-            var bckgTask = Task.Delay(400).ContinueWith(t => registry.TryAdd(calculation, DateTime.UtcNow));
+            var bckgTask = Task.Delay(400).ContinueWith(t => registry.TryAdd(calculation, TimeSpan.Zero));
 
             var takenCalculation = await registry.TakeNext(deadlockProtection.Token);
             Assert.Equal(calculation, takenCalculation);
@@ -309,7 +309,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
             deadlockProtection.CancelAfter(TimeSpan.FromSeconds(60));
 
             var calculation = CreateCalculation();
-            bool success = registry.TryAdd(calculation, DateTime.UtcNow);
+            bool success = registry.TryAdd(calculation, TimeSpan.Zero);
             Assert.True(success);
 
 
@@ -382,7 +382,7 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
                     {
                         if (slot.IsAvailable)
                         {
-                            slot.Fill(calculation, DateTime.UtcNow.AddMilliseconds(localRandom.Next(maxItemDelayMs)));
+                            slot.Fill(calculation, TimeSpan.FromMilliseconds(localRandom.Next(maxItemDelayMs)));
                             addedGuids.Add(calculation.Id);
                             avaiable = true;
                         }
