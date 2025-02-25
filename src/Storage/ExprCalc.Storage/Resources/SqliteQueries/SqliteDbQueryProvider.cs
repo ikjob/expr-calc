@@ -1,5 +1,6 @@
 ﻿using ExprCalc.Entities;
 using ExprCalc.Entities.Enums;
+using ExprCalc.Entities.MetadataParams;
 using ExprCalc.Storage.Resources.SqliteQueries.Exceptions;
 using ExprCalc.Storage.Resources.SqliteQueries.Models;
 using Microsoft.Data.Sqlite;
@@ -46,6 +47,28 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
                         ErrorDetails TEXT    NULL,
                         CancelledBy  INTEGER NULL REFERENCES Users(Id)
                     )
+                    """;
+
+                command.ExecuteNonQuery();
+            }
+
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = $"""
+                    CREATE INDEX IF NOT EXISTS idx_Calculations_CreatedAt_UpdatedAt ON Calculations (
+                        CreatedAt DESC,
+                        UpdatedAt
+                    );
+
+                    CREATE INDEX IF NOT EXISTS idx_Calculations_CreatedAt_CreatedBy ON Calculations (
+                        CreatedAt DESC,
+                        CreatedBy
+                    );
+
+                    CREATE INDEX IF NOT EXISTS idx_Calculations_CreatedAt_State ON Calculations (
+                        CreatedAt DESC,
+                        State
+                    ) WHERE State != {(int)CalculationState.Success};
                     """;
 
                 command.ExecuteNonQuery();
@@ -171,20 +194,114 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
 
             return result;
         }
-        public List<T> GetCalculationsList<T>(SqliteConnection connection, Func<CalculationDbModel, T> transformer)
+
+        private static void FillGetCalculationsCommand(SqliteCommand command, CalculationFilters filters, PaginationParams pagination)
+        {
+            StringBuilder conditionBuilder = new StringBuilder();
+            bool appendAnd = false;
+            if (filters.Id != null)
+            {
+                if (appendAnd) 
+                    conditionBuilder.Append(" AND ");
+                conditionBuilder.Append("Calculations.Id = @Id");
+                command.Parameters.Add("@Id", SqliteType.Blob).Value = filters.Id.Value;
+                appendAnd = true;
+            }
+            if (filters.CreatedBy != null)
+            {
+                if (appendAnd)
+                    conditionBuilder.Append(" AND ");
+                conditionBuilder.Append("creator.Login = @CreatorLogin");
+                command.Parameters.Add("@CreatorLogin", SqliteType.Text).Value = filters.CreatedBy;
+                appendAnd = true;
+            }
+            if (filters.CreatedAtMin != null)
+            {
+                if (appendAnd)
+                    conditionBuilder.Append(" AND ");
+                conditionBuilder.Append("CreatedAt >= @CreatedAtMin");
+                command.Parameters.Add("@CreatedAtMin", SqliteType.Integer).Value = CommonConversions.DateTimeToTimestamp(filters.CreatedAtMin.Value);
+                appendAnd = true;
+            }
+            if (filters.CreatedAtMax != null)
+            {
+                if (appendAnd)
+                    conditionBuilder.Append(" AND ");
+                conditionBuilder.Append("CreatedAt < @CreatedAtMax");
+                command.Parameters.Add("@CreatedAtMax", SqliteType.Integer).Value = CommonConversions.DateTimeToTimestamp(filters.CreatedAtMax.Value);
+                appendAnd = true;
+            }
+            if (filters.UpdatedAtMin != null)
+            {
+                if (appendAnd)
+                    conditionBuilder.Append(" AND ");
+                conditionBuilder.Append("UpdatedAt >= @UpdatedAtMin");
+                command.Parameters.Add("@UpdatedAtMin", SqliteType.Integer).Value = CommonConversions.DateTimeToTimestamp(filters.UpdatedAtMin.Value);
+                appendAnd = true;
+            }
+            if (filters.UpdatedAtMax != null)
+            {
+                if (appendAnd)
+                    conditionBuilder.Append(" AND ");
+                conditionBuilder.Append("UpdatedAt < @UpdatedAtMax");
+                command.Parameters.Add("@UpdatedAtMax", SqliteType.Integer).Value = CommonConversions.DateTimeToTimestamp(filters.UpdatedAtMax.Value);
+                appendAnd = true;
+            }
+            if (filters.State != null)
+            {
+                if (appendAnd)
+                    conditionBuilder.Append(" AND ");
+                conditionBuilder.Append("State = @State");
+                command.Parameters.Add("@State", SqliteType.Integer).Value = (long)filters.State.Value;
+                appendAnd = true;
+            }
+            if (filters.Expression != null)
+            {
+                if (appendAnd)
+                    conditionBuilder.Append(" AND ");
+                conditionBuilder.Append("Expression LIKE @Expression");
+                command.Parameters.Add("@Expression", SqliteType.Text).Value = "%" + filters.Expression + "%";
+                appendAnd = true;
+            }
+
+            if (!appendAnd)
+                conditionBuilder.Append("1 = 1");
+
+            string limitOffset = "";
+            if (pagination.Offset > 0 || pagination.Limit < uint.MaxValue)
+            {
+                limitOffset = $"LIMIT {pagination.Limit} OFFSET {pagination.Offset}";
+            }
+
+            command.CommandText = $"""
+                SELECT Calculations.Id, Expression, CreatedAt, CreatedBy, UpdatedAt, State, CalcResult, ErrorCode, ErrorDetails, CancelledBy, creator.Login AS "CreatedByLogin", canceller.Login AS "CancelledByLogin"
+                FROM Calculations 
+                JOIN Users creator ON Calculations.CreatedBy = creator.Id
+                LEFT JOIN Users canceller ON Calculations.CancelledBy = canceller.Id
+                WHERE {conditionBuilder}
+                ORDER BY CreatedAt DESC
+                {limitOffset};
+                """;
+
+            if (pagination.IncludeCount)
+            {
+                command.CommandText += $"""
+
+                    SELECT COUNT(Calculations.Id)
+                    FROM Calculations 
+                    JOIN Users creator ON Calculations.CreatedBy = creator.Id
+                    WHERE {conditionBuilder};
+                    """;
+            }
+        }
+        public PaginatedResult<T> GetCalculationsList<T>(SqliteConnection connection, CalculationFilters filters, PaginationParams pagination, Func<CalculationDbModel, T> transformer)
         {
             using (var command = connection.CreateCommand())
             {
-                command.CommandText = """
-                    SELECT Calculations.Id, Expression, CreatedAt, CreatedBy, UpdatedAt, State, CalcResult, ErrorCode, ErrorDetails, CancelledBy, creator.Login AS "CreatedByLogin", canceller.Login AS "CancelledByLogin"
-                    FROM Calculations 
-                    JOIN Users creator ON Calculations.CreatedBy = creator.Id
-                    LEFT JOIN Users canceller ON Calculations.CancelledBy = canceller.Id
-                    ORDER BY CreatedAt DESC
-                    """;
-
+                FillGetCalculationsCommand(command, filters, pagination);
 
                 List<T> result = new List<T>();
+                uint? pagesCount = null;
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -192,14 +309,22 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
                         var dbModel = ReadCalculation(reader);
                         result.Add(transformer(dbModel));
                     }
+
+                    if (pagination.IncludeCount)
+                    {
+                        if (!reader.NextResult() || !reader.Read())
+                            throw new InvalidOperationException("Second result should conain the number of items");
+
+                        pagesCount = (uint)reader.GetInt32(0);
+                    }
                 }
 
-                return result;
+                return new PaginatedResult<T>(result, pagination.Offset, pagination.Limit, pagesCount);
             }
         }
-        public List<CalculationDbModel> GetCalculationsList(SqliteConnection connection)
+        public PaginatedResult<CalculationDbModel> GetCalculationsList(SqliteConnection connection, CalculationFilters filters, PaginationParams pagination)
         {
-            return GetCalculationsList(connection, v => v);
+            return GetCalculationsList(connection, filters, pagination, v => v);
         }
 
 

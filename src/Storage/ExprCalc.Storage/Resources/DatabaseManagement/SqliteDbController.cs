@@ -1,5 +1,6 @@
 ﻿using DotNext.Threading;
 using ExprCalc.Entities;
+using ExprCalc.Entities.MetadataParams;
 using ExprCalc.Storage.Configuration;
 using ExprCalc.Storage.Resources.SqliteQueries;
 using ExprCalc.Storage.Resources.SqliteQueries.Models;
@@ -200,7 +201,7 @@ namespace ExprCalc.Storage.Resources.DatabaseManagement
             return result;
         }
 
-        public async Task<List<Calculation>> GetCalculationsListAsync(CancellationToken token)
+        public async Task<PaginatedResult<Calculation>> GetCalculationsListAsync(CalculationFilters filters, PaginationParams pagination, CancellationToken token)
         {
             await EnsureInitialized(token);
 
@@ -212,7 +213,7 @@ namespace ExprCalc.Storage.Resources.DatabaseManagement
                 using (var connection = new SqliteConnection(_readConnectionString))
                 {
                     connection.Open();
-                    return _calculationsQueryProvider.GetCalculationsList(connection, v => v.IntoEntity());
+                    return _calculationsQueryProvider.GetCalculationsList(connection, filters, pagination, v => v.IntoEntity());
                 }
             }
         }

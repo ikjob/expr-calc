@@ -5,6 +5,7 @@ using ExprCalc.CoreLogic.Helpers;
 using ExprCalc.CoreLogic.Instrumentation;
 using ExprCalc.CoreLogic.Resources.CalculationsRegistry;
 using ExprCalc.Entities;
+using ExprCalc.Entities.MetadataParams;
 using ExprCalc.Storage.Api.Exceptions;
 using ExprCalc.Storage.Api.Repositories;
 using Microsoft.Extensions.Logging;
@@ -34,7 +35,7 @@ namespace ExprCalc.CoreLogic.UseCases
         private readonly ActivitySource _activitySource = instrumentation.ActivitySource;
 
 
-        public async Task<List<Calculation>> GetCalculationsListAsync(CancellationToken token)
+        public async Task<PaginatedResult<Calculation>> GetCalculationsListAsync(CalculationFilters filters, PaginationParams pagination, CancellationToken token)
         {
             _logger.LogTrace(nameof(GetCalculationsListAsync) + " started");
             _metrics.GetCalculationsList.AddCall();
@@ -42,7 +43,7 @@ namespace ExprCalc.CoreLogic.UseCases
 
             try
             {
-                return await _calculationRepository.GetCalculationsListAsync(token);
+                return await _calculationRepository.GetCalculationsListAsync(filters, pagination, token);
             }
             catch (Exception exc)
             {

@@ -16,6 +16,7 @@ Expression calculator changelog
 - Background calculations processor (#26)
 - TimeBasedQueue implementation (#27)
 - Storage implementation with SQLite (#28)
+- Filters and pagination support (#32)
 
 #### Changed
 - Entities updated according to database schema (#23)

@@ -1,4 +1,5 @@
 ﻿using ExprCalc.Entities;
+using ExprCalc.Entities.MetadataParams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace ExprCalc.CoreLogic.Api.UseCases
     /// </summary>
     public interface ICalculationUseCases
     {
-        Task<List<Calculation>> GetCalculationsListAsync(CancellationToken token);
+        Task<PaginatedResult<Calculation>> GetCalculationsListAsync(CalculationFilters filters, PaginationParams pagination, CancellationToken token);
         Task<Calculation> GetCalculationByIdAsync(Guid id, CancellationToken token);
         Task<Calculation> CreateCalculationAsync(Calculation calculation, CancellationToken token);
         Task<CalculationStatusUpdate> CancelCalculationAsync(Guid id, User cancelledBy, CancellationToken token);
