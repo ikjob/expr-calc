@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.Storage.Resources.SqliteQueries
 {
-    internal interface ISqlDbQueryProvider
+    internal interface ISqlDbInitializationQueryProvider
     {
-        Task InitializeDbIfNeeded(SqliteConnection connection, CancellationToken token);
+        void InitializeDbIfNeeded(SqliteConnection connection);
     }
 }

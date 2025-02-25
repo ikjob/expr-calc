@@ -1,6 +1,8 @@
 ﻿using DotNext.Threading;
+using ExprCalc.Entities;
 using ExprCalc.Storage.Configuration;
 using ExprCalc.Storage.Resources.SqliteQueries;
+using ExprCalc.Storage.Resources.SqliteQueries.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,6 +15,9 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.Storage.Resources.DatabaseManagement
 {
+    /// <summary>
+    /// Manages single SQLite database file
+    /// </summary>
     internal class SqliteDbController : IDatabaseController, IDisposable, IAsyncDisposable
     {
         public const string DatabaseFileName = "expr_calc.sqlite";
@@ -22,17 +27,26 @@ namespace ExprCalc.Storage.Resources.DatabaseManagement
         private readonly string _readConnectionString;
 
         private volatile SqliteConnection? _writeConnection;
+        /// <summary>
+        /// Mutex that protects access to <see cref="_writeConnection"/>
+        /// </summary>
         private readonly AsyncExclusiveLock _writerLock;
+        /// <summary>
+        /// RwLock that used to prevent query execution during initialization or disposing.
+        /// Write lock acquired in initialization and disposing phases. Read lock acquired in all queries
+        /// </summary>
         private readonly AsyncReaderWriterLock _queryRwLock;
-        
-        private readonly ISqlDbQueryProvider _queryProvider;
 
+        private readonly ISqlDbInitializationQueryProvider _initializationQueryProvider;
+        private readonly ISqlDbCalculationsQueryProvider _calculationsQueryProvider;
+        
         private readonly ILogger<SqliteDbController> _logger;
 
         private volatile bool _disposed;
 
         public SqliteDbController(
-            ISqlDbQueryProvider queryProvider, 
+            ISqlDbInitializationQueryProvider initializationQueryProvider,
+            ISqlDbCalculationsQueryProvider calculationsQueryProvider, 
             string databaseDirectory,
             ILogger<SqliteDbController> logger)
         {
@@ -46,19 +60,20 @@ namespace ExprCalc.Storage.Resources.DatabaseManagement
             _writeConnection = null;
             _writerLock = new AsyncExclusiveLock();
             _queryRwLock = new AsyncReaderWriterLock();
-  
 
-            _queryProvider = queryProvider;
+            _initializationQueryProvider = initializationQueryProvider;
+            _calculationsQueryProvider = calculationsQueryProvider;
             _logger = logger;
 
             _disposed = false;
         }
         [ActivatorUtilitiesConstructor]
         public SqliteDbController(
-            ISqlDbQueryProvider queryProvider,
+            ISqlDbInitializationQueryProvider initializationQueryProvider,
+            ISqlDbCalculationsQueryProvider calculationsQueryProvider,
             IOptions<StorageConfig> config,
             ILogger<SqliteDbController> logger)
-            : this(queryProvider, config.Value.DatabaseDirectory, logger)
+            : this(initializationQueryProvider, calculationsQueryProvider, config.Value.DatabaseDirectory, logger)
         {
         }
 
@@ -101,9 +116,9 @@ namespace ExprCalc.Storage.Resources.DatabaseManagement
                     Directory.CreateDirectory(_databaseDirectory);
 
                 _writeConnection = new SqliteConnection(_writeConnectionString);
-                await _writeConnection.OpenAsync(token);
+                _writeConnection.Open();
 
-                await _queryProvider.InitializeDbIfNeeded(_writeConnection, token);
+                _initializationQueryProvider.InitializeDbIfNeeded(_writeConnection);
             }
         }
 
@@ -113,8 +128,111 @@ namespace ExprCalc.Storage.Resources.DatabaseManagement
         }
 
 
+        public async Task<Calculation> AddCalculationAsync(Calculation calculation, CancellationToken token)
+        {
+            await EnsureInitialized(token);
+
+            using (await _queryRwLock.AcquireReadLockAsync(token))
+            using (await _writerLock.AcquireLockAsync(token))
+            {
+                if (_disposed || _writeConnection == null)
+                    throw new ObjectDisposedException(nameof(SqliteDbController));
+
+                
+                using (var transaction = _writeConnection.BeginTransaction())
+                {
+                    var dbModel = CalculationDbModel.FromEntity(calculation);
+
+                    dbModel.CreatedBy = _calculationsQueryProvider.GetOrAddUser(
+                        _writeConnection,
+                        dbModel.CreatedBy ?? throw new InvalidOperationException("CreatedBy should be set by converter"));
+                    dbModel.CreatedById = dbModel.CreatedBy.Id;
+
+                    if (dbModel.CancelledBy != null)
+                    {
+                        dbModel.CancelledBy = _calculationsQueryProvider.GetOrAddUser(
+                            _writeConnection,
+                            dbModel.CancelledBy);
+                        dbModel.CancelledById = dbModel.CancelledBy.Id;
+                    }
+
+                    dbModel = _calculationsQueryProvider.AddCalculation(_writeConnection, dbModel);
+
+                    transaction.Commit();
+                }
+            }
+
+            return calculation;
+        }
+
+        public async Task<bool> TryUpdateCalculationStatusAsync(CalculationStatusUpdate calculationStatus, CancellationToken token)
+        {
+            await EnsureInitialized(token);
+
+            bool result = false;
+
+            using (await _queryRwLock.AcquireReadLockAsync(token))
+            using (await _writerLock.AcquireLockAsync(token))
+            {
+                if (_disposed || _writeConnection == null)
+                    throw new ObjectDisposedException(nameof(SqliteDbController));
 
 
+                using (var transaction = _writeConnection.BeginTransaction())
+                {
+                    var dbModel = CalculationDbModel.FromStatusUpdateEntity(calculationStatus);
+
+                    if (dbModel.CancelledBy != null)
+                    {
+                        dbModel.CancelledBy = _calculationsQueryProvider.GetOrAddUser(
+                            _writeConnection,
+                            dbModel.CancelledBy);
+                        dbModel.CancelledById = dbModel.CancelledBy.Id;
+                    }
+
+                    result = _calculationsQueryProvider.TryUpdateCalculationStatus(_writeConnection, dbModel);
+
+                    transaction.Commit();
+                }
+            }
+
+
+            return result;
+        }
+
+        public async Task<List<Calculation>> GetCalculationsListAsync(CancellationToken token)
+        {
+            await EnsureInitialized(token);
+
+            using (await _queryRwLock.AcquireReadLockAsync(token))
+            {
+                if (_disposed)
+                    throw new ObjectDisposedException(nameof(SqliteDbController));
+
+                using (var connection = new SqliteConnection(_readConnectionString))
+                {
+                    connection.Open();
+                    return _calculationsQueryProvider.GetCalculationsList(connection, v => v.IntoEntity());
+                }
+            }
+        }
+
+        public async Task<Calculation> GetCalculationByIdAsync(Guid id, CancellationToken token)
+        {
+            await EnsureInitialized(token);
+
+            using (await _queryRwLock.AcquireReadLockAsync(token))
+            {
+                if (_disposed)
+                    throw new ObjectDisposedException(nameof(SqliteDbController));
+
+                using (var connection = new SqliteConnection(_readConnectionString))
+                {
+                    connection.Open();
+                    return _calculationsQueryProvider.GetCalculationById(connection, id).IntoEntity();
+                }
+            }
+        }
 
 
 

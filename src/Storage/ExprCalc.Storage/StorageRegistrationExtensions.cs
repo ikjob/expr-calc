@@ -22,7 +22,9 @@ namespace ExprCalc.Storage
 
             serviceCollection.AddSingleton<ICalculationRepository, CalculationRepositoryInMemory>();
 
-            serviceCollection.AddSingleton<ISqlDbQueryProvider, SqliteDbQueryProvider>();
+            serviceCollection.AddSingleton<SqliteDbQueryProvider>();
+            serviceCollection.AddSingleton<ISqlDbInitializationQueryProvider>(sp => sp.GetRequiredService<SqliteDbQueryProvider>());
+            serviceCollection.AddSingleton<ISqlDbCalculationsQueryProvider>(sp => sp.GetRequiredService<SqliteDbQueryProvider>());
             serviceCollection.AddSingleton<IDatabaseController, SqliteDbController>();
 
             serviceCollection.AddHostedService<DatabaseMonitoringService>();

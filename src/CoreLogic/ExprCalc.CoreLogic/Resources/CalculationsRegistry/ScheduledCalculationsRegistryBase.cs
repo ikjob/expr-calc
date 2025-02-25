@@ -81,7 +81,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
             if (_calculations.TryRemove(result.Calculation.Id, out _))
             {
-                ReleaseReservedSlotCore(result.Calculation.GetOccupiedMemory());
+                ReleaseReservedSlotCore(result.Calculation.GetOccupiedMemoryEstimation());
             }
             else
             {
@@ -96,7 +96,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             var result = await TakeNextScheduledItem(cancellationToken);
             if (_calculations.TryRemove(result.Calculation.Id, out _))
             {
-                ReleaseReservedSlotCore(result.Calculation.GetOccupiedMemory());
+                ReleaseReservedSlotCore(result.Calculation.GetOccupiedMemoryEstimation());
             }
             else
             {
@@ -154,7 +154,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             {
                 if (!fullSuccess)
                 {
-                    ReleaseReservedSlotCore(calculation.GetOccupiedMemory());
+                    ReleaseReservedSlotCore(calculation.GetOccupiedMemoryEstimation());
                     if (addedToDictionary)
                         _calculations.TryRemove(calculation.Id, out _);
                 }
@@ -166,7 +166,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             if (!calculation.Status.IsPending())
                 throw new ArgumentException("Only calculations in Pending status can be added to the registry", nameof(calculation));
 
-            if (!TryReserveSlotCore(calculation.GetOccupiedMemory()))
+            if (!TryReserveSlotCore(calculation.GetOccupiedMemoryEstimation()))
                 return false;
 
             AddForAlreadyReservedSlot(calculation, delayBeforeExecution);
@@ -175,7 +175,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
 
         public CalculationRegistryReservedSlot TryReserveSlot(Calculation calculation)
         {
-            long occupiedMemory = calculation.GetOccupiedMemory();
+            long occupiedMemory = calculation.GetOccupiedMemoryEstimation();
             if (TryReserveSlotCore(occupiedMemory))
             {
                 return new CalculationRegistryReservedSlot(this, occupiedMemory);
@@ -206,7 +206,7 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         {
             if (_calculations.TryRemove(id, out var calculation))
             {
-                ReleaseReservedSlotCore(calculation.Calculation.GetOccupiedMemory());
+                ReleaseReservedSlotCore(calculation.Calculation.GetOccupiedMemoryEstimation());
             }
             else
             {
