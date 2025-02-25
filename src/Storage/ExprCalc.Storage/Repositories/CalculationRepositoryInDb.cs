@@ -1,4 +1,5 @@
 ﻿using ExprCalc.Entities;
+using ExprCalc.Entities.MetadataParams;
 using ExprCalc.Storage.Api.Exceptions;
 using ExprCalc.Storage.Api.Repositories;
 using ExprCalc.Storage.Instrumentation;
@@ -68,14 +69,14 @@ namespace ExprCalc.Storage.Repositories
             }
         }
 
-        public async Task<List<Calculation>> GetCalculationsListAsync(CancellationToken token)
+        public async Task<PaginatedResult<Calculation>> GetCalculationsListAsync(CalculationFilters filters, PaginationParams pagination, CancellationToken token)
         {
             _logger.LogTrace(nameof(GetCalculationsListAsync) + " started");
             using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInDb) + "." + nameof(GetCalculationsListAsync));
 
             try
             {
-                return await _databaseController.GetCalculationsListAsync(token);
+                return await _databaseController.GetCalculationsListAsync(filters, pagination, token);
             }
             catch (Exception ex)
             {

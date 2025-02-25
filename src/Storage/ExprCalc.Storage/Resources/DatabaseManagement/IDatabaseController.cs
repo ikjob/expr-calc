@@ -1,4 +1,5 @@
 ﻿using ExprCalc.Entities;
+using ExprCalc.Entities.MetadataParams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace ExprCalc.Storage.Resources.DatabaseManagement
 
         Task<bool> ContainsCalculationAsync(Guid id, CancellationToken token);
         Task<Calculation> GetCalculationByIdAsync(Guid id, CancellationToken token);
-        Task<List<Calculation>> GetCalculationsListAsync(CancellationToken token);
+        Task<PaginatedResult<Calculation>> GetCalculationsListAsync(CalculationFilters filters, PaginationParams pagination, CancellationToken token);
         Task<Calculation> AddCalculationAsync(Calculation calculation, CancellationToken token);
         Task<bool> TryUpdateCalculationStatusAsync(CalculationStatusUpdate calculationStatus, CancellationToken token);
     }

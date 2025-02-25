@@ -1,4 +1,5 @@
-﻿using ExprCalc.Storage.Resources.SqliteQueries.Models;
+﻿using ExprCalc.Entities.MetadataParams;
+using ExprCalc.Storage.Resources.SqliteQueries.Models;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
@@ -18,8 +19,8 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
         CalculationDbModel AddCalculation(SqliteConnection connection, CalculationDbModel calculation);
         bool TryUpdateCalculationStatus(SqliteConnection connection, ICaluclationStatusDbModelView calculationStatus);
 
-        List<T> GetCalculationsList<T>(SqliteConnection connection, Func<CalculationDbModel, T> transformer);
-        List<CalculationDbModel> GetCalculationsList(SqliteConnection connection);
+        PaginatedResult<T> GetCalculationsList<T>(SqliteConnection connection, CalculationFilters filters, PaginationParams pagination, Func<CalculationDbModel, T> transformer);
+        PaginatedResult<CalculationDbModel> GetCalculationsList(SqliteConnection connection, CalculationFilters filters, PaginationParams pagination);
         CalculationDbModel GetCalculationById(SqliteConnection connection, Guid id);
         bool ContainsCalculation(SqliteConnection connection, Guid id);
     }

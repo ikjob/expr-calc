@@ -1,5 +1,6 @@
 ﻿using ExprCalc.CoreLogic.Api.Exceptions;
 using ExprCalc.CoreLogic.Api.UseCases;
+using ExprCalc.Entities.MetadataParams;
 using ExprCalc.RestApi.Dto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -30,8 +31,8 @@ namespace ExprCalc.RestApi.Controllers
         {
             try
             {
-                var result = await _calculationUseCases.GetCalculationsListAsync(token);
-                return Ok(result.Select(CalculationGetDto.FromEntity));
+                var result = await _calculationUseCases.GetCalculationsListAsync(CalculationFilters.NoFilters, PaginationParams.AllData, token);
+                return Ok(result.Items.Select(CalculationGetDto.FromEntity));
             }
             catch (Exception ex)
             {

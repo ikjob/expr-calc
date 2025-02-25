@@ -48,13 +48,6 @@ namespace ExprCalc.Storage.Resources.SqliteQueries.Models
             };
         }
 
-        private static long DateTimeToTimestamp(DateTime dateTime)
-        {
-            if (dateTime.Kind != DateTimeKind.Utc)
-                dateTime = dateTime.ToUniversalTime();
-
-            return (long)(dateTime - DateTime.UnixEpoch).TotalMilliseconds;
-        }
         private void FillFromCalculationStatus(CalculationStatus entity)
         {
             State = entity.State;
@@ -84,10 +77,10 @@ namespace ExprCalc.Storage.Resources.SqliteQueries.Models
             {
                 Id = entity.Id,
                 Expression = entity.Expression,
-                CreatedAt = DateTimeToTimestamp(entity.CreatedAt),
+                CreatedAt = CommonConversions.DateTimeToTimestamp(entity.CreatedAt),
                 CreatedById = 0,
                 CreatedBy = UserDbModel.FromEntity(entity.CreatedBy),
-                UpdatedAt = DateTimeToTimestamp(entity.UpdatedAt),
+                UpdatedAt = CommonConversions.DateTimeToTimestamp(entity.UpdatedAt),
                 State = entity.Status.State
             };
 
@@ -103,7 +96,7 @@ namespace ExprCalc.Storage.Resources.SqliteQueries.Models
                 CreatedAt = 0,
                 CreatedById = 0,
                 State = statusUpdate.Status.State,
-                UpdatedAt = DateTimeToTimestamp(statusUpdate.UpdatedAt)
+                UpdatedAt = CommonConversions.DateTimeToTimestamp(statusUpdate.UpdatedAt)
             };
 
             result.FillFromCalculationStatus(statusUpdate.Status);
@@ -111,10 +104,7 @@ namespace ExprCalc.Storage.Resources.SqliteQueries.Models
         }
 
 
-        private static DateTime TimestampToDateTime(long timestamp)
-        {
-            return DateTime.UnixEpoch + TimeSpan.FromMilliseconds(timestamp);
-        }
+
         public CalculationStatus IntoStatusEntity()
         {
             switch (State)
@@ -160,8 +150,8 @@ namespace ExprCalc.Storage.Resources.SqliteQueries.Models
                 id: Id,
                 expression: Expression,
                 createdBy: CreatedBy.IntoEntity(),
-                createdAt: TimestampToDateTime(CreatedAt),
-                updatedAt: TimestampToDateTime(UpdatedAt),
+                createdAt: CommonConversions.TimestampToDateTime(CreatedAt),
+                updatedAt: CommonConversions.TimestampToDateTime(UpdatedAt),
                 status: status);
         }
     }

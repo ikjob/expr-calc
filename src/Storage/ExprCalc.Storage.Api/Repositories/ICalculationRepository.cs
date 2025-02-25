@@ -1,4 +1,5 @@
 ﻿using ExprCalc.Entities;
+using ExprCalc.Entities.MetadataParams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace ExprCalc.Storage.Api.Repositories
     /// </summary>
     public interface ICalculationRepository
     {
-        Task<List<Calculation>> GetCalculationsListAsync(CancellationToken token);
+        Task<PaginatedResult<Calculation>> GetCalculationsListAsync(CalculationFilters filters, PaginationParams pagination, CancellationToken token);
         Task<Calculation> GetCalculationByIdAsync(Guid id, CancellationToken token);
         Task<bool> ContainsCalculationAsync(Guid id, CancellationToken token);
         Task<Calculation> AddCalculationAsync(Calculation calculation, CancellationToken token);

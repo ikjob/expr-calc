@@ -1,4 +1,5 @@
 ﻿using ExprCalc.Entities;
+using ExprCalc.Entities.MetadataParams;
 using ExprCalc.Storage.Api.Exceptions;
 using ExprCalc.Storage.Api.Repositories;
 using ExprCalc.Storage.Instrumentation;
@@ -141,15 +142,15 @@ namespace ExprCalc.Storage.Repositories
             }
         }
 
-        public Task<List<Calculation>> GetCalculationsListAsync(CancellationToken token)
+        public Task<PaginatedResult<Calculation>> GetCalculationsListAsync(CalculationFilters filters, PaginationParams pagination, CancellationToken token)
         {
             try
             {
-                return Task.FromResult(GetCalculationsList());
+                return Task.FromResult(new PaginatedResult<Calculation>(GetCalculationsList(), 0, uint.MaxValue));
             }
             catch (Exception ex)
             {
-                return Task.FromException<List<Calculation>>(ex);
+                return Task.FromException<PaginatedResult<Calculation>>(ex);
             }
         }
 
