@@ -15,6 +15,7 @@ Expression calculator changelog
 - Storage project initialized (#23)
 - Background calculations processor (#26)
 - TimeBasedQueue implementation (#27)
+- Storage implementation with SQLite (#28)
 
 #### Changed
 - Entities updated according to database schema (#23)

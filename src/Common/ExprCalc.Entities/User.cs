@@ -16,7 +16,7 @@ namespace ExprCalc.Entities
     /// </remarks>
     public readonly record struct User
     {
-        private static readonly long _fixedSize = Unsafe.SizeOf<string>();
+        private const long _fixedSize = 4;
 
         public const int MaxLoginLength = 32;
 
@@ -32,7 +32,7 @@ namespace ExprCalc.Entities
 
         public string Login { get; }
 
-        public long GetOccupiedMemory()
+        public long GetOccupiedMemoryEstimation()
         {
             return _fixedSize + Login.Length * sizeof(char);
         }

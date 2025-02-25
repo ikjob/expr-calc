@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc", "ExprCalc\ExprCa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{11875CEC-539A-4607-B268-1E6592F094F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.Tests", "Tests\ExprCalc.Tests\ExprCalc.Tests.csproj", "{56A0AA8D-1096-44C7-A804-295A6D733418}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.IntegrationTests", "Tests\ExprCalc.IntegrationTests\ExprCalc.IntegrationTests.csproj", "{56A0AA8D-1096-44C7-A804-295A6D733418}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{C26B41A7-CF23-4B98-BCD8-834CC46124BE}"
 EndProject
@@ -36,6 +36,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.Common", "Common\ExprCalc.Common\ExprCalc.Common.csproj", "{894933AD-347F-4908-B0F1-1270F19408CA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.CoreLogic.Tests", "CoreLogic\ExprCalc.CoreLogic.Tests\ExprCalc.CoreLogic.Tests.csproj", "{BBFCEF44-08C6-4BE8-86C4-5C54B92261F4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExprCalc.Storage.Tests", "Storage\ExprCalc.Storage.Tests\ExprCalc.Storage.Tests.csproj", "{AE2902A2-8947-4C6E-92B9-2259BFE29260}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,6 +93,10 @@ Global
 		{BBFCEF44-08C6-4BE8-86C4-5C54B92261F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BBFCEF44-08C6-4BE8-86C4-5C54B92261F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BBFCEF44-08C6-4BE8-86C4-5C54B92261F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE2902A2-8947-4C6E-92B9-2259BFE29260}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE2902A2-8947-4C6E-92B9-2259BFE29260}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE2902A2-8947-4C6E-92B9-2259BFE29260}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE2902A2-8947-4C6E-92B9-2259BFE29260}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,5 +113,6 @@ Global
 		{13BBF498-3D1C-482A-B893-71853A774616} = {C26B41A7-CF23-4B98-BCD8-834CC46124BE}
 		{894933AD-347F-4908-B0F1-1270F19408CA} = {C26B41A7-CF23-4B98-BCD8-834CC46124BE}
 		{BBFCEF44-08C6-4BE8-86C4-5C54B92261F4} = {4939B10B-7466-44FC-9E67-795EA35BBAA3}
+		{AE2902A2-8947-4C6E-92B9-2259BFE29260} = {1E92E21C-8E38-4618-AC93-F7BB53075FEC}
 	EndGlobalSection
 EndGlobal

@@ -55,6 +55,27 @@ namespace ExprCalc.CoreLogic.UseCases
                 throw;
             }
         }
+        public async Task<Calculation> GetCalculationByIdAsync(Guid id, CancellationToken token)
+        {
+            _logger.LogTrace(nameof(GetCalculationByIdAsync) + " started");
+            _metrics.GetCalculationById.AddCall();
+            using var activity = _activitySource.StartActivity(nameof(CalculationUseCases) + "." + nameof(GetCalculationByIdAsync));
+
+            try
+            {
+                return await _calculationRepository.GetCalculationByIdAsync(id, token);
+            }
+            catch (Exception exc)
+            {
+                _metrics.GetCalculationById.AddFail();
+                activity?.SetStatus(ActivityStatusCode.Error, "Excpetion: " + exc.Message);
+
+                if (exc is StorageException storageExc && storageExc.TryTranslateStorageException(out var translatedException))
+                    throw translatedException;
+
+                throw;
+            }
+        }
 
 
         private TimeSpan GenerateRandomDelay()
@@ -79,8 +100,8 @@ namespace ExprCalc.CoreLogic.UseCases
                     if (!slot.IsAvailable)
                         throw new TooManyPendingCalculationsException("Too many pending calculations in registry");
 
-                    var createdCalculation = await _calculationRepository.CreateCalculationAsync(calculation, token);
-                    slot.Fill(createdCalculation, availableAfter: DateTime.UtcNow.Add(GenerateRandomDelay()));
+                    var createdCalculation = await _calculationRepository.AddCalculationAsync(calculation, token);
+                    slot.Fill(createdCalculation, delayBeforeExecution: GenerateRandomDelay());
                     return createdCalculation;
                 }
             }
@@ -105,8 +126,12 @@ namespace ExprCalc.CoreLogic.UseCases
             try
             {
                 if (!_calculationsRegistry.TryCancel(id, cancelledBy, out var statusUpdate))
-                    throw new EntityNotFoundException($"Calculation for sepcified id = {id} is not exists or not processed now");
-
+                {
+                    if (!await _calculationRepository.ContainsCalculationAsync(id, token))
+                        throw new EntityNotFoundException($"Calculation for sepcified id = {id} does not exists");
+                    else
+                        throw new ConflictingEntityStateException($"Calculation for sepcified id = {id} is not Pending/InProgress and thus cannot be canceled");
+                }
                 await _calculationRepository.UpdateCalculationStatusAsync(statusUpdate.Value, token);
                 return statusUpdate.Value;
             }

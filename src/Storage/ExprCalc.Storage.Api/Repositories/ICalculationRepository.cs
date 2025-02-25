@@ -13,7 +13,9 @@ namespace ExprCalc.Storage.Api.Repositories
     public interface ICalculationRepository
     {
         Task<List<Calculation>> GetCalculationsListAsync(CancellationToken token);
-        Task<Calculation> CreateCalculationAsync(Calculation calculation, CancellationToken token);
-        Task<bool> UpdateCalculationStatusAsync(CalculationStatusUpdate calculationStatusUpdate, CancellationToken token);
+        Task<Calculation> GetCalculationByIdAsync(Guid id, CancellationToken token);
+        Task<bool> ContainsCalculationAsync(Guid id, CancellationToken token);
+        Task<Calculation> AddCalculationAsync(Calculation calculation, CancellationToken token);
+        Task UpdateCalculationStatusAsync(CalculationStatusUpdate calculationStatusUpdate, CancellationToken token);
     }
 }

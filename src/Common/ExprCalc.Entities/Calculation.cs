@@ -10,7 +10,7 @@ namespace ExprCalc.Entities
     public class Calculation
     {
         public const int MaxExpressionLength = 25000;
-        private static readonly long _fixedSize = Unsafe.SizeOf<Calculation>() + Unsafe.SizeOf<string>();
+        private static readonly long _fixedSize = Unsafe.SizeOf<Guid>() + 4 + Unsafe.SizeOf<User>() + Unsafe.SizeOf<DateTime>() * 2 + Unsafe.SizeOf<object>();
 
         public static Calculation CreateInitial(string expression, User createdBy)
         {
@@ -135,9 +135,9 @@ namespace ExprCalc.Entities
         }
 
 
-        public long GetOccupiedMemory()
+        public long GetOccupiedMemoryEstimation()
         {
-            return _fixedSize + Expression.Length * sizeof(char) + CreatedBy.GetOccupiedMemory();
+            return _fixedSize + Expression.Length * sizeof(char) + CreatedBy.GetOccupiedMemoryEstimation();
         }
 
         public Calculation Clone()

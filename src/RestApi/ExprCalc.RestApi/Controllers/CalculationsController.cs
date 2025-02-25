@@ -40,6 +40,33 @@ namespace ExprCalc.RestApi.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        [SwaggerResponse(StatusCodes.Status200OK, Description = "Signle calculation")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails), Description = "Calculation for specified id does not exist")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails), Description = "Server error")]
+        public async Task<ActionResult<CalculationGetDto>> GetCalculationByIdAsync(Guid id, CancellationToken token)
+        {
+            try
+            {
+                var result = await _calculationUseCases.GetCalculationByIdAsync(id, token);
+                return Ok(CalculationGetDto.FromEntity(result));
+            }
+            catch (EntityNotFoundException notFound)
+            {
+                _logger.LogDebug(notFound, "Entity not found. Id = {id}", id);
+                return Problem(
+                     statusCode: StatusCodes.Status404NotFound,
+                     type: "not_found",
+                     title: "Entity not found",
+                     detail: "Calculation for specified key not found");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected excpetion in {methodName}", nameof(GetCalculationByIdAsync));
+                throw;
+            }
+        }
+
 
         [HttpPost]
         [SwaggerResponse(StatusCodes.Status200OK, Description = "Success")]
@@ -73,7 +100,8 @@ namespace ExprCalc.RestApi.Controllers
         [HttpPut("{id}/status")]
         [SwaggerOperation("Allow to cancel the calculation")]
         [SwaggerResponse(StatusCodes.Status200OK, Description = "Success")]
-        [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails), Description = "Calculation not found or already finished")]
+        [SwaggerResponse(StatusCodes.Status409Conflict, Type = typeof(ProblemDetails), Description = "Calculation already completed")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails), Description = "Calculation not found")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails), Description = "Server error")]
         public async Task<ActionResult<CalculationStatusUpdateDto>> CancelCalculationAsync(Guid id, CalculationStatusPutDto status, CancellationToken token)
         {
@@ -82,15 +110,25 @@ namespace ExprCalc.RestApi.Controllers
                 var result = await _calculationUseCases.CancelCalculationAsync(id, new Entities.User(status.CancelledBy), token);
                 return Ok(CalculationStatusUpdateDto.FromEntity(result));
             }
+            catch (ConflictingEntityStateException confictExc)
+            {
+                _logger.LogDebug(confictExc, "Cannot cancel calculation due to its state");
+
+                return Problem(
+                        statusCode: StatusCodes.Status409Conflict,
+                        type: "conflict",
+                        title: "Already completed",
+                        detail: "Calculation already completed");
+            }
             catch (EntityNotFoundException notFoundExc)
             {
-                _logger.LogDebug(notFoundExc, "Cannot cancel calculation due to its state");
+                _logger.LogDebug(notFoundExc, "Cannot cancel non-existed calculation");
 
                 return Problem(
                         statusCode: StatusCodes.Status404NotFound,
                         type: "not_found",
                         title: "Not found",
-                        detail: "Calculation not found or already finished");
+                        detail: "Calculation not found");
             }
             catch (Exception ex)
             {

@@ -233,9 +233,10 @@ namespace ExprCalc.CoreLogic.Resources.TimeBasedOrdering
         /// </summary>
         private void TimeAdvanceHandler(object? state)
         {
-            ulong newTimepoint = GetCurrentTimepoint();
             lock (_queueLock)
             {
+                ulong newTimepoint = GetCurrentTimepoint();
+
                 // Advance queue time
                 int availableItemsDelta = _queue.AdvanceTime(newTimepoint);
                 if (availableItemsDelta > 0)

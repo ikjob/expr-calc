@@ -49,7 +49,7 @@ namespace ExprCalc.Storage.Repositories
             }
         }
 
-        public bool UpdateCalculationStatus(CalculationStatusUpdate calculationStatusUpdate)
+        public void UpdateCalculationStatus(CalculationStatusUpdate calculationStatusUpdate)
         {
             _logger.LogTrace(nameof(UpdateCalculationStatus) + " started");
             using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInMemory) + "." + nameof(UpdateCalculationStatus));
@@ -60,9 +60,11 @@ namespace ExprCalc.Storage.Repositories
                 {
                     if (!calculation.TryChangeStatus(calculationStatusUpdate.Status, calculationStatusUpdate.UpdatedAt, out _))
                         throw new InvalidOperationException("Unexpected status change received by InMemoryStorage");
-                    return true;
                 }
-                return false;
+                else
+                {
+                    throw new StorageEntityNotFoundException($"Can't update calculation status, because it was not found in storage. Id = {calculationStatusUpdate.Id}");
+                }
             }
         }
 
@@ -77,9 +79,33 @@ namespace ExprCalc.Storage.Repositories
             }
         }
 
+        public Calculation GetCalculationById(Guid id)
+        {
+            _logger.LogTrace(nameof(GetCalculationById) + " started");
+            using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInMemory) + "." + nameof(GetCalculationById));
+
+            lock (_lock)
+            {
+                if (!_data.TryGetValue(id, out var calc))
+                    throw new StorageEntityNotFoundException($"Entity for specified key was not found. Id = {id}");
+                return calc.Clone();
+            }
+        }
+
+        public bool ContainsCalculation(Guid id)
+        {
+            _logger.LogTrace(nameof(ContainsCalculation) + " started");
+            using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInMemory) + "." + nameof(ContainsCalculation));
+
+            lock (_lock)
+            {
+                return _data.ContainsKey(id);
+            }
+        }
 
 
-        public Task<Calculation> CreateCalculationAsync(Calculation calculation, CancellationToken token)
+
+        public Task<Calculation> AddCalculationAsync(Calculation calculation, CancellationToken token)
         {
             try
             {
@@ -88,6 +114,30 @@ namespace ExprCalc.Storage.Repositories
             catch (Exception ex)
             {
                 return Task.FromException<Calculation>(ex);
+            }
+        }
+
+        public Task<Calculation> GetCalculationByIdAsync(Guid id, CancellationToken token)
+        {
+            try
+            {
+                return Task.FromResult(GetCalculationById(id));
+            }
+            catch (Exception ex)
+            {
+                return Task.FromException<Calculation>(ex);
+            }
+        }
+
+        public Task<bool> ContainsCalculationAsync(Guid id, CancellationToken token)
+        {
+            try
+            {
+                return Task.FromResult(ContainsCalculation(id));
+            }
+            catch (Exception ex)
+            {
+                return Task.FromException<bool>(ex);
             }
         }
 
@@ -103,11 +153,12 @@ namespace ExprCalc.Storage.Repositories
             }
         }
 
-        public Task<bool> UpdateCalculationStatusAsync(CalculationStatusUpdate calculationStatusUpdate, CancellationToken token)
+        public Task UpdateCalculationStatusAsync(CalculationStatusUpdate calculationStatusUpdate, CancellationToken token)
         {
             try
             {
-                return Task.FromResult(UpdateCalculationStatus(calculationStatusUpdate));
+                UpdateCalculationStatus(calculationStatusUpdate);
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
