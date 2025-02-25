@@ -226,5 +226,21 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
                 }
             }
         }
+
+        public bool ContainsCalculation(SqliteConnection connection, Guid id)
+        {
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = """
+                    SELECT 1
+                    FROM Calculations 
+                    WHERE Id = @Id
+                    """;
+
+                command.Parameters.Add("@Id", SqliteType.Blob).Value = id;
+                var result = command.ExecuteScalar();
+                return result != null && (long)result == 1;
+            }
+        }
     }
 }

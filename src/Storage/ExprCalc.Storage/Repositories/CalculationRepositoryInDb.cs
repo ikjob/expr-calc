@@ -33,6 +33,24 @@ namespace ExprCalc.Storage.Repositories
             _activitySource = instrumentation.ActivitySource;
         }
 
+
+        public async Task<bool> ContainsCalculationAsync(Guid id, CancellationToken token)
+        {
+            _logger.LogTrace(nameof(ContainsCalculationAsync) + " started");
+            using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInDb) + "." + nameof(ContainsCalculationAsync));
+
+            try
+            {
+                return await _databaseController.ContainsCalculationAsync(id, token);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "{methodName} ended with exception", nameof(ContainsCalculationAsync));
+                activity?.SetStatus(ActivityStatusCode.Error, $"{nameof(ContainsCalculationAsync)} ended with exception");
+                throw;
+            }
+        }
+
         public async Task<Calculation> GetCalculationByIdAsync(Guid id, CancellationToken token)
         {
             _logger.LogTrace(nameof(GetCalculationByIdAsync) + " started");

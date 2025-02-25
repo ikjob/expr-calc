@@ -126,8 +126,12 @@ namespace ExprCalc.CoreLogic.UseCases
             try
             {
                 if (!_calculationsRegistry.TryCancel(id, cancelledBy, out var statusUpdate))
-                    throw new EntityNotFoundException($"Calculation for sepcified id = {id} is not exists or not processed now");
-
+                {
+                    if (!await _calculationRepository.ContainsCalculationAsync(id, token))
+                        throw new EntityNotFoundException($"Calculation for sepcified id = {id} does not exists");
+                    else
+                        throw new ConflictingEntityStateException($"Calculation for sepcified id = {id} is not Pending/InProgress and thus cannot be canceled");
+                }
                 await _calculationRepository.UpdateCalculationStatusAsync(statusUpdate.Value, token);
                 return statusUpdate.Value;
             }

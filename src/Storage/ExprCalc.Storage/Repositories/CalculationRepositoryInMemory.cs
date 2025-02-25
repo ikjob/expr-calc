@@ -92,6 +92,17 @@ namespace ExprCalc.Storage.Repositories
             }
         }
 
+        public bool ContainsCalculation(Guid id)
+        {
+            _logger.LogTrace(nameof(ContainsCalculation) + " started");
+            using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInMemory) + "." + nameof(ContainsCalculation));
+
+            lock (_lock)
+            {
+                return _data.ContainsKey(id);
+            }
+        }
+
 
 
         public Task<Calculation> AddCalculationAsync(Calculation calculation, CancellationToken token)
@@ -115,6 +126,18 @@ namespace ExprCalc.Storage.Repositories
             catch (Exception ex)
             {
                 return Task.FromException<Calculation>(ex);
+            }
+        }
+
+        public Task<bool> ContainsCalculationAsync(Guid id, CancellationToken token)
+        {
+            try
+            {
+                return Task.FromResult(ContainsCalculation(id));
+            }
+            catch (Exception ex)
+            {
+                return Task.FromException<bool>(ex);
             }
         }
 

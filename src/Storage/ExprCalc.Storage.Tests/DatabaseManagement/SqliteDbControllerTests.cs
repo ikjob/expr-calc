@@ -185,6 +185,34 @@ namespace ExprCalc.Storage.Tests.DatabaseManagement
             }
         }
 
+        [Fact]
+        public async Task ContainsCalculationTest()
+        {
+            CancellationTokenSource deadlockProtection = new CancellationTokenSource();
+            deadlockProtection.CancelAfter(TimeSpan.FromSeconds(60));
+
+            using var tempDirHolder = new TempDirectoryHolder();
+            await using var controller = CreateController(tempDirHolder.Directory);
+            await controller.Init(deadlockProtection.Token);
+
+            List<Calculation> insertionList = [
+                CreateCalculation(),
+                CreateCalculationSuccess(timeOffset: TimeSpan.FromMilliseconds(10)),
+                CreateCalculationFailed(timeOffset: TimeSpan.FromMilliseconds(20)),
+                CreateCalculationCancelled(timeOffset: TimeSpan.FromMilliseconds(30))
+            ];
+            await controller.AddCalculationAsync(insertionList[0], deadlockProtection.Token);
+            await controller.AddCalculationAsync(insertionList[1], deadlockProtection.Token);
+            await controller.AddCalculationAsync(insertionList[2], deadlockProtection.Token);
+            await controller.AddCalculationAsync(insertionList[3], deadlockProtection.Token);
+
+            for (int i = 0; i < insertionList.Count; i++)
+            {
+                var contains = await controller.ContainsCalculationAsync(insertionList[i].Id, deadlockProtection.Token);
+                Assert.True(contains);
+            }
+        }
+
 
         [Fact]
         public async Task TryUpdateCalculationStatusTest()

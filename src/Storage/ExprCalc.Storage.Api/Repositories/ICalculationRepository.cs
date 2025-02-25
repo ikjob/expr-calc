@@ -14,6 +14,7 @@ namespace ExprCalc.Storage.Api.Repositories
     {
         Task<List<Calculation>> GetCalculationsListAsync(CancellationToken token);
         Task<Calculation> GetCalculationByIdAsync(Guid id, CancellationToken token);
+        Task<bool> ContainsCalculationAsync(Guid id, CancellationToken token);
         Task<Calculation> AddCalculationAsync(Calculation calculation, CancellationToken token);
         Task UpdateCalculationStatusAsync(CalculationStatusUpdate calculationStatusUpdate, CancellationToken token);
     }

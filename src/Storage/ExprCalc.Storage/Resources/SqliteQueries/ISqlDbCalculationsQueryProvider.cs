@@ -14,11 +14,13 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
     internal interface ISqlDbCalculationsQueryProvider
     {
         UserDbModel GetOrAddUser(SqliteConnection connection, UserDbModel user);
+
         CalculationDbModel AddCalculation(SqliteConnection connection, CalculationDbModel calculation);
         bool TryUpdateCalculationStatus(SqliteConnection connection, ICaluclationStatusDbModelView calculationStatus);
 
         List<T> GetCalculationsList<T>(SqliteConnection connection, Func<CalculationDbModel, T> transformer);
         List<CalculationDbModel> GetCalculationsList(SqliteConnection connection);
         CalculationDbModel GetCalculationById(SqliteConnection connection, Guid id);
+        bool ContainsCalculation(SqliteConnection connection, Guid id);
     }
 }
