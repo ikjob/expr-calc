@@ -199,7 +199,7 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
         }
         public List<CalculationDbModel> GetCalculationsList(SqliteConnection connection)
         {
-            return GetCalculationsList(connection, v => v.Clone());
+            return GetCalculationsList(connection, v => v);
         }
 
 

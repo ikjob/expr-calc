@@ -7,6 +7,12 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.Storage.Resources.DatabaseManagement
 {
+    /// <summary>
+    /// Database controller, that provides operations on database
+    /// </summary>
+    /// <remarks>
+    /// This layer of abstraction was implemented specifically to support SQLite database partitioning later
+    /// </remarks>
     internal interface IDatabaseController : IDisposable, IAsyncDisposable
     {
         Task Init(CancellationToken token);
