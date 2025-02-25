@@ -40,6 +40,33 @@ namespace ExprCalc.RestApi.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        [SwaggerResponse(StatusCodes.Status200OK, Description = "Signle calculation")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails), Description = "Calculation for specified id does not exist")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails), Description = "Server error")]
+        public async Task<ActionResult<CalculationGetDto>> GetCalculationByIdAsync(Guid id, CancellationToken token)
+        {
+            try
+            {
+                var result = await _calculationUseCases.GetCalculationByIdAsync(id, token);
+                return Ok(CalculationGetDto.FromEntity(result));
+            }
+            catch (EntityNotFoundException notFound)
+            {
+                _logger.LogDebug(notFound, "Entity not found. Id = {id}", id);
+                return Problem(
+                     statusCode: StatusCodes.Status404NotFound,
+                     type: "not_found",
+                     title: "Entity not found",
+                     detail: "Calculation for specified key not found");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected excpetion in {methodName}", nameof(GetCalculationByIdAsync));
+                throw;
+            }
+        }
+
 
         [HttpPost]
         [SwaggerResponse(StatusCodes.Status200OK, Description = "Success")]

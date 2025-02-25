@@ -55,6 +55,27 @@ namespace ExprCalc.CoreLogic.UseCases
                 throw;
             }
         }
+        public async Task<Calculation> GetCalculationByIdAsync(Guid id, CancellationToken token)
+        {
+            _logger.LogTrace(nameof(GetCalculationByIdAsync) + " started");
+            _metrics.GetCalculationById.AddCall();
+            using var activity = _activitySource.StartActivity(nameof(CalculationUseCases) + "." + nameof(GetCalculationByIdAsync));
+
+            try
+            {
+                return await _calculationRepository.GetCalculationByIdAsync(id, token);
+            }
+            catch (Exception exc)
+            {
+                _metrics.GetCalculationById.AddFail();
+                activity?.SetStatus(ActivityStatusCode.Error, "Excpetion: " + exc.Message);
+
+                if (exc is StorageException storageExc && storageExc.TryTranslateStorageException(out var translatedException))
+                    throw translatedException;
+
+                throw;
+            }
+        }
 
 
         private TimeSpan GenerateRandomDelay()
