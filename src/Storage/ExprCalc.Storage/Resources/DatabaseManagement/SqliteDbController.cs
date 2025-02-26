@@ -1,5 +1,6 @@
 ﻿using DotNext.Threading;
 using ExprCalc.Entities;
+using ExprCalc.Entities.Enums;
 using ExprCalc.Entities.MetadataParams;
 using ExprCalc.Storage.Configuration;
 using ExprCalc.Storage.Resources.SqliteQueries;
@@ -249,6 +250,21 @@ namespace ExprCalc.Storage.Resources.DatabaseManagement
                     connection.Open();
                     return _calculationsQueryProvider.ContainsCalculation(connection, id);
                 }
+            }
+        }
+
+        public async Task<int> ResetNonFinalStateToPending(DateTime maxCreatedAt, DateTime newUpdatedAt, CancellationToken token)
+        {
+            await EnsureInitialized(token);
+
+            using (await _queryRwLock.AcquireReadLockAsync(token))
+            using (await _writerLock.AcquireLockAsync(token))
+            {
+                if (_disposed || _writeConnection == null)
+                    throw new ObjectDisposedException(nameof(SqliteDbController));
+
+
+                return _calculationsQueryProvider.ResetNonFinalStateToPending(_writeConnection, maxCreatedAt, newUpdatedAt);
             }
         }
 

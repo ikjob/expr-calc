@@ -367,5 +367,35 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
                 return result != null && (long)result == 1;
             }
         }
+
+
+        public int ResetNonFinalStateToPending(SqliteConnection connection, DateTime maxCreatedAt, DateTime newUpdatedAt)
+        {
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = """
+                    UPDATE Calculations
+                    SET UpdatedAt = @UpdatedAt,
+                        State = @StateTo,
+                        CalcResult = @CalcResult,
+                        ErrorCode = @ErrorCode,
+                        ErrorDetails = @ErrorDetails,
+                        CancelledBy = @CancelledBy
+                    WHERE CreatedAt < @CreatedAt AND State = @StateFrom
+                    """;
+
+                command.Parameters.Add("@CreatedAt", SqliteType.Integer).Value = CommonConversions.DateTimeToTimestamp(maxCreatedAt);
+                command.Parameters.Add("@StateFrom", SqliteType.Integer).Value = (long)CalculationState.InProgress;
+
+                command.Parameters.Add("@UpdatedAt", SqliteType.Integer).Value = CommonConversions.DateTimeToTimestamp(newUpdatedAt);
+                command.Parameters.Add("@StateTo", SqliteType.Integer).Value = (long)CalculationState.Pending;
+                command.Parameters.Add("@CalcResult", SqliteType.Real).Value = DBNull.Value;
+                command.Parameters.Add("@ErrorCode", SqliteType.Integer).Value = DBNull.Value;
+                command.Parameters.Add("@ErrorDetails", SqliteType.Text).Value = DBNull.Value;
+                command.Parameters.Add("@CancelledBy", SqliteType.Integer).Value = DBNull.Value;
+
+                return command.ExecuteNonQuery();
+            }
+        }
     }
 }

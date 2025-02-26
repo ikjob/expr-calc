@@ -23,5 +23,7 @@ namespace ExprCalc.Storage.Resources.DatabaseManagement
         Task<PaginatedResult<Calculation>> GetCalculationsListAsync(CalculationFilters filters, PaginationParams pagination, CancellationToken token);
         Task<Calculation> AddCalculationAsync(Calculation calculation, CancellationToken token);
         Task<bool> TryUpdateCalculationStatusAsync(CalculationStatusUpdate calculationStatus, CancellationToken token);
+
+        Task<int> ResetNonFinalStateToPending(DateTime maxCreatedAt, DateTime newUpdatedAt, CancellationToken token);
     }
 }

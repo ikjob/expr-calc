@@ -23,5 +23,7 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
         PaginatedResult<CalculationDbModel> GetCalculationsList(SqliteConnection connection, CalculationFilters filters, PaginationParams pagination);
         CalculationDbModel GetCalculationById(SqliteConnection connection, Guid id);
         bool ContainsCalculation(SqliteConnection connection, Guid id);
+
+        int ResetNonFinalStateToPending(SqliteConnection connection, DateTime maxCreatedAt, DateTime newUpdatedAt);
     }
 }

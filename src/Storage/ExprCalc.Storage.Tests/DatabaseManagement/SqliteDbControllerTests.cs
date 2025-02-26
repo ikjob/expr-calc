@@ -353,6 +353,49 @@ namespace ExprCalc.Storage.Tests.DatabaseManagement
             Assert.Equivalent(calculation, calc);
         }
 
+        [Fact]
+        public async Task ResetNonFinalStateToPendingTest()
+        {
+            CancellationTokenSource deadlockProtection = new CancellationTokenSource();
+            deadlockProtection.CancelAfter(TimeSpan.FromSeconds(60));
+
+            using var tempDirHolder = new TempDirectoryHolder();
+            await using var controller = CreateController(tempDirHolder.Directory);
+            await controller.Init(deadlockProtection.Token);
+
+            List<Calculation> insertionList = [
+                CreateCalculationPending(user: "abc"),
+                CreateCalculationInProgress(user: "bcd", timeOffset: TimeSpan.FromMilliseconds(10)),
+                CreateCalculationSuccess(user: "bcd", timeOffset: TimeSpan.FromMilliseconds(20)),
+                CreateCalculationFailed(user: "abc", expression: "log(10) / cos(1)", timeOffset: TimeSpan.FromMilliseconds(30)),
+                CreateCalculationCancelled(user: "abc", timeOffset: TimeSpan.FromMilliseconds(40))
+            ];
+
+            foreach (var item in insertionList)
+            {
+                await controller.AddCalculationAsync(item, deadlockProtection.Token);
+            }
+
+            DateTime newUpdateTime = RoundTime(DateTime.UtcNow);
+
+            var pendingCheck = await controller.GetCalculationsListAsync(new CalculationFilters() { State = Entities.Enums.CalculationState.Pending }, PaginationParams.AllData, deadlockProtection.Token);
+            Assert.Single(pendingCheck.Items);
+
+            int resetedCount = await controller.ResetNonFinalStateToPending(insertionList[0].CreatedAt, newUpdateTime, deadlockProtection.Token);
+            Assert.Equal(0, resetedCount);
+
+            pendingCheck = await controller.GetCalculationsListAsync(new CalculationFilters() { State = Entities.Enums.CalculationState.Pending }, PaginationParams.AllData, deadlockProtection.Token);
+            Assert.Single(pendingCheck.Items);
+
+            // Second try when time covers all records
+
+            resetedCount = await controller.ResetNonFinalStateToPending(insertionList[insertionList.Count - 1].CreatedAt.AddMilliseconds(100), newUpdateTime, deadlockProtection.Token);
+            Assert.Equal(1, resetedCount);
+
+            pendingCheck = await controller.GetCalculationsListAsync(new CalculationFilters() { State = Entities.Enums.CalculationState.Pending }, PaginationParams.AllData, deadlockProtection.Token);
+            Assert.Equal(2, pendingCheck.Items.Count);
+        }
+
 
         [Fact]
         public async Task ParallelReadWriteTest()
