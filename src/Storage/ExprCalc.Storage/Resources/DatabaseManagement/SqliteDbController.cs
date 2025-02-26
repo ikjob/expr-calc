@@ -253,7 +253,7 @@ namespace ExprCalc.Storage.Resources.DatabaseManagement
             }
         }
 
-        public async Task<int> ResetNonFinalStateToPending(DateTime maxCreatedAt, DateTime newUpdatedAt, CancellationToken token)
+        public async Task<int> ResetNonFinalStateToPendingAsync(DateTime maxCreatedAt, DateTime newUpdatedAt, CancellationToken token)
         {
             await EnsureInitialized(token);
 
@@ -265,6 +265,21 @@ namespace ExprCalc.Storage.Resources.DatabaseManagement
 
 
                 return _calculationsQueryProvider.ResetNonFinalStateToPending(_writeConnection, maxCreatedAt, newUpdatedAt);
+            }
+        }
+
+        public async Task<int> DeleteCalculationsAsync(DateTime createdBefore, CancellationToken token)
+        {
+            await EnsureInitialized(token);
+
+            using (await _queryRwLock.AcquireReadLockAsync(token))
+            using (await _writerLock.AcquireLockAsync(token))
+            {
+                if (_disposed || _writeConnection == null)
+                    throw new ObjectDisposedException(nameof(SqliteDbController));
+
+
+                return _calculationsQueryProvider.DeleteCalculations(_writeConnection, createdBefore);
             }
         }
 

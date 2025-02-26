@@ -58,7 +58,7 @@ namespace ExprCalc.CoreLogic.Services.RegistryRepopulation
             _logger.LogInformation("Registry repopulation started");
             using var activity = _activitySource.StartActivity(nameof(RegistryRepopulationJob) + ".Repopulation");
 
-            int resetStatesCount = await _calculationsRepository.ResetNonFinalStateToPending(_startTime, _startTime, stoppingToken);
+            int resetStatesCount = await _calculationsRepository.ResetNonFinalStateToPendingAsync(_startTime, _startTime, stoppingToken);
             _logger.LogInformation("Repopulation procedure reset statuses in storage for {num} calculations", resetStatesCount);
 
 

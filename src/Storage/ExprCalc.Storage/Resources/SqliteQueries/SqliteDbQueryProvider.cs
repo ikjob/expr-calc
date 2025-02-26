@@ -397,5 +397,21 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
                 return command.ExecuteNonQuery();
             }
         }
+
+
+        public int DeleteCalculations(SqliteConnection connection, DateTime createdBefore)
+        {
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = """
+                    DELETE FROM Calculations
+                    WHERE CreatedAt < @CreatedBefore
+                    """;
+
+                command.Parameters.Add("@CreatedBefore", SqliteType.Integer).Value = CommonConversions.DateTimeToTimestamp(createdBefore);
+
+                return command.ExecuteNonQuery();
+            }
+        }
     }
 }

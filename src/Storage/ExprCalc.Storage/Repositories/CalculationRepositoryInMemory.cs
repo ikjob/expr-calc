@@ -167,7 +167,12 @@ namespace ExprCalc.Storage.Repositories
             }
         }
 
-        public Task<int> ResetNonFinalStateToPending(DateTime maxCreatedAt, DateTime newUpdatedAt, CancellationToken token)
+        public Task<int> ResetNonFinalStateToPendingAsync(DateTime maxCreatedAt, DateTime newUpdatedAt, CancellationToken token)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task<int> DeleteCalculationsAsync(DateTime createdBefore, CancellationToken token)
         {
             return Task.FromResult(0);
         }

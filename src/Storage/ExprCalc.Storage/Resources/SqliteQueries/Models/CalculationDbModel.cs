@@ -1,5 +1,4 @@
-﻿using DotNext;
-using ExprCalc.Entities;
+﻿using ExprCalc.Entities;
 using ExprCalc.Entities.Enums;
 using ExprCalc.Storage.Resources.SqliteQueries.Exceptions;
 using System;

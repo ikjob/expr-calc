@@ -25,5 +25,6 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
         bool ContainsCalculation(SqliteConnection connection, Guid id);
 
         int ResetNonFinalStateToPending(SqliteConnection connection, DateTime maxCreatedAt, DateTime newUpdatedAt);
+        int DeleteCalculations(SqliteConnection connection, DateTime createdBefore);
     }
 }
