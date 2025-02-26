@@ -24,17 +24,17 @@ jobs:
           dotnet-version: 9.0.x
       - name: Build
         run: |
-          dotnet build ./src/
+          dotnet build ./src/backend/
       - name: Test
         run: |
-          dotnet test ./src/ --no-build -f "net9.0" --blame-hang --blame-hang-timeout 15m --collect:"XPlat Code Coverage"
+          dotnet test ./src/backend/ --no-build -f "net9.0" --blame-hang --blame-hang-timeout 15m --collect:"XPlat Code Coverage"
 
       - name: Code Coverage Report
         run: |
-          find src/*/*.Tests/TestResults/*/ -name 'coverage.cobertura.xml' -execdir head -n 5 {} \; -execdir echo -e '\n\n' \;
+          find src/backend/*/*.Tests/TestResults/*/ -name 'coverage.cobertura.xml' -execdir head -n 5 {} \; -execdir echo -e '\n\n' \;
       - uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
-          directory: ./src/
+          directory: ./src/backend/
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true 

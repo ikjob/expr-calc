@@ -7,7 +7,7 @@ Expression calculator changelog
 
 
 #### Changed
-
+- Repository structure updated to include frontend code (#39)
 
 #### Fixed
 

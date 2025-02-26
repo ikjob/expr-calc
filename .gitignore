@@ -166,4 +166,4 @@ $RECYCLE.BIN/
 
 
 # ====== Project specific =====
-src/ExprCalc/db/
+src/backend/ExprCalc/db/
