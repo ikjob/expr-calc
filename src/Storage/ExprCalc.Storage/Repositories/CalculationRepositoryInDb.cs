@@ -120,19 +120,36 @@ namespace ExprCalc.Storage.Repositories
             }
         }
 
-        public async Task<int> ResetNonFinalStateToPending(DateTime maxCreatedAt, DateTime newUpdatedAt, CancellationToken token)
+        public async Task<int> ResetNonFinalStateToPendingAsync(DateTime maxCreatedAt, DateTime newUpdatedAt, CancellationToken token)
         {
-            _logger.LogTrace(nameof(ResetNonFinalStateToPending) + " started");
-            using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInDb) + "." + nameof(ResetNonFinalStateToPending));
+            _logger.LogTrace(nameof(ResetNonFinalStateToPendingAsync) + " started");
+            using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInDb) + "." + nameof(ResetNonFinalStateToPendingAsync));
 
             try
             {
-                return await _databaseController.ResetNonFinalStateToPending(maxCreatedAt, newUpdatedAt, token);
+                return await _databaseController.ResetNonFinalStateToPendingAsync(maxCreatedAt, newUpdatedAt, token);
             }
             catch (Exception ex)
             {
-                _logger.LogDebug(ex, "{methodName} ended with exception", nameof(ResetNonFinalStateToPending));
-                activity?.SetStatus(ActivityStatusCode.Error, $"{nameof(ResetNonFinalStateToPending)} ended with exception");
+                _logger.LogDebug(ex, "{methodName} ended with exception", nameof(ResetNonFinalStateToPendingAsync));
+                activity?.SetStatus(ActivityStatusCode.Error, $"{nameof(ResetNonFinalStateToPendingAsync)} ended with exception");
+                throw;
+            }
+        }
+
+        public async Task<int> DeleteCalculationsAsync(DateTime createdBefore, CancellationToken token)
+        {
+            _logger.LogTrace(nameof(DeleteCalculationsAsync) + " started");
+            using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInDb) + "." + nameof(DeleteCalculationsAsync));
+
+            try
+            {
+                return await _databaseController.DeleteCalculationsAsync(createdBefore, token);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "{methodName} ended with exception", nameof(DeleteCalculationsAsync));
+                activity?.SetStatus(ActivityStatusCode.Error, $"{nameof(DeleteCalculationsAsync)} ended with exception");
                 throw;
             }
         }
