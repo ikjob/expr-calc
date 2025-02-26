@@ -4,6 +4,20 @@ Expression calculator changelog
 
 ## [Unreleased]
 #### Added
+
+
+#### Changed
+
+
+#### Fixed
+
+
+#### Removed
+
+
+
+## [v0.1.0] - 2025-02-27
+#### Added
 - Repository initialization (#11)
 - Basic CI added (#12)
 - Expression parsing (#13)
