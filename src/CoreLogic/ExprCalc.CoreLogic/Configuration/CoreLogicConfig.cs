@@ -48,6 +48,16 @@ namespace ExprCalc.CoreLogic.Configuration
         /// </summary>
         public TimeSpan RegistryRepopulationDelay { get; init; } = TimeSpan.FromSeconds(30);
 
+        /// <summary>
+        /// Priodical cleanup job will remove calculations that are older than specified amount of time
+        /// </summary>
+        public TimeSpan StorageCleanupExpiration { get; init; } = TimeSpan.FromDays(1);
+        /// <summary>
+        /// Periods of execution for cleanup job. Zero value means no cleanup
+        /// </summary>
+        public TimeSpan StorageCleanupPeriod { get; init; } = TimeSpan.FromHours(12);
+
+
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (CalculationProcessorsCount == 0 || CalculationProcessorsCount < -1)
@@ -68,6 +78,11 @@ namespace ExprCalc.CoreLogic.Configuration
         
             if (RegistryRepopulationDelay <= TimeSpan.Zero)
                 yield return new ValidationResult($"RegistryRepopulationDelay cannot be zero or negative", [nameof(RegistryRepopulationDelay)]);
+        
+            if (StorageCleanupExpiration <= TimeSpan.Zero)
+                yield return new ValidationResult($"StorageCleanupExpiration cannot be zero or negative", [nameof(StorageCleanupExpiration)]);
+            if (StorageCleanupPeriod < TimeSpan.Zero)
+                yield return new ValidationResult($"StorageCleanupPeriod cannot be negative", [nameof(StorageCleanupPeriod)]);
         }
     }
 }
