@@ -9,10 +9,12 @@ Evaluates expressions in background tasks
 1. `.github` - contains GitHub Actions workflows for CI/CD
 2. `docs` - project documentation
 3. `src` - source code of the project
+   - `src/backend` - source code of backend
+   - `src/frontend` - source code of frontend
 4. `CHANGELOG.md` - descriptions of changes and version history
 
 
-#### Project structure (inside `src` folder):
+#### Backend project structure (inside `src/backend` folder):
 1. `Common`:
    - `ExprCalc.Entities` - shared domain entities
    - `ExprCalc.Common` - common types shared between all projects
