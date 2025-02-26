@@ -18,5 +18,6 @@ namespace ExprCalc.Storage.Api.Repositories
         Task<bool> ContainsCalculationAsync(Guid id, CancellationToken token);
         Task<Calculation> AddCalculationAsync(Calculation calculation, CancellationToken token);
         Task UpdateCalculationStatusAsync(CalculationStatusUpdate calculationStatusUpdate, CancellationToken token);
+        Task<int> ResetNonFinalStateToPending(DateTime maxCreatedAt, DateTime newUpdatedAt, CancellationToken token);
     }
 }

@@ -5,6 +5,7 @@ using ExprCalc.CoreLogic.Instrumentation;
 using ExprCalc.CoreLogic.Resources.CalculationsRegistry;
 using ExprCalc.CoreLogic.Resources.ExpressionCalculation;
 using ExprCalc.CoreLogic.Services.CalculationsProcessor;
+using ExprCalc.CoreLogic.Services.RegistryRepopulation;
 using ExprCalc.CoreLogic.UseCases;
 using ExprCalc.Storage.Api.Repositories;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,7 +32,7 @@ namespace ExprCalc.CoreLogic
             serviceCollection.AddSingleton<IScheduledCalculationsRegistry, TimeBasedCalculationRegistry>();
 
             serviceCollection.AddHostedService<CalculationsProcessingService>();
-            
+            serviceCollection.AddHostedService<RegistryRepopulationJob>();
         }
 
         public static void AddCoreLogicMetrics(this MetricsRegistry registry)

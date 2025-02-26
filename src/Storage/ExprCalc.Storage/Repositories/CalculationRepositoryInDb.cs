@@ -119,5 +119,22 @@ namespace ExprCalc.Storage.Repositories
                 throw;
             }
         }
+
+        public async Task<int> ResetNonFinalStateToPending(DateTime maxCreatedAt, DateTime newUpdatedAt, CancellationToken token)
+        {
+            _logger.LogTrace(nameof(ResetNonFinalStateToPending) + " started");
+            using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInDb) + "." + nameof(ResetNonFinalStateToPending));
+
+            try
+            {
+                return await _databaseController.ResetNonFinalStateToPending(maxCreatedAt, newUpdatedAt, token);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "{methodName} ended with exception", nameof(ResetNonFinalStateToPending));
+                activity?.SetStatus(ActivityStatusCode.Error, $"{nameof(ResetNonFinalStateToPending)} ended with exception");
+                throw;
+            }
+        }
     }
 }

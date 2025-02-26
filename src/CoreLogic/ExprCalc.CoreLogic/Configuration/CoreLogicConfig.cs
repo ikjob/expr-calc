@@ -38,6 +38,16 @@ namespace ExprCalc.CoreLogic.Configuration
         /// Actual delay sets randomly between <see cref="MinCalculationAvailabilityDelay"/> and <see cref="MaxCalculationAvailabilityDelay"/>.
         public TimeSpan MaxCalculationAvailabilityDelay { get; init; } = TimeSpan.FromSeconds(15);
 
+        /// <summary>
+        /// Registry repopulation after restart happens in batches to avoid selection of large numbers of calculations at once
+        /// </summary>
+        [Range(1, int.MaxValue)]
+        public int RegistryRepopulationBatch { get; init; } = 1000;
+        /// <summary>
+        /// Delay for repopulation when registry is overflowed
+        /// </summary>
+        public TimeSpan RegistryRepopulationDelay { get; init; } = TimeSpan.FromSeconds(30);
+
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (CalculationProcessorsCount == 0 || CalculationProcessorsCount < -1)
@@ -55,6 +65,9 @@ namespace ExprCalc.CoreLogic.Configuration
                 yield return new ValidationResult("Max delay cannot be negative", [nameof(MaxCalculationAvailabilityDelay)]);
             if (MaxCalculationAvailabilityDelay < MinCalculationAvailabilityDelay)
                 yield return new ValidationResult("Max delay cannot be less than min delay", [nameof(MinCalculationAvailabilityDelay), nameof(MaxCalculationAvailabilityDelay)]);
+        
+            if (RegistryRepopulationDelay <= TimeSpan.Zero)
+                yield return new ValidationResult($"RegistryRepopulationDelay cannot be zero or negative", [nameof(RegistryRepopulationDelay)]);
         }
     }
 }
