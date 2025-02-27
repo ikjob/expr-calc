@@ -164,6 +164,3 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 
-
-# ====== Project specific =====
-src/backend/ExprCalc/db/
