@@ -20,4 +20,5 @@ jobs:
       - name: Build
         run: |
           cd ./src/frontend/
+          yarn install
           yarn build
