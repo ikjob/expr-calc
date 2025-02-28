@@ -4,7 +4,7 @@ export default function CalculationsTable() {
   return (
       <div className="overflow-x-auto my-4 hover:table-hover">
         <table className="table border-1 border-base-200 table-fixed">
-          <thead className="info text-accent text-md bg-sky-100/50">
+          <thead className="info text-accent text-md bg-info/10">
             <tr className="">
               <th className="w-12"></th>
               <th className="min-w-40 w-full text-left">Expression</th>
@@ -15,7 +15,7 @@ export default function CalculationsTable() {
             </tr>
           </thead>
           <tbody>
-            <tr className="hover:bg-gray-200">
+            <tr className="hover:bg-base-200">
               <td className="w-12"><CheckCircle className="text-success w-4" /></td>
               <td className="min-w-40 w-full text-left">1 + 2</td>
               <td className="w-40">3</td>
@@ -23,7 +23,7 @@ export default function CalculationsTable() {
               <td className="w-40">20.02.2025 13:00:01</td>
               <td className="w-24"></td>
             </tr>
-            <tr className="hover:bg-gray-200 bg-gray-200/25">
+            <tr className="hover:bg-base-200 bg-base-200/25">
               <td className="w-12"><TimesCircle className="text-error w-4" /></td>
               <td className="min-w-40 w-full text-left">3 * 6 +</td>
               <td className="w-40"><a>Syntax error</a><CalculationErrorInfoMarker /></td>
@@ -31,7 +31,7 @@ export default function CalculationsTable() {
               <td className="w-40">20.02.2025 13:00:01</td>
               <td className="w-24"></td>
             </tr>
-            <tr className="hover:bg-gray-200">
+            <tr className="hover:bg-base-200">
               <td className="w-12"><span className="loading loading-spinner join-item text-primary w-4"/></td>
               <td className="min-w-40 w-full text-left">8 / 2</td>
               <td className="w-40">-</td>

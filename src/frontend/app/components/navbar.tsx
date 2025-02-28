@@ -5,7 +5,7 @@ export default function Navbar() {
     <nav className="navbar bg-base-200">
       <div className="navbar-start">
         <div className="flex-1 ml-2">
-          <Calculator className="h-[3em] text-xs text-neutral" />
+          <Calculator className="h-[3em] text-xs text-base-content" />
         </div>
       </div>
 
