@@ -21,7 +21,7 @@ function UserLoginButton() {
     return (
       <div className="dropdown dropdown-end">
         <div tabIndex={0} className="btn btn-ghost rounded-btn" role="button">
-          <a>UserLogin</a>
+          <a>User1</a>
           <UserCircle className="rounded-full h-[2em]" />
         </div>
         <ul 
