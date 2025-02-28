@@ -6,6 +6,7 @@ Expression calculator changelog
 #### Added
 - Frontend template app based on React, Vite, TypeScript (#40)
 - Basic CI for frontend (#41)
+- Frontend basic layout (#43)
 
 #### Changed
 - Repository structure updated to include frontend code (#39)
