@@ -1,13 +1,17 @@
-import { useState } from 'react'
+import { Routes, Route } from 'react-router'
+import Layout from './pages/layout'
+import CalculationsPage from './pages/calculations'
+import AboutPage from './pages/about'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-        <button onClick={() => setCount((count) => count + 1)} className='btn btn-primary'>
-          count is {count}
-        </button>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<CalculationsPage />} />
+          <Route path='about' element={<AboutPage />} />
+        </Route>
+      </Routes>
     </>
   )
 }

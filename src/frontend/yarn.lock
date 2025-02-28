@@ -237,6 +237,11 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@ricons/fa@^0.13.0":
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/@ricons/fa/-/fa-0.13.0.tgz#e30019554b947fce7e9f1f3dc8e19352c65eb53f"
+  integrity sha512-ZDE7A/+xWGafM/+KYGwvcFUzcYOmpyYSpRV3+RuszVmKxbHxMV74bWV9l/u5qRqa0QzIJSgbL+4sW9+QaOs59Q==
+
 "@rollup/rollup-android-arm-eabi@4.34.8":
   version "4.34.8"
   resolved "https://registry.yarnpkg.com/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.34.8.tgz#731df27dfdb77189547bcef96ada7bf166bbb2fb"
