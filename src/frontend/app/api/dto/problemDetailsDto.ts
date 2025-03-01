@@ -5,6 +5,7 @@ export type ProblemDetailsDto = {
     detail? : string | null;
 }
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 export function isProblemDetailsError(error: unknown): error is ProblemDetailsDto {
     return (
         typeof error === "object" &&

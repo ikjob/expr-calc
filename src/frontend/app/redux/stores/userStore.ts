@@ -3,7 +3,7 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
 
 interface UserState {
-  userName: String | null
+  userName: string | null
 }
 
 const initialState: UserState = {
@@ -14,7 +14,7 @@ export const activeUserStateSlice = createSlice({
   name: 'activeUserState',
   initialState,
   reducers: {
-    setActiveUserName: (state, action: PayloadAction<String>) => {
+    setActiveUserName: (state, action: PayloadAction<string>) => {
       state.userName = action.payload
     },
   },
