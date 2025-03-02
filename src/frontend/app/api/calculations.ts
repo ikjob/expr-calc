@@ -42,6 +42,8 @@ export const calculationsApi = backendApi.enhanceEndpoints({ addTagTypes: [calcu
             query: (args) : FetchArgs => {
                 const queryParams = (args.filters ? convertCalculationFiltersAndPaginationParamsIntoQueryParams(args.filters) : null) ?? { };
                 queryParams.updatedAtMin = args.fromTime;
+                queryParams.pageNumber = undefined;
+                queryParams.pageSize = undefined;
                 return {
                     url: "/calculations",
                     params: queryParams

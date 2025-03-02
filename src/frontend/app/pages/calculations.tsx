@@ -22,7 +22,9 @@ export default function CalculationsPage() {
 
             <CalculationsFilter />
           
-            <CalculationsTable rows={testRows} onStop={(_id) => {}} />
+            <div className="my-4">
+                <CalculationsTable rows={testRows} onStop={(_id) => {}} />
+            </div>
 
             <Pagination />
         </div>
