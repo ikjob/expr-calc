@@ -27,7 +27,7 @@ function CalculationsFilter() {
     </summary>
     <div className="collapse-content">
     <label className="label cursor-pointer">
-      <input type="checkbox" className="checkbox" checked={true} />
+      <input type="checkbox" className="checkbox" defaultChecked={true} />
       <span className="label-text">Current user</span>
     </label>
     </div>
