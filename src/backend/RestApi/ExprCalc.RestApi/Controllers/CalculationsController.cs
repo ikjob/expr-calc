@@ -28,16 +28,17 @@ namespace ExprCalc.RestApi.Controllers
         [HttpGet]
         [SwaggerResponse(StatusCodes.Status200OK, Description = "Calculations list")]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails), Description = "Server error")]
-        public async Task<ActionResult<PaginatedResultDto<CalculationGetDto>>> GetCalculationsListAsync(CalculationFiltersDto filters, PaginationParamsDto pagination, CancellationToken token)
+        public async Task<ActionResult<MetadataResultDto<CalculationGetDto>>> GetCalculationsListAsync(CalculationFiltersDto filters, PaginationParamsDto pagination, CancellationToken token)
         {
             try
             {
+                DateTime timeOnServer = DateTime.UtcNow;
                 var result = await _calculationUseCases.GetCalculationsListAsync(filters.IntoEntity(), pagination.IntoEntity(), token);
                 return Ok(
-                    new PaginatedResultDto<CalculationGetDto>()
+                    new MetadataResultDto<CalculationGetDto>()
                     {
                         Data = result.Items.Select(CalculationGetDto.FromEntity),
-                        Metadata = PaginationMetadataDto.FromEntity(result)
+                        Metadata = QueryResultMetadataDto.FromPaginationWithTime(result, timeOnServer)
                     });
             }
             catch (Exception ex)

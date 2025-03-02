@@ -8,26 +8,29 @@ using System.Threading.Tasks;
 
 namespace ExprCalc.RestApi.Dto.Common
 {
-    public class PaginatedResultDto<T>
+    public class MetadataResultDto<T>
     {
         public required IEnumerable<T> Data { get; set; }
-        public required PaginationMetadataDto Metadata { get; set; }
+        public required QueryResultMetadataDto Metadata { get; set; }
     }
 
-    public record struct PaginationMetadataDto
+    public readonly record struct QueryResultMetadataDto
     {
         public required uint PageNumber { get; init; }
         public required uint PageSize { get; init; }
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public uint? TotalPagesCount { get; init; }
+        public uint? TotalItemsCount { get; init; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public DateTime? TimeOnServer { get; init; }
 
-        public static PaginationMetadataDto FromEntity<T>(in PaginatedResult<T> entity)
+        public static QueryResultMetadataDto FromPaginationWithTime<T>(in PaginatedResult<T> entity, DateTime timeOnServer)
         {
-            return new PaginationMetadataDto()
+            return new QueryResultMetadataDto()
             {
                 PageNumber = entity.PageNumber,
                 PageSize = entity.PageSize,
-                TotalPagesCount = entity.TotalPagesCount
+                TotalItemsCount = entity.TotalItemsCount,
+                TimeOnServer = timeOnServer
             };
         }
     }

@@ -4,12 +4,12 @@ import { activeUserStateSlice } from './stores/userStore'
 import { backendApi } from '../api/backendApi'
 
 export const store = configureStore({
-  reducer: {
-    [activeUserStateSlice.reducerPath]: activeUserStateSlice.reducer,
-    [backendApi.reducerPath]: backendApi.reducer
-  },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(backendApi.middleware),
+    reducer: {
+        [activeUserStateSlice.reducerPath]: activeUserStateSlice.reducer,
+        [backendApi.reducerPath]: backendApi.reducer
+    },
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware().concat(backendApi.middleware),
 })
 
 setupListeners(store.dispatch)

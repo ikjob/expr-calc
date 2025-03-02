@@ -1,27 +1,12 @@
 import CalculationsTable from '../components/calculationsTable/calculationsTable'
 import Pagination from '../components/pagination'
-import { useGetCalculationByIdQuery } from '../api/calculations'
-import { isProblemDetailsError } from '../api/dto/problemDetailsDto'
 
 export default function CalculationsPage() {  
-  const { data, error, isLoading } = useGetCalculationByIdQuery("01954f5e-4ae1-7a7f-80ad-a5e482b483a1")
-
   return (
     <div className="mt-2 mx-4">
       <div className="join flex my-4">
         <input type="text" className="input input-bordered input-accent join-item flex-auto" placeholder="Expression" />
         <button className="btn btn-accent join-item rounded-r-full flex-none">Submit</button>
-      </div>
-
-      <div>
-      {
-        isLoading ? "loading" : JSON.stringify(data) ?? "null"
-      }
-      </div>
-      <div>
-        {
-           isProblemDetailsError(error) ? (error.type ?? JSON.stringify(error)) : JSON.stringify(error)
-        }
       </div>
 
       <CalculationsFilter />
