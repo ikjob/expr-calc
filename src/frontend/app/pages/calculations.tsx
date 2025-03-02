@@ -7,10 +7,10 @@ export default function CalculationsPage() {
         { id: "11", expression: "1+1", createdAt: new Date(), createdBy: "user", updatedAt: new Date(), status: createPedningCalculationStatus() },
         { id: "12", expression: "2+2", createdAt: new Date(), createdBy: "user", updatedAt: new Date(), status: createInProgressCalculationStatus() },
         { id: "13", expression: "1+3", createdAt: new Date(), createdBy: "user", updatedAt: new Date(), status: createSuccessCalculationStatus(100) },
-        { id: "14", expression: "1+4", createdAt: new Date(), createdBy: "user", updatedAt: new Date(), status: createFailedCalculationStatus('ArithmeticError', { errorCode: 'Some code', offset: 1, length: 1}) },
+        { id: "14", expression: "1+4", createdAt: new Date(), createdBy: "user", updatedAt: new Date(), status: createFailedCalculationStatus('ArithmeticError', { errorCode: 'Some code', offset: 1 }) },
         { id: "15", expression: "1+5", createdAt: new Date(), createdBy: "user", updatedAt: new Date(), status: createCancelledCalculationStatus("Admin") },
         { id: "16", expression: "1+6", createdAt: new Date(), createdBy: "user", updatedAt: new Date(), status: createInProgressCalculationStatus() },
-        { id: "17", expression: "1+7", createdAt: new Date(), createdBy: "user", updatedAt: new Date(), status: createInProgressCalculationStatus() },
+        { id: "17", expression: "1+2+3+4+5+6+7+8+9+10+11+12+13+14+15+16+17+18+19+20+21", createdAt: new Date(), createdBy: "user", updatedAt: new Date(), status: createFailedCalculationStatus('BadExpressionSyntax', { errorCode: 'Some code', offset: 8, length: 8}) },
     ]
 
     return (

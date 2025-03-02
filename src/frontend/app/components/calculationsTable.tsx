@@ -93,24 +93,28 @@ function CalculationCancelledInfoMarker(props: { calculation: Calculation, class
 
 
 function CalculationErrorContextView({text, offset, length }: { text: string, offset: number, length: number | null }) {
-    if (length)
-    {
-        const afterLength = 6;
-        const maxLength = 32;
+    const expectedOutLength = 36;
+
+    const correctedOffset = offset < 0 ? 0 : (offset > text.length ? text.length : offset);
+    const correctedLength = length ? ((length + correctedOffset) <= text.length ? length : text.length - correctedOffset) : 0;
     
-        const correctedOffset = offset < 0 ? 0 : (offset > text.length ? text.length : offset);
-        const beforeLength = Math.min(6, correctedOffset);
-        const beforeText = text.substring(correctedOffset - beforeLength, beforeLength)
-
-
+    const beforeLength = Math.min(Math.max(6, (expectedOutLength - correctedLength) / 2), correctedOffset);
+    let beforeText = text.substring(correctedOffset - beforeLength, correctedOffset);
+    if (correctedOffset - beforeLength > 0) {
+        beforeText = ".." + beforeText;
     }
-    else
-    {
 
+    const highlightLength = Math.min(correctedLength, expectedOutLength - beforeLength);
+    const highlightText = text.substring(correctedOffset, correctedOffset + highlightLength);
+
+    const afterLength = Math.min(Math.max(6, (expectedOutLength - correctedLength) / 2), text.length - (correctedOffset + highlightLength));
+    let afterText = text.substring(correctedOffset + highlightLength, correctedOffset + highlightLength + afterLength);
+    if (correctedOffset + highlightLength + afterLength < text.length) {
+        afterText = afterText + "..";
     }
 
     return (
-        <span>11<span className="bg-error/50">+</span><span className="bg-error/50">&nbsp;</span>ag</span>
+        <span>{beforeText}<span className="bg-error/50">{highlightText.length > 0 ? highlightText : " "}</span>{afterText}</span>
     )
 }
 
