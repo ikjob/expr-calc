@@ -7,8 +7,8 @@ export type CalculationDto = {
     id: Uuid;
     expression: string;
     createdBy: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
     status: CalculationStatusDto;
 }
 
@@ -35,8 +35,8 @@ export function convertCalculationFromDtoToModel(dto: CalculationDto) : Calculat
         id: dto.id,
         expression: dto.expression,
         createdBy: dto.createdBy,
-        createdAt: dto.createdAt,
-        updatedAt: dto.updatedAt,
+        createdAt: Date.parse(dto.createdAt),
+        updatedAt: Date.parse(dto.updatedAt),
         status: convertCalculationStatusFromDtoToModel(dto.status) 
     }
 }
@@ -69,11 +69,11 @@ export type CalculationGetListQueryParamsDto = {
     id?: Uuid;
     createdBy?: string;
 
-    createdAtMin?: Date;
-    createdAtMax?: Date;
+    createdAtMin?: string;
+    createdAtMax?: string;
 
-    updatedAtMin?: Date;
-    updatedAtMax?: Date;
+    updatedAtMin?: string;
+    updatedAtMax?: string;
 
     state?: CalculationStateDto;
     expression?: string;
@@ -82,19 +82,19 @@ export type CalculationGetListQueryParamsDto = {
     pageSize?: number;
 }
 
-export function convertCalculationFiltersAndPaginationParamsIntoQueryParams(params: CalculationFilters & PaginationParams) : CalculationGetListQueryParamsDto {
+export function convertCalculationFiltersAndPaginationParamsIntoQueryParams(filters?: CalculationFilters, pagination?: PaginationParams) : CalculationGetListQueryParamsDto {
     return {
-        id: params.id,
-        createdBy: params.createdBy,
-        createdAtMin: params.createdAtMin,
-        createdAtMax: params.createdAtMax,
-        updatedAtMin: params.updatedAtMin,
-        updatedAtMax: params.updatedAtMax,
-        state: params.state,
-        expression: params.expression,
+        id: filters?.id,
+        createdBy: filters?.createdBy,
+        createdAtMin: filters?.createdAtMin ? new Date(filters.createdAtMin).toISOString() : undefined,
+        createdAtMax: filters?.createdAtMax ? new Date(filters?.createdAtMax).toISOString() : undefined,
+        updatedAtMin: filters?.updatedAtMin ? new Date(filters?.updatedAtMin).toISOString() : undefined,
+        updatedAtMax: filters?.updatedAtMax ? new Date(filters?.updatedAtMax).toISOString() : undefined,
+        state: filters?.state,
+        expression: filters?.expression,
 
-        pageNumber: params.pageNumber,
-        pageSize: params.pageSize
+        pageNumber: pagination?.pageNumber,
+        pageSize: pagination?.pageSize
     }
 }
 

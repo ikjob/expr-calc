@@ -1,12 +1,12 @@
-import { Uuid } from "../common";
+import { DateTime, Uuid } from "../common";
 import { UserLogin } from "./user";
 
 export type Calculation = {
     id: Uuid;
     expression: string;
     createdBy: UserLogin;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: DateTime;
+    updatedAt: DateTime;
     status: CalculationStatus;
 }
 

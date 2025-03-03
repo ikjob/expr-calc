@@ -1,5 +1,5 @@
 import { backendApi } from './backendApi'
-import { Uuid } from '../common'
+import { DateTime, Uuid } from '../common'
 import { CalculationDto, convertCalculationCreateFromModelToDto, convertCalculationFiltersAndPaginationParamsIntoQueryParams, convertCalculationFromDtoToModel } from './dto/calculationDto'
 import { convertQueryListMetadataFromDtoToModel, DataBodyDto } from './dto/commonDto'
 import { Calculation, CalculationCreateRequest } from '../models/calculation'
@@ -21,11 +21,11 @@ export const calculationsApi = backendApi.enhanceEndpoints({ addTagTypes: [calcu
             providesTags: (_result, _error, id) => [{ type: calculationsTagType, id }],
         }),
 
-        getCalculations: builder.query<DataListWithMetadata<Calculation>, CalculationFilters & PaginationParams | null>({
+        getCalculations: builder.query<DataListWithMetadata<Calculation>, { filters?: CalculationFilters, pagination?: PaginationParams }>({
             query: (args) : FetchArgs => {
                 return {
                     url: "/calculations",
-                    params: args ? convertCalculationFiltersAndPaginationParamsIntoQueryParams(args) : undefined
+                    params: args ? convertCalculationFiltersAndPaginationParamsIntoQueryParams(args.filters, args.pagination) : undefined
                 }
             },
             transformResponse: (response: DataBodyDto<CalculationDto[]>) => {
@@ -35,13 +35,14 @@ export const calculationsApi = backendApi.enhanceEndpoints({ addTagTypes: [calcu
                 }
             },
             transformErrorResponse: (baseQueryReturnValue, _meta, _arg) => convertRawClientErrorToErrorDetails(baseQueryReturnValue),
+            forceRefetch: () => true,
             providesTags: [calculationsTagType],
         }),
 
-        getCalculationUpdates: builder.query<DataListWithMetadata<Calculation>, { fromTime: Date, filters: CalculationFilters | null }>({
+        getCalculationUpdates: builder.query<DataListWithMetadata<Calculation>, { fromTime: DateTime, filters?: CalculationFilters }>({
             query: (args) : FetchArgs => {
                 const queryParams = (args.filters ? convertCalculationFiltersAndPaginationParamsIntoQueryParams(args.filters) : null) ?? { };
-                queryParams.updatedAtMin = args.fromTime;
+                queryParams.updatedAtMin = new Date(args.fromTime).toISOString();
                 queryParams.pageNumber = undefined;
                 queryParams.pageSize = undefined;
                 return {
@@ -78,7 +79,7 @@ export const calculationsApi = backendApi.enhanceEndpoints({ addTagTypes: [calcu
                 body: { state: "Cancelled", cancelledBy: cancelledBy },
             }),
             transformErrorResponse: (baseQueryReturnValue, _meta, _arg) => convertRawClientErrorToErrorDetails(baseQueryReturnValue),
-            invalidatesTags: (_result, _error, { id }) => [{ type: calculationsTagType, id }],
+            invalidatesTags: [calculationsTagType],
         }),
     }),
     overrideExisting: false

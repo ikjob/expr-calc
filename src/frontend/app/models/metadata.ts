@@ -1,8 +1,10 @@
+import { DateTime } from "../common";
+
 export type QueryListMetadata = {
     pageNumber: number;
     pageSize: number;
     totalItemsCount: number;
-    timeOnServer: Date;
+    timeOnServer: DateTime;
 }
 
 
