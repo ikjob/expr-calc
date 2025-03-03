@@ -8,7 +8,8 @@ Expression calculator changelog
 - Basic CI for frontend (#41)
 - Frontend basic layout (#43)
 - Frontend: Rest API support to interact with backend (#46)
-- Frontend: table component interactivity (#49)
+- Frontend: interactivity for table component (#49)
+- Frontend: general interactivity for the expression submission process (#50)
 
 #### Changed
 - Repository structure updated to include frontend code (#39)
