@@ -67,8 +67,8 @@ namespace ExprCalc.ExpressionParsing.Parser
     /// </summary>
     public class InvalidExpressionException : ExpressionParserException
     {
-        public InvalidExpressionException(string? message, int offset) : base(message, offset, null) { }
-        public InvalidExpressionException(string? message, int offset, Exception? innerException) : base(message, offset, null, innerException) { }
+        public InvalidExpressionException(string? message, int offset, int? length) : base(message, offset, length) { }
+        public InvalidExpressionException(string? message, int offset, int? length, Exception? innerException) : base(message, offset, length, innerException) { }
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ namespace ExprCalc.ExpressionParsing.Parser
     /// </summary>
     public class UnbalancedExpressionException : InvalidExpressionException
     {
-        public UnbalancedExpressionException(string? message, int offset) : base(message, offset) { }
-        public UnbalancedExpressionException(string? message, int offset, Exception? innerException) : base(message, offset, innerException) { }
+        public UnbalancedExpressionException(string? message, int offset, int? length) : base(message, offset, length) { }
+        public UnbalancedExpressionException(string? message, int offset, int? length, Exception? innerException) : base(message, offset, length, innerException) { }
     }
 }

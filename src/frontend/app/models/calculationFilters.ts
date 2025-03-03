@@ -1,15 +1,15 @@
-import { Uuid } from "../common";
+import { DateTime, Uuid } from "../common";
 import { CalculationState } from "./calculation";
 
 export type CalculationFilters = {
     id?: Uuid;
     createdBy?: string;
 
-    createdAtMin?: Date;
-    createdAtMax?: Date;
+    createdAtMin?: DateTime;
+    createdAtMax?: DateTime;
 
-    updatedAtMin?: Date;
-    updatedAtMax?: Date;
+    updatedAtMin?: DateTime;
+    updatedAtMax?: DateTime;
 
     state?: CalculationState;
     expression?: string;

@@ -93,12 +93,12 @@ namespace ExprCalc.ExpressionParsing.Parser
             {
                 case 1:
                     if (args.Count < 1)
-                        throw new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 1 operand which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", 0);
+                        throw new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 1 operand which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", oper.Offset, null);
                     var lastArg = args.Pop();
                     return nodeFactory.UnaryOp(oper.Op.OperationType.Value, oper.Offset, lastArg);
                 case 2:
                     if (args.Count < 2)
-                        throw new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 2 operands which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", 0);
+                        throw new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 2 operands which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", oper.Offset, null);
                     var arg2 = args.Pop();
                     var arg1 = args.Pop();
                     return nodeFactory.BinaryOp(oper.Op.OperationType.Value, oper.Offset, arg1, arg2);
@@ -137,21 +137,21 @@ namespace ExprCalc.ExpressionParsing.Parser
                     operatorFromStack.Op.IsFunction &&
                     token.Type != TokenType.OpeningBracket)
                 {
-                    throw new InvalidExpressionException($"Opening bracket expected after the function name, but found {token.Type}. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                    throw new InvalidExpressionException($"Opening bracket expected after the function name, but found {token.Type}. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, null);
                 }
 
                 switch (token.Type)
                 {
                     case TokenType.Number:
                         if (trackingState != TrackingState.OperandExpected)
-                            throw new InvalidExpressionException($"Operator expected, but number is found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                            throw new InvalidExpressionException($"Operator expected, but number is found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, token.Length);
 
                         var node = nodeFactory.Number(token.GetTokenText(), token.Offset);
                         outputNodes.Push(node);
                         break;
                     case TokenType.Identifier:
                         if (trackingState != TrackingState.OperandExpected)
-                            throw new InvalidExpressionException($"Operator expected, but function call is found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                            throw new InvalidExpressionException($"Operator expected, but function call is found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, token.Length);
 
                         var func = GetFunctionNameForIdentifier(token);
                         operatorStack.Push(func);
@@ -167,7 +167,7 @@ namespace ExprCalc.ExpressionParsing.Parser
                     case TokenType.DivisionSign:
                     case TokenType.ExponentSign:
                         if (trackingState != TrackingState.OperatorExpected)
-                            throw new InvalidExpressionException($"Unexpected operator sequence. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                            throw new InvalidExpressionException($"Unexpected operator sequence. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, token.Length);
 
                         var newOperator = ExpressionOperation.GetOperatorForLexerToken(token.Type);
                         while (operatorStack.TryPeek(out operatorFromStack) &&
@@ -181,13 +181,13 @@ namespace ExprCalc.ExpressionParsing.Parser
                         break;
                     case TokenType.OpeningBracket:
                         if (trackingState != TrackingState.OperandExpected)
-                            throw new InvalidExpressionException($"Unexpected opening bracket. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                            throw new InvalidExpressionException($"Unexpected opening bracket. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, token.Length);
 
                         operatorStack.Push(new ExpressionOperationExt(ExpressionOperation.OpeningBracket, token.Offset));
                         break;
                     case TokenType.ClosingBracket:
                         if (trackingState != TrackingState.OperatorExpected)
-                            throw new InvalidExpressionException($"Unexpected closing bracket. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                            throw new InvalidExpressionException($"Unexpected closing bracket. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, token.Length);
 
                         while (operatorStack.TryPeek(out operatorFromStack) &&
                                operatorFromStack.Op != ExpressionOperation.OpeningBracket)
@@ -197,7 +197,7 @@ namespace ExprCalc.ExpressionParsing.Parser
                         }
 
                         if (!operatorStack.TryPeek(out operatorFromStack) || operatorFromStack.Op != ExpressionOperation.OpeningBracket)
-                            throw new UnbalancedExpressionException($"Closing bracket without paired opening bracket found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                            throw new UnbalancedExpressionException($"Closing bracket without paired opening bracket found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, token.Length);
                         operatorStack.Pop();
 
                         // Check function
@@ -220,10 +220,10 @@ namespace ExprCalc.ExpressionParsing.Parser
             }
 
             if (outputNodes.Count == 0)
-                throw new InvalidExpressionException("Empty expression", 0);
+                throw new InvalidExpressionException("Empty expression", 0, null);
 
             if (outputNodes.Count > 1)
-                throw new UnbalancedExpressionException("Unbalanced expression passed", expression.Length);
+                throw new UnbalancedExpressionException("Unbalanced expression passed", expression.Length, null);
 
             return outputNodes.Pop();
         }
@@ -239,12 +239,12 @@ namespace ExprCalc.ExpressionParsing.Parser
             {
                 case 1:
                     if (args.Count < 1)
-                        return ValueTask.FromException<TNode>(new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 1 operand which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", 0));
+                        return ValueTask.FromException<TNode>(new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 1 operand which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", oper.Offset, null));
                     var lastArg = args.Pop();
                     return nodeFactory.UnaryOpAsync(oper.Op.OperationType.Value, lastArg, oper.Offset, cancellationToken);
                 case 2:
                     if (args.Count < 2)
-                        return ValueTask.FromException<TNode>(new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 2 operands which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", 0));
+                        return ValueTask.FromException<TNode>(new UnbalancedExpressionException($"Operation {oper.Op.OperationType} expected 2 operands which is not provided. Offset = {oper.Offset}. Context = {GetTextAroundOffset(expression, oper.Offset)}", oper.Offset, null));
                     var arg2 = args.Pop();
                     var arg1 = args.Pop();
                     return nodeFactory.BinaryOpAsync(oper.Op.OperationType.Value, arg1, arg2, oper.Offset, cancellationToken);
@@ -286,21 +286,21 @@ namespace ExprCalc.ExpressionParsing.Parser
                     operatorFromStack.Op.IsFunction &&
                     token.Type != TokenType.OpeningBracket)
                 {
-                    throw new InvalidExpressionException($"Opening bracket expected after the function name, but found {token.Type}. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                    throw new InvalidExpressionException($"Opening bracket expected after the function name, but found {token.Type}. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, null);
                 }
 
                 switch (token.Type)
                 {
                     case TokenType.Number:
                         if (trackingState != TrackingState.OperandExpected)
-                            throw new InvalidExpressionException($"Operator expected, but number is found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                            throw new InvalidExpressionException($"Operator expected, but number is found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, token.Length);
 
                         var node = await nodeFactory.NumberAsync(token.GetTokenText(), token.Offset, cancellationToken);
                         outputNodes.Push(node);
                         break;
                     case TokenType.Identifier:
                         if (trackingState != TrackingState.OperandExpected)
-                            throw new InvalidExpressionException($"Operator expected, but function call is found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                            throw new InvalidExpressionException($"Operator expected, but function call is found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, token.Length);
 
                         var func = GetFunctionNameForIdentifier(token);
                         operatorStack.Push(func);
@@ -316,7 +316,7 @@ namespace ExprCalc.ExpressionParsing.Parser
                     case TokenType.DivisionSign:
                     case TokenType.ExponentSign:
                         if (trackingState != TrackingState.OperatorExpected)
-                            throw new InvalidExpressionException($"Unexpected operator sequence. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                            throw new InvalidExpressionException($"Unexpected operator sequence. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, token.Length);
 
                         var newOperator = ExpressionOperation.GetOperatorForLexerToken(token.Type);
                         while (operatorStack.TryPeek(out operatorFromStack) &&
@@ -330,13 +330,13 @@ namespace ExprCalc.ExpressionParsing.Parser
                         break;
                     case TokenType.OpeningBracket:
                         if (trackingState != TrackingState.OperandExpected)
-                            throw new InvalidExpressionException($"Unexpected opening bracket. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                            throw new InvalidExpressionException($"Unexpected opening bracket. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, token.Length);
 
                         operatorStack.Push(new ExpressionOperationExt(ExpressionOperation.OpeningBracket, token.Offset));
                         break;
                     case TokenType.ClosingBracket:
                         if (trackingState != TrackingState.OperatorExpected)
-                            throw new InvalidExpressionException($"Unexpected closing bracket. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                            throw new InvalidExpressionException($"Unexpected closing bracket. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, token.Length);
 
                         while (operatorStack.TryPeek(out operatorFromStack) &&
                                operatorFromStack.Op != ExpressionOperation.OpeningBracket)
@@ -346,7 +346,7 @@ namespace ExprCalc.ExpressionParsing.Parser
                         }
 
                         if (!operatorStack.TryPeek(out operatorFromStack) || operatorFromStack.Op != ExpressionOperation.OpeningBracket)
-                            throw new UnbalancedExpressionException($"Closing bracket without paired opening bracket found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset);
+                            throw new UnbalancedExpressionException($"Closing bracket without paired opening bracket found. Offset = {token.Offset}. Context = '{GetTextAroundOffset(expression, token.Offset)}'", token.Offset, token.Length);
                         operatorStack.Pop();
 
                         // Check function
@@ -370,10 +370,10 @@ namespace ExprCalc.ExpressionParsing.Parser
             }
 
             if (outputNodes.Count == 0)
-                throw new InvalidExpressionException("Empty expression", 0);
+                throw new InvalidExpressionException("Empty expression", 0, null);
 
             if (outputNodes.Count > 1)
-                throw new UnbalancedExpressionException("Unbalanced expression passed", expression.Length);
+                throw new UnbalancedExpressionException("Unbalanced expression passed", expression.Length, null);
 
             return outputNodes.Pop();
         }

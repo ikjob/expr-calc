@@ -4,7 +4,7 @@ export type QueryResultMetadataDto = {
     pageNumber?: number | null;
     pageSize?: number | null;
     totalItemsCount?: number | null;
-    timeOnServer?: Date | null;
+    timeOnServer?: string | null;
 }
 
 
@@ -18,8 +18,13 @@ export function convertQueryListMetadataFromDtoToModel(dto?: QueryResultMetadata
     if (!dto) {
         throw new Error("Query metadata was not provided");
     }
-    else if (dto.pageNumber && dto.pageSize && dto.totalItemsCount && dto.timeOnServer) {
-        return dto as QueryListMetadata;
+    else if (dto.pageNumber != null && dto.pageSize != null && dto.totalItemsCount != null && dto.timeOnServer != null) {
+        return {
+            pageNumber: dto.pageNumber,
+            pageSize: dto.pageSize,
+            totalItemsCount: dto.totalItemsCount,
+            timeOnServer: Date.parse(dto.timeOnServer)
+        }
     }
     else {
         throw new Error("Query metadata does not contain all required fields");
