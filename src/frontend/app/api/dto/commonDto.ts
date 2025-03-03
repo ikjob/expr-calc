@@ -18,7 +18,7 @@ export function convertQueryListMetadataFromDtoToModel(dto?: QueryResultMetadata
     if (!dto) {
         throw new Error("Query metadata was not provided");
     }
-    else if (dto.pageNumber && dto.pageSize && dto.totalItemsCount && dto.timeOnServer) {
+    else if (dto.pageNumber != null && dto.pageSize != null && dto.totalItemsCount != null && dto.timeOnServer != null) {
         return {
             pageNumber: dto.pageNumber,
             pageSize: dto.pageSize,

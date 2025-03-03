@@ -36,7 +36,7 @@ export default function Pagination(props: PaginationProps) {
             { pages.map((val, index) => val > 0 ? (
                 <input key={index} className="join-item btn btn-square" type="radio" name="options" aria-label={val} defaultChecked={val == 1} onClick={() => props.onPageChange(val)} />
             ): (
-                <input key={index} className="join-item btn btn-square btn-disabled text-neutral" type="radio" name="options" aria-label="..." />
+                <input key={index} className="join-item btn btn-square btn-disabled" type="radio" name="options" aria-label="..." />
             ))}
         </div>
     )
