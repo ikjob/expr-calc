@@ -7,7 +7,7 @@ interface UserState {
 }
 
 const initialState: UserState = {
-    userName: "SuperUser",
+    userName: null,
 }
 
 export const activeUserStateSlice = createSlice({
@@ -23,5 +23,6 @@ export const activeUserStateSlice = createSlice({
 export const { setActiveUserName } = activeUserStateSlice.actions
 
 export const selectActiveUserName = (state: RootState) => state.activeUserState.userName
+export const iseActiveUserNameSet = (state: RootState) => !!state.activeUserState.userName
 
 export default activeUserStateSlice.reducer
