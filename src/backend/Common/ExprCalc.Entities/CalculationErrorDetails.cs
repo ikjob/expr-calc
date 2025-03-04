@@ -18,7 +18,7 @@ namespace ExprCalc.Entities
         public const string NumberToLargeErrorCode = "Number too large";
         public const string OverflowErrorCode = "Number overflow";
         public const string DivisionByZeroErrorCode = "Division by zero";
-        public const string LnFromNegativeErrorCode = "Logarithm from negative number";
+        public const string LnFromNegativeErrorCode = "Logarithm from non-positive number";
         public const string PowZeroZeroErrorCode = "Zero raised to the zero power";
         public const string NegativeBaseFractionalExponentErrorCode = "Negative number raised to the fractional power";
 
