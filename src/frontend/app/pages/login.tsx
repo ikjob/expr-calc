@@ -13,7 +13,7 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="bg-gray-100 flex items-center justify-center min-h-screen">
+        <div className="bg-base-300 flex items-center justify-center min-h-screen">
             <UserNameSettingForm className="relative" allowCancel={false} onSubmit={onSubmitUserName} />
         </div>
     )
