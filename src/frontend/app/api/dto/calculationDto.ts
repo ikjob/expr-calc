@@ -48,15 +48,15 @@ export function convertCalculationStatusFromDtoToModel(dto: CalculationStatusDto
         case "InProgress":
             return createInProgressCalculationStatus();
         case "Success":
-            if (!dto.calculationResult)
+            if (dto.calculationResult == null)
                 throw new Error("CalculationResult not provided for success status");
             return createSuccessCalculationStatus(dto.calculationResult);
         case "Failed":
-            if (!dto.errorCode || !dto.errorDetails)
+            if (dto.errorCode == null || dto.errorDetails == null)
                 throw new Error("ErrorCode not provided for failed status");
             return createFailedCalculationStatus(dto.errorCode, dto.errorDetails);
         case "Cancelled":
-            if (!dto.cancelledBy)
+            if (dto.cancelledBy == null)
                 throw new Error("CancelledBy not provided for failed status");
             return createCancelledCalculationStatus(dto.cancelledBy);
         default:

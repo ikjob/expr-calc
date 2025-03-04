@@ -122,7 +122,7 @@ function CalculationErrorInfoMarker(props: { calculation: Calculation, className
     let errorContext: ReactNode | null = null;
     if (props.calculation.status.errorDetails) {
         const details = props.calculation.status.errorDetails;
-        if (details.offset) {
+        if (details.offset != null) {
             errorContext = CalculationErrorContextView({ text: props.calculation.expression, offset: details.offset, length: details.length ?? null })
         }
     }
@@ -133,7 +133,7 @@ function CalculationErrorInfoMarker(props: { calculation: Calculation, className
             <div tabIndex={0} role="button" className="btn btn-circle btn-ghost btn-xs text-error">
                 <ExclamationCircleIcon className="h-4 w-4 stroke-current" />
             </div>
-            <div tabIndex={0} className="card card-sm dropdown-content bg-base-100 rounded-box z-1 w-64 shadow-sm border-base-content/25 border-1">
+            <div tabIndex={0} className="card card-sm dropdown-content bg-base-100 rounded-box z-1 w-70 shadow-sm border-base-content/25 border-1">
                 <div tabIndex={0} className="card-body">
                     <h2 className="card-title">{props.calculation.status.errorDetails?.errorCode ?? "Error"}</h2>
                     { errorContext ?? <></>}
