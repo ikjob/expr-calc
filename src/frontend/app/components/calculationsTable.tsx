@@ -10,7 +10,7 @@ import { Calculation, CalculationErrorCode, CalculationState } from '../models/c
 import { Uuid } from '../common';
 import { ReactNode } from 'react';
 
-interface CalculationsTableProps {
+export interface CalculationsTableProps {
     rows: Calculation[];
     onStop: (id: Uuid) => void;
 }

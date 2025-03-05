@@ -8,23 +8,54 @@ export type ProblemDetailsDto = {
     detail?: string | null;
 }
 
+function isProblemDetails(err: unknown) : err is ProblemDetailsDto {
+    if (err == null) {
+        return false;
+    }
+    if (typeof err !== "object") {
+        return false;
+    }
+    const errObj = err as object;
+    if ("status" in errObj && typeof errObj.status !== "number") {
+        return false;
+    }
+    if ("type" in errObj && typeof errObj.type !== "string") {
+        return false;
+    }
+    if ("title" in errObj && typeof errObj.title !== "string") {
+        return false;
+    }
+    if ("detail" in errObj && typeof errObj.detail !== "string") {
+        return false;
+    }
+    return true;
+}
+
 export function convertRawClientErrorToErrorDetails(error: FetchBaseQueryError) : ErrorDetails {
     const result : ErrorDetails = { type: "", status: null, title: null, detail: null };
     let problemDetails: ProblemDetailsDto | null = null;
 
-    if (error.status as number) {
+    if (typeof error.status === "number") {
         result.status = error.status as number;
-        problemDetails = error.data as ProblemDetailsDto;
+        if (isProblemDetails(error.data)) {
+            problemDetails = error.data as ProblemDetailsDto;
+        }
     } 
-    else if (error.status as string) {
+    else if (typeof error.status === "string") {
         result.type = error.status as string;
-        if ("error" in error) {
+        if (error.status == "FETCH_ERROR") {
+            result.detail = "NetworkError when attempting to fetch resource";
+        } else if (error.status == "TIMEOUT_ERROR") {
+            result.detail = "Timeout occured when attempting to fetch resource";
+        } else if (error.status == "PARSING_ERROR") {
+            result.detail = "Parsing of fetched resource has ended with error";
+        } else if ("error" in error) {
             result.detail = error.error;
         }
         if ("originalStatus" in error) {
             result.status = error.originalStatus;
         }
-        if ("data" in error) {
+        if ("data" in error && isProblemDetails(error.data)) {
             problemDetails = error.data as ProblemDetailsDto;
         }
     }
@@ -44,6 +75,7 @@ export function convertRawClientErrorToErrorDetails(error: FetchBaseQueryError) 
 
     result.type = result.type || "unknown";
     result.title = result.title || "Internal error";
+
     return result;
 }
 

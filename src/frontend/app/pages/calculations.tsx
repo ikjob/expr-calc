@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useCancelCalculationMutation, useCreateCalculationMutation, useGetCalculationsQuery } from '../api/calculations'
 import CalculationsTable from '../components/calculationsTable'
 import Pagination from '../components/pagination'
@@ -9,6 +9,8 @@ import { Uuid } from '../common'
 import { useSelector } from 'react-redux'
 import { selectActiveUserName } from '../redux/stores/userStore'
 import { CalculationState } from '../models/calculation'
+import AlertBar, { AlertBarSeverity, AlertContent, AlertItem } from '../components/alertBar'
+import { ErrorDetails, isErrorDetails } from '../models/errorDetails'
 
 const PAGE_SIZE = 10;
 const POLLING_INTERVAL_MS = 1500;
@@ -17,11 +19,21 @@ export default function CalculationsPage() {
     const activeUser = useSelector(selectActiveUserName);
     const [filters, setFilters] = useState({} as CalculationFilters);
     const [pagination, setPagination] = useState({ pageNumber: 1, pageSize: PAGE_SIZE } as PaginationParams);
-    const { data: calculationRows, isLoading: calcLoading } = useGetCalculationsQuery({ filters: filters, pagination: pagination }, { pollingInterval: POLLING_INTERVAL_MS, skipPollingIfUnfocused: true });
-    const [createCalculationApi] = useCreateCalculationMutation();
-    const [cancelCalculationApi] = useCancelCalculationMutation();
+    const { data: calculationRows, isLoading: calcLoading, error: calcError, startedTimeStamp: calcTimestamp } = useGetCalculationsQuery({ filters: filters, pagination: pagination }, { pollingInterval: POLLING_INTERVAL_MS, skipPollingIfUnfocused: true });
+    const [createCalculationApi, {error: createError, startedTimeStamp: createTimestamp}] = useCreateCalculationMutation();
+    const [cancelCalculationApi, {error: cancelError, startedTimeStamp: cancelTimestamp}] = useCancelCalculationMutation();
     //const { data: calculationsDelta } = useGetCalculationUpdatesQuery({ fromTime:  filters: filters })
 
+    const alertingErrors : AlertItem[] = [];
+    if (calcError) {
+        alertingErrors.push(convertErrorDataToAlertItem("Fetch", calcError, calcTimestamp));
+    }
+    if (createError) {
+        alertingErrors.push(convertErrorDataToAlertItem("Submit", createError, createTimestamp));
+    }
+    if (cancelError) {
+        alertingErrors.push(convertErrorDataToAlertItem("Cancel", cancelError, cancelTimestamp));
+    }
 
     function createCalculation(expression: string) {
         if (activeUser) {
@@ -59,8 +71,38 @@ export default function CalculationsPage() {
                 pageSize={calculationRows?.metadata.pageSize ?? PAGE_SIZE} 
                 totalItemsCount={calculationRows?.metadata.totalItemsCount ?? 0} 
                 onPageChange={changePage}/>
+
+            <AlertBar items={alertingErrors} />
         </div>
     )
+}
+
+function convertErrorDataToAlertItem(operation: "Fetch" | "Submit" | "Cancel", error: ErrorDetails | unknown, key?: React.Key) : AlertItem {
+    let severity: AlertBarSeverity = "error";
+    const content: AlertContent = {
+        title: operation + " error",
+        detail: "Internal error"
+    };
+
+    if (isErrorDetails(error)) {
+        content.detail = error.detail;
+        if (error.type == "overflow" && operation == "Submit") {
+            severity = "warn";
+            content.title = operation + " warning";
+            content.detail = "Server overloaded. Make a new attempt later";
+        }
+        else if (error.type == "conflict" && operation == "Cancel") {
+            severity = "warn";
+            content.title = operation + " warning";
+            content.detail = "Calculation finished or canceled by other user";
+        }
+    }
+
+    return {
+        key: key,
+        severity: severity,
+        value: content
+    }
 }
 
 
