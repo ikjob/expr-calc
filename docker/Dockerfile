@@ -20,7 +20,7 @@ RUN dotnet publish -c Release -r linux-x64 --self-contained false -o /publish/ap
     && rm -f /publish/app/appsettings.Development.json
     && rm -f /publish/app/wwwroot/*
 
-COPY ./config/appsettings.json /publish/config/
+COPY ./appsettings.json /publish/app/
 
 
 # Build frontend
@@ -44,4 +44,4 @@ COPY --from=buildFrontend /src/frontend/dist /home/app/wwwroot/
 
 EXPOSE 80
 ENTRYPOINT ["/home/app/ExprCalc"]
-CMD ["--config /home/config/appsettings.json"]
+CMD ["--config /home/app/appsettings.json"]
