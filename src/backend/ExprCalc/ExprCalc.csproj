@@ -46,4 +46,10 @@
     <ProjectReference Include="..\Storage\ExprCalc.Storage\ExprCalc.Storage.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\index.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

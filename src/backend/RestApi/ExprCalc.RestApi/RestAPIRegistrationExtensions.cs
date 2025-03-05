@@ -59,8 +59,8 @@ namespace ExprCalc.RestApi
 
             app.UseExceptionHandler();
 
-            //app.UseDefaultFiles();
-            //app.UseStaticFiles();
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
             app.UseRouting();
 
             // Enable Cors
