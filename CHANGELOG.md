@@ -11,6 +11,7 @@ Expression calculator changelog
 - Frontend: interactivity for table component (#49)
 - Frontend: general interactivity for the expression submission process (#50)
 - Frontend: error alerts implemented (#54)
+- Dockerfile and docker-compose (#55)
 
 #### Changed
 - Repository structure updated to include frontend code (#39)
