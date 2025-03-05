@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { selectActiveUserName, setActiveUserName } from "../redux/stores/userStore";
 import { useAppDispatch } from "../redux/hooks";
 
-interface UserNameSettingFormProps {
+export interface UserNameSettingFormProps {
     className?: string;
     allowCancel?: boolean;
     defaultValue?: string;

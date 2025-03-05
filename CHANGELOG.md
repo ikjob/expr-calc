@@ -10,6 +10,7 @@ Expression calculator changelog
 - Frontend: Rest API support to interact with backend (#46)
 - Frontend: interactivity for table component (#49)
 - Frontend: general interactivity for the expression submission process (#50)
+- Frontend: error alerts implemented (#54)
 
 #### Changed
 - Repository structure updated to include frontend code (#39)
