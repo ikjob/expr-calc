@@ -64,7 +64,7 @@ namespace ExprCalc.Telemetry
                     if (tracingConfig.EnableConsoleExporter)
                         tBuilder.AddConsoleExporter();
 
-                    if (tracingConfig.OtlpEndpoint != null)
+                    if (!string.IsNullOrWhiteSpace(tracingConfig.OtlpEndpoint))
                     {
                         tBuilder.AddOtlpExporter(opt =>
                         {

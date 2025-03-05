@@ -5,6 +5,15 @@
 
 Evaluates expressions in background tasks
 
+#### How to start
+
+```
+cd ./docker/
+docker compose up
+```
+Web interface will be available at http://127.0.0.1:8123
+
+
 #### Repository structure:
 1. `.github` - contains GitHub Actions workflows for CI/CD
 2. `docs` - project documentation

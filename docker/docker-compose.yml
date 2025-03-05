@@ -1,0 +1,11 @@
+services:
+  expr-calc:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - "./appsettings.json:/home/app/appsettings.json"
+      - "./logs/:/home/logs/"
+      - "./db/:/home/db/"
+    ports:
+      - 8123:80
