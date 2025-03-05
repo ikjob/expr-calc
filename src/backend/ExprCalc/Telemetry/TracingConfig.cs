@@ -8,6 +8,6 @@
         public bool EnableConsoleExporter { get; set; }
         public string? OtlpEndpoint { get; set; }
 
-        public bool IsEnable => EnableConsoleExporter || OtlpEndpoint != null;
+        public bool IsEnable => EnableConsoleExporter || !string.IsNullOrEmpty(OtlpEndpoint);
     }
 }
