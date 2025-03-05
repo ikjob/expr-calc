@@ -1,7 +1,8 @@
 services:
   expr-calc:
     build:
-      context: .
+      context: ../
+      dockerfile: ./docker/Dockerfile
     volumes:
       - "./appsettings.json:/home/app/appsettings.json"
       - "./logs/:/home/logs/"
