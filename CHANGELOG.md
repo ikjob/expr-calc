@@ -4,6 +4,20 @@ Expression calculator changelog
 
 ## [Unreleased]
 #### Added
+
+
+#### Changed
+
+
+#### Fixed
+
+
+#### Removed
+
+
+
+## [v1.0.0] - 2025-03-06
+#### Added
 - Frontend template app based on React, Vite, TypeScript (#40)
 - Basic CI for frontend (#41)
 - Frontend basic layout (#43)
