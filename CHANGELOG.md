@@ -16,6 +16,7 @@ Expression calculator changelog
 #### Changed
 - Repository structure updated to include frontend code (#39)
 - More information about the project was added to README.md (#57)
+- Improvements for: dockerfile, long expression display, table rows height (#59)
 
 #### Fixed
 
