@@ -51,9 +51,9 @@ export default function CalculationsTable({ rows, onStop }: CalculationsTablePro
             </thead>
             <tbody>
                 { rows.map((calculation, index) => (
-                    <tr key={calculation.id} className={`hover:bg-base-200 ${index % 2 == 1 ? "bg-base-200/25" : ""}`}>
+                    <tr key={calculation.id} className={`leading-6 hover:bg-base-200 ${index % 2 == 1 ? "bg-base-200/25" : ""}`}>
                         <td className="w-12">{statusIconPerState.get(calculation.status.state) ?? <></>}</td>
-                        <td className="min-w-40 w-full text-left line-clamp-1">{calculation.expression}</td>
+                        <td className="min-w-40 w-full text-left truncate">{calculation.expression}</td>
                         <td className="w-40">{
                             (calculation.status.state == "Success" ? calculation.status.calculationResult :
                             (calculation.status.state == "Failed" ? <>{getErrorNameByErrorCode(calculation.status.errorCode)} <CalculationErrorInfoMarker calculation={calculation} className="relative top-[-0.15em]" /></> : 
@@ -64,7 +64,7 @@ export default function CalculationsTable({ rows, onStop }: CalculationsTablePro
                         <td className="w-40">{new Date(calculation.createdAt).toLocaleString()}</td>
                         <td className="w-24"> {
                             (calculation.status.state == "Pending" || calculation.status.state == "InProgress") ?
-                                <button className="btn btn-xs" onClick={() => onStop(calculation.id)}><StopIcon className="size-[1em]" />Stop</button> :
+                                <button className="btn btn-xs h-5" onClick={() => onStop(calculation.id)}><StopIcon className="size-[1em]" />Stop</button> :
                                 <></>
                         }</td>
                     </tr>
@@ -77,7 +77,7 @@ export default function CalculationsTable({ rows, onStop }: CalculationsTablePro
 function CalculationCancelledInfoMarker(props: { calculation: Calculation, className?: string }) {  
     return (
         <div className={`dropdown dropdown-end ${props.className}`}>
-            <div tabIndex={0} role="button" className="btn btn-circle btn-ghost btn-xs text-info">
+            <div tabIndex={0} role="button" className="btn btn-circle btn-ghost btn-xs text-info h-5 w-5">
                 <ExclamationCircleIcon className="h-4 w-4 stroke-current" />
             </div>
             <div tabIndex={0} className="card card-sm dropdown-content bg-base-100 rounded-box z-1 w-64 shadow-sm border-base-content/25 border-1">
@@ -130,7 +130,7 @@ function CalculationErrorInfoMarker(props: { calculation: Calculation, className
 
     return (
         <div className={`dropdown dropdown-end ${props.className}`}>
-            <div tabIndex={0} role="button" className="btn btn-circle btn-ghost btn-xs text-error">
+            <div tabIndex={0} role="button" className="btn btn-circle btn-ghost btn-xs text-error h-5 w-5">
                 <ExclamationCircleIcon className="h-4 w-4 stroke-current" />
             </div>
             <div tabIndex={0} className="card card-sm dropdown-content bg-base-100 rounded-box z-1 w-70 shadow-sm border-base-content/25 border-1">
