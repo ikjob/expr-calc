@@ -85,7 +85,7 @@ function convertErrorDataToAlertItem(operation: "Fetch" | "Submit" | "Cancel", e
     };
 
     if (isErrorDetails(error)) {
-        content.detail = error.detail;
+        content.detail = error.detail ?? error.title;
         if (error.type == "overflow" && operation == "Submit") {
             severity = "warn";
             content.title = operation + " warning";
@@ -126,8 +126,13 @@ function CalculationSubmit(props: CalculationSubmitProps) {
 
     function submitExpression() {
         if (currentInput.current != null && currentInput.current != "" && currentInput.current.trim() != "") {
-            props.onSubmitExpr(currentInput.current);
-            setInputErrorStatus({ error: "", counter: inputErrorStatus.counter });
+            if (currentInput.current.length <= 25000) {
+                props.onSubmitExpr(currentInput.current);
+                setInputErrorStatus({ error: "", counter: inputErrorStatus.counter });
+            }
+            else {
+                setInputErrorStatus({ error: "The expression is too long. The maximum allowed length is 25000 symbols", counter: inputErrorStatus.counter + 1 });
+            }
         } 
         else {
             setInputErrorStatus({ error: "Expression cannot be empty", counter: inputErrorStatus.counter + 1 });
@@ -137,7 +142,7 @@ function CalculationSubmit(props: CalculationSubmitProps) {
     return (
         <div className="mt-4 mb-0">
             <div className="join flex">
-                <input type="text" className="input input-bordered input-accent join-item flex-auto" placeholder="Expression" onChange={e => { currentInput.current = e.target.value; }} />
+                <input type="text" className="input input-bordered input-accent join-item flex-auto" placeholder="Expression" maxLength={25001} onChange={e => { currentInput.current = e.target.value; }} />
                 <button className="btn btn-accent join-item rounded-r-full flex-none" onClick={submitExpression}>Submit</button>
             </div>
             <span className="validator-hint text-error ml-1 mt-1 mb-0">

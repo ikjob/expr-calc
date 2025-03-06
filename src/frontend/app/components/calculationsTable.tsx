@@ -53,7 +53,7 @@ export default function CalculationsTable({ rows, onStop }: CalculationsTablePro
                 { rows.map((calculation, index) => (
                     <tr key={calculation.id} className={`hover:bg-base-200 ${index % 2 == 1 ? "bg-base-200/25" : ""}`}>
                         <td className="w-12">{statusIconPerState.get(calculation.status.state) ?? <></>}</td>
-                        <td className="min-w-40 w-full text-left line-clamp-1">{calculation.expression}</td>
+                        <td className="min-w-40 w-full text-left truncate">{calculation.expression}</td>
                         <td className="w-40">{
                             (calculation.status.state == "Success" ? calculation.status.calculationResult :
                             (calculation.status.state == "Failed" ? <>{getErrorNameByErrorCode(calculation.status.errorCode)} <CalculationErrorInfoMarker calculation={calculation} className="relative top-[-0.15em]" /></> : 
