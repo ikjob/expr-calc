@@ -15,6 +15,7 @@ Expression calculator changelog
 
 #### Changed
 - Repository structure updated to include frontend code (#39)
+- More information about the project was added to README.md (#57)
 
 #### Fixed
 
