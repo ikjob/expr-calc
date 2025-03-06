@@ -21,11 +21,12 @@ Evaluates expressions in background tasks
 13. The frontend allows users to specify their username
 14. The frontend allows users to submit new expressions to the backend
 15. The frontend monitors the status of requests and automatically updates the UI when the statuses change on the backend. Supported statuses: Pending, InProgress, Success, Failed, Cancelled
-16. The frontend displays the calculation results. Possible results: for the Success status, it is a number; for Failed, it is an error message; for Cancelled, it includes information on who canceled the calculation
+16. The frontend displays the calculation results. Possible results: for the Success status, it is a number; for Failed, it is an error message and error location within the expression; for Cancelled, it includes information on who canceled the calculation
 17. The frontend allows users to view the history of all requests from the server, displayed as a paginated table
 18. The frontend allows users to apply filters to view specific calculations. Currently supported frontend filters: by the current user and by status. The backend supports additional filters: by creation time, update time, username, and substring in the expression
 19. The request history table on frontend is automatically updated if a new calculation appears on the server and matches the client's active filters
-
+20. If the backend returns an error, it is displayed on the frontend for the user
+21. The backend implements all modern methods of monitoring its behavior: logs, metrics and tracing
 
 ### Quick start
 
@@ -76,7 +77,23 @@ yarn install
 yarn dev
 ```
 
-Open URL it have printed in Web-browser.
+Open in Web-browser an URL that was printed by `yarn`.
+
+
+### Known drawbacks and problems
+
+1. The frontend UI/UX design is not perfect. It is not fully responsive (table columns overlap if the browser window is small), error alerts do not close automatically after some time, and long expressions are not displayed well enough
+2. Not all filters supported by the backend are available on the frontend
+3. The storage subsystem was initially designed to support manually implemented SQLite database partitioning in the future. This was done to make the removal of old calculations significantly faster (the whole partition could be removed in this case). This led to the introduction of an additional level of abstraction (`Repository -> IDbController -> IDbQueryProvider`). Later, it became clear that manually implementing partitioning was unnecessary, as it would be faster, simpler, and more future-proof to use a DBMS that supports partitioning out of the box (for example, switching to PostgreSQL). This additional abstraction was not removed, but as part of the project evolution, it must be. The better scheme would be: `Repository <- IDbConnectionsManager`
+
+### Future improvements
+
+1. Improve UI/UX
+2. Support all filters on the frontend
+3. Remove unnecessary design abstractions in the Storage subsystem (see p.3 in "Known drawbacks and problems")
+4. Implement caching in the backend. Since the frontend uses polling to get updates, it is very important to implement caches on the backend. A cache containing recently updated calculations should prevent unnecessary database access and significantly improve performance
+5. Implement incremental state updates during polling on the frontend. Currently, the frontend requests the whole page every time. It would be more efficient to request only updates since the last request on the specific page. The backend already supports this, as it allows specifying `UpdatedAtMin` and `UpdatedAtMax` parameters in filters. In combination with p.4, this would provide a significant performance boost and would allow more clients to work simultaneously.
+6. Other general improvements, such as supporting more mathematical operations, migrating to a large-scale DBMS, implementing authorization, and so on
 
 
 ### Repository structure:
