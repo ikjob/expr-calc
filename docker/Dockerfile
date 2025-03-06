@@ -20,8 +20,6 @@ RUN dotnet publish -c Release -r linux-x64 --self-contained false -o /publish/ap
     && rm -f /publish/app/appsettings.Development.json \
     && rm -f /publish/app/wwwroot/*
 
-COPY ./docker/appsettings.json /publish/app/
-
 
 # Build frontend
 FROM node:23-alpine AS build_frontend
@@ -41,6 +39,8 @@ COPY --from=build_backend /publish /home
 WORKDIR /home/app/
 
 COPY --from=build_frontend /src/frontend/dist /home/app/wwwroot/
+
+COPY ./docker/appsettings.json /home/app/
 
 EXPOSE 80
 ENTRYPOINT ["/home/app/ExprCalc"]
