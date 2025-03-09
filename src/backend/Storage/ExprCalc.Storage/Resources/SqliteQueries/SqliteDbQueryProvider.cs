@@ -413,5 +413,20 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
                 return command.ExecuteNonQuery();
             }
         }
+
+        public bool DeleteCalculationById(SqliteConnection connection, Guid id)
+        {
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = """
+                    DELETE FROM Calculations
+                    WHERE Id = @Id
+                    """;
+
+                command.Parameters.Add("@Id", SqliteType.Blob).Value = id;
+
+                return command.ExecuteNonQuery() > 0;
+            }
+        }
     }
 }

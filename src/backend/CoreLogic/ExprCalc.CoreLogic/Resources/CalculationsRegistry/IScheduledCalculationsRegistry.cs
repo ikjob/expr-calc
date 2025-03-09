@@ -54,6 +54,10 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
         /// </summary>
         bool TryGetStatus(Guid id, [NotNullWhen(true)] out CalculationStatus? status);
         /// <summary>
+        /// Enumerates all registered calculation
+        /// </summary>
+        IEnumerable<Calculation> Enumerate(bool withCancelled = false);
+        /// <summary>
         /// Attemtps to cancel <see cref="Calculation"/>.
         /// Success if <see cref="Calculation"/> for the specified key is presented and its status is not final
         /// </summary>

@@ -438,6 +438,43 @@ namespace ExprCalc.Storage.Tests.DatabaseManagement
             Assert.Single(remainingCheck.Items);
         }
 
+        [Fact]
+        public async Task DeleteCalculationByIdTest()
+        {
+            CancellationTokenSource deadlockProtection = new CancellationTokenSource();
+            deadlockProtection.CancelAfter(TimeSpan.FromSeconds(60));
+
+            using var tempDirHolder = new TempDirectoryHolder();
+            await using var controller = CreateController(tempDirHolder.Directory);
+            await controller.Init(deadlockProtection.Token);
+
+            List<Calculation> insertionList = [
+                CreateCalculationPending(user: "abc"),
+                CreateCalculationInProgress(user: "bcd", timeOffset: TimeSpan.FromMilliseconds(10)),
+                CreateCalculationSuccess(user: "bcd", timeOffset: TimeSpan.FromMilliseconds(20)),
+                CreateCalculationFailed(user: "abc", expression: "log(10) / cos(1)", timeOffset: TimeSpan.FromMilliseconds(30)),
+                CreateCalculationCancelled(user: "abc", timeOffset: TimeSpan.FromMilliseconds(40))
+            ];
+
+            foreach (var item in insertionList)
+            {
+                await controller.AddCalculationAsync(item, deadlockProtection.Token);
+            }
+
+            bool deleted = await controller.DeleteCalculationByIdAsync(insertionList[0].Id, deadlockProtection.Token);
+            Assert.True(deleted);
+
+            var remainingCheck = await controller.GetCalculationsListAsync(CalculationFilters.NoFilters, PaginationParams.AllData, deadlockProtection.Token);
+            Assert.Equal(insertionList.Count - 1, remainingCheck.Items.Count);
+
+            // Delete not existed 
+            deleted = await controller.DeleteCalculationByIdAsync(Guid.CreateVersion7(), deadlockProtection.Token);
+            Assert.False(deleted);
+
+            remainingCheck = await controller.GetCalculationsListAsync(CalculationFilters.NoFilters, PaginationParams.AllData, deadlockProtection.Token);
+            Assert.Equal(insertionList.Count - 1, remainingCheck.Items.Count);
+        }
+
 
         [Fact]
         public async Task ParallelReadWriteTest()

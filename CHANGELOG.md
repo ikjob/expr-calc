@@ -10,7 +10,7 @@ Expression calculator changelog
 
 
 #### Fixed
-
+- Cancel caluclation in registry when it is removed from db by cleanup procedure (#62)
 
 #### Removed
 

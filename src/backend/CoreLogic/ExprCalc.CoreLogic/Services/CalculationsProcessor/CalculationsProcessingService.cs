@@ -102,13 +102,18 @@ namespace ExprCalc.CoreLogic.Services.CalculationsProcessor
                     }
                     else if (finalState.IsCancelled(out _))
                     {
-                        _logger.LogDebug("Calculation was cancelled. Id = {id}", newCalculation.Calculation.Id);
+                        _logger.LogDebug("Calculation was cancelled by the user. Id = {id}", newCalculation.Calculation.Id);
                         _metrics.ProcessedWasCancelledCount.Add(1);
                     }
                     else if (finalState.IsFailed(out var failedStatus))
                     {
                         _logger.LogDebug("Calculation was failed. Id = {id}. ErrorCode = {errorCode}", newCalculation.Calculation.Id, failedStatus.ErrorDetails.ErrorCode);
                         _metrics.ProcessedWithFailureCount.Add(1);
+                    }
+                    else if (newCalculation.Token.IsCancellationRequested)
+                    {
+                        _logger.LogDebug("Calculation was cancelled by the system. Id = {id}", newCalculation.Calculation.Id);
+                        _metrics.ProcessedWasCancelledCount.Add(1);
                     }
                     else
                     {

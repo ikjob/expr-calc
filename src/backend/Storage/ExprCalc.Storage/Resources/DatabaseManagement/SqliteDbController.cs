@@ -283,6 +283,21 @@ namespace ExprCalc.Storage.Resources.DatabaseManagement
             }
         }
 
+        public async Task<bool> DeleteCalculationByIdAsync(Guid id, CancellationToken token)
+        {
+            await EnsureInitialized(token);
+
+            using (await _queryRwLock.AcquireReadLockAsync(token))
+            using (await _writerLock.AcquireLockAsync(token))
+            {
+                if (_disposed || _writeConnection == null)
+                    throw new ObjectDisposedException(nameof(SqliteDbController));
+
+
+                return _calculationsQueryProvider.DeleteCalculationById(_writeConnection, id);
+            }
+        }
+
 
 
         protected virtual void Dispose(bool isUserCall)
