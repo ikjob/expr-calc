@@ -1,7 +1,6 @@
 ﻿using ExprCalc.CoreLogic.Configuration;
 using ExprCalc.CoreLogic.Instrumentation;
 using ExprCalc.CoreLogic.Resources.CalculationsRegistry;
-using ExprCalc.CoreLogic.Services.StorageCleanup;
 using ExprCalc.Storage.Api.Repositories;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -47,7 +46,7 @@ namespace ExprCalc.CoreLogic.Services.StorageManagement
         {
             DateTime deleteBefore = DateTime.UtcNow.Subtract(_expirationPeriod);
             _logger.LogInformation("Cleanup procedure started");
-            using var activity = _activitySource.StartActivity(nameof(StorageCleanupService) + ".Cleanup");
+            using var activity = _activitySource.StartActivity(nameof(StorageCleanupJob) + ".Cleanup");
 
             Stopwatch sw = Stopwatch.StartNew();
             // Remove from database first

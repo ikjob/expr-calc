@@ -1,7 +1,6 @@
 ﻿using ExprCalc.CoreLogic.Configuration;
 using ExprCalc.CoreLogic.Instrumentation;
 using ExprCalc.CoreLogic.Resources.CalculationsRegistry;
-using ExprCalc.CoreLogic.Services.RegistryRepopulation;
 using ExprCalc.Storage.Api.Repositories;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
