@@ -1,17 +1,12 @@
 ﻿using ExprCalc.Common.Instrumentation;
 using ExprCalc.CoreLogic.Api.UseCases;
 using ExprCalc.CoreLogic.Configuration;
-using ExprCalc.CoreLogic.Instrumentation;
 using ExprCalc.CoreLogic.Resources.CalculationsRegistry;
 using ExprCalc.CoreLogic.Resources.ExpressionCalculation;
 using ExprCalc.CoreLogic.Services.CalculationsProcessor;
-using ExprCalc.CoreLogic.Services.RegistryRepopulation;
-using ExprCalc.CoreLogic.Services.StorageCleanup;
+using ExprCalc.CoreLogic.Services.StorageManagement;
 using ExprCalc.CoreLogic.UseCases;
-using ExprCalc.Storage.Api.Repositories;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace ExprCalc.CoreLogic
 {
@@ -33,8 +28,7 @@ namespace ExprCalc.CoreLogic
             serviceCollection.AddSingleton<IScheduledCalculationsRegistry, TimeBasedCalculationRegistry>();
 
             serviceCollection.AddHostedService<CalculationsProcessingService>();
-            serviceCollection.AddHostedService<RegistryRepopulationJob>();
-            serviceCollection.AddHostedService<StorageCleanupService>();
+            serviceCollection.AddHostedService<StorageManagementService>();
         }
 
         public static void AddCoreLogicMetrics(this MetricsRegistry registry)

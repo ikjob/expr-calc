@@ -1,10 +1,8 @@
 ﻿using ExprCalc.CoreLogic.Configuration;
 using ExprCalc.CoreLogic.Instrumentation;
 using ExprCalc.CoreLogic.Resources.CalculationsRegistry;
-using ExprCalc.CoreLogic.Services.CalculationsProcessor;
 using ExprCalc.Entities.MetadataParams;
 using ExprCalc.Storage.Api.Repositories;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -14,12 +12,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ExprCalc.CoreLogic.Services.RegistryRepopulation
+namespace ExprCalc.CoreLogic.Services.StorageManagement
 {
     /// <summary>
     /// Job that runs at the startup and repopulates <see cref="IScheduledCalculationsRegistry"/> from storage
     /// </summary>
-    internal class RegistryRepopulationJob : BackgroundService
+    internal class RegistryRepopulationJob
     {
         private readonly IScheduledCalculationsRegistry _calculationsRegistry;
         private readonly ICalculationRepository _calculationsRepository;
@@ -29,13 +27,13 @@ namespace ExprCalc.CoreLogic.Services.RegistryRepopulation
         private readonly TimeSpan _repopulationDelay;
 
         private readonly ActivitySource _activitySource;
-        private readonly ILogger<RegistryRepopulationJob> _logger;
+        private readonly ILogger _logger;
 
         public RegistryRepopulationJob(
             IScheduledCalculationsRegistry calculationsRegistry,
             ICalculationRepository calculationRepository,
             IOptions<CoreLogicConfig> config,
-            ILogger<RegistryRepopulationJob> logger,
+            ILogger logger,
             InstrumentationContainer instrumentation)
         {
             _startTime = DateTime.UtcNow;
@@ -51,10 +49,8 @@ namespace ExprCalc.CoreLogic.Services.RegistryRepopulation
         }
 
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Task.Yield();
-
             _logger.LogInformation("Registry repopulation started");
             using var activity = _activitySource.StartActivity(nameof(RegistryRepopulationJob) + ".Repopulation");
 
@@ -99,7 +95,7 @@ namespace ExprCalc.CoreLogic.Services.RegistryRepopulation
                 _logger.LogDebug("Repopulation processed batch: {size}", batch.Items.Count);
                 // Time is not unique, so add 1 millsecond to capture all records. 
                 // This will lead to duplicate records but it is not a big problem
-                filter = filter with { CreatedAtMax = lastCreatedAt.AddMilliseconds(1) }; 
+                filter = filter with { CreatedAtMax = lastCreatedAt.AddMilliseconds(1) };
             }
 
 
