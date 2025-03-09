@@ -161,16 +161,30 @@ interface CalculationsFilterProps {
 
 function CalculationsFilter({ filters, onChange }: CalculationsFilterProps) {
     const activeUser = useSelector(selectActiveUserName);
+    const [isActiveUserCheck, isActiveUserCheckSet] = useState(activeUser === filters.createdBy);
+    const userInputRef = useRef<HTMLInputElement>(null);
     const anyFilter = filters.createdBy || filters.state || false;
 
     function toggleActiveUserFilter() {
         const newFilters = { ...filters };
-        if (newFilters.createdBy || activeUser === null) {
+        if (isActiveUserCheck) {
             newFilters.createdBy = undefined;
+            if (userInputRef.current) {
+                userInputRef.current.value = "";
+            }
+            isActiveUserCheckSet(false);
         } else {
-            newFilters.createdBy = activeUser;
+            newFilters.createdBy = activeUser ?? undefined;
+            isActiveUserCheckSet(true);
         }
         onChange(newFilters);
+    }
+    function onUserNameChanged(newName: string) {
+        if (newName !== filters.createdBy) {
+            const newFilters = { ...filters };
+            newFilters.createdBy = newName.trim() ? newName : undefined;
+            onChange(newFilters);
+        }
     }
     function onSelectStateChange(newState: string) {
         const newFilters = { ...filters };
@@ -192,16 +206,21 @@ function CalculationsFilter({ filters, onChange }: CalculationsFilterProps) {
                 { filters.state ? <div className="badge badge-lg mx-4"><span className="text-info">State:</span> {filters.state}</div> : <></>}
             </summary>
             <div className="collapse-content mt-2">
-                <span className="mr-4 align-top">User: </span>
-                <label className="label cursor-pointer">
+                <span className="mr-3 align-middle">User: </span>
+                <input type="text" className="input w-70 mr-3" placeholder="User name" maxLength={32} disabled={isActiveUserCheck} 
+                    ref={userInputRef}
+                    value={isActiveUserCheck ? (filters.createdBy ?? "") : undefined} 
+                    onKeyDown={(e) => { if (e.key == "Enter") { onUserNameChanged((e.target as HTMLInputElement).value); } } }
+                    onBlur={(e) => onUserNameChanged((e.target as HTMLInputElement).value) } />
+                <label className="label cursor-pointer align-middle">
                     <input type="checkbox" className="checkbox" 
-                        checked={filters.createdBy == activeUser}
+                        checked={isActiveUserCheck}
                         onChange={toggleActiveUserFilter} />
                     <span className="label-text">Current</span>
                 </label>
                 <div className="mt-2">
                     <span className="mr-2 align-middle">State: </span>
-                    <select defaultValue="Pick a status" className="select select-sm" onChange={(e) => onSelectStateChange(e.target.value)}>
+                    <select defaultValue="Pick a status" className="select select-sm w-70" onChange={(e) => onSelectStateChange(e.target.value)}>
                         <option value="">---</option>
                         <option value="Pending">Pending</option>
                         <option value="InProgress">In Progress</option>
