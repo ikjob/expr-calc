@@ -73,7 +73,8 @@ const UserFilterContextBound = connect((state: RootState) => { return { activeUs
 
 
 export function CalculationsFilter({ filters, onChange }: CalculationsFilterProps) {
-    const anyFilter = filters.createdBy || filters.state || false;
+    const expressionInputRef = useRef<HTMLInputElement>(null);
+    const anyFilter = filters.createdBy || filters.state || filters.expression || false;
 
     function onSelectStateChange(newState: string) {
         if (newState != filters.state) {
@@ -88,15 +89,41 @@ export function CalculationsFilter({ filters, onChange }: CalculationsFilterProp
         }
     }
 
+    function onExpressionChange(newExpr: string) {
+        if (newExpr != filters.expression) {
+            const newFilters = { ...filters };
+            newFilters.expression = newExpr ? newExpr : undefined;
+            onChange(newFilters);
+            
+            if (expressionInputRef.current != null) {
+                expressionInputRef.current.value = newExpr;
+            }
+        }
+    }
+
     return (
         <details className="collapse collapse-arrow bg-base-200 border-base-300 rounded-md my-4">
             <summary className="collapse-title">
                 <span className="align-middle">Filters:</span>
                 { !anyFilter ? <div className="badge badge-lg mx-4">All</div> : <></>}
+                { filters.expression ? <div className="badge badge-lg mx-4 max-w-120"><span className="text-info">Expression:</span><span className="truncate">{filters.expression.substring(0, Math.min(120, filters.expression.length))}</span></div> : <></>}
                 { filters.createdBy ? <div className="badge badge-lg mx-4"><span className="text-info">Submitted by:</span> <UserIcon className="w-4 h-[1em] inline relative text-base-content" /> {filters.createdBy}</div> : <></>}
                 { filters.state ? <div className="badge badge-lg mx-4"><span className="text-info">State:</span> {filters.state}</div> : <></>}
             </summary>
             <div className="collapse-content mt-2">
+                <div className="mt-2">
+                    <span className="mr-1 align-middle">Expression: </span>
+                    <label className="input w-100 mr-3">
+                        <input type="text" className="" placeholder="Expression substring" maxLength={25000}
+                            ref={expressionInputRef}
+                            defaultValue={filters.expression ?? ""}
+                            onKeyDown={(e) => { if (e.key == "Enter") { onExpressionChange((e.target as HTMLInputElement).value); } } }
+                            onBlur={(e) => onExpressionChange((e.target as HTMLInputElement).value) } />
+                        <button onClick={() => onExpressionChange("")}>
+                            <TimesIcon className="w-3 h-3"  />
+                        </button>
+                    </label>
+                </div>
                 <div className="mt-2">
                     <span className="mr-12 align-middle">User: </span>
                     <UserFilterContextBound filters={filters} onChange={onChange} />
