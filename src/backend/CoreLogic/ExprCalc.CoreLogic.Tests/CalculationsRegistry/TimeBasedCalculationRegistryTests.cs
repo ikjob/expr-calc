@@ -85,6 +85,12 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
             await GeneralScheduledCalculationsRegistryTests.TryCancelTest(registry);
         }
 
+        [Fact]
+        public static void EnumerateTest()
+        {
+            GeneralScheduledCalculationsRegistryTests.EnumerateTest(CreateRegistry());
+        }
+
         [Theory]
         [InlineData(2, 2, 5000, 4, 5, 10, 500)]
         [InlineData(3, 1, 2000, 5, 5, 16, 500)]

@@ -349,7 +349,27 @@ namespace ExprCalc.CoreLogic.Tests.CalculationsRegistry
             Assert.False(registry.TryCancel(calculation.Id, new User("bcd"), out _));
         }
 
+        public static void EnumerateTest(IScheduledCalculationsRegistry registry)
+        {
+            var calculation = CreateCalculation();
+            bool success = registry.TryAdd(calculation, TimeSpan.Zero);
+            Assert.True(success);
 
+            Assert.Single(registry.Enumerate(withCancelled: false));
+            Assert.Equal(calculation.Id, registry.Enumerate(withCancelled: false).Single().Id);
+
+            var calculation2 = CreateCalculation();
+            registry.TryAdd(calculation2, TimeSpan.Zero);
+
+            Assert.Equal(2, registry.Enumerate(withCancelled: false).Count());
+
+            registry.TryCancel(calculation.Id, new User("abc"), out _);
+
+            Assert.Single(registry.Enumerate(withCancelled: false));
+            Assert.Equal(calculation2.Id, registry.Enumerate(withCancelled: false).Single().Id);
+
+            Assert.Equal(2, registry.Enumerate(withCancelled: true).Count());
+        }
 
         public static async Task MultithreadTest(IScheduledCalculationsRegistry registry, int addThreads, int takeThreads, int testItemCount, int addDelay, int takeDelay, int maxItemDelayMs)
         {

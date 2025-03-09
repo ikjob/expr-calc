@@ -20,6 +20,7 @@ namespace ExprCalc.Entities
 
         public const int MaxLoginLength = 32;
 
+        public static User System { get; } = new User("@system");
         public User(string login)
         {
             if (login.Length == 0)

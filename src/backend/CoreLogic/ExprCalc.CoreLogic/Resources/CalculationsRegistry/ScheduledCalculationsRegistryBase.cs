@@ -59,6 +59,16 @@ namespace ExprCalc.CoreLogic.Resources.CalculationsRegistry
             return _calculations.ContainsKey(id);
         }
 
+        public IEnumerable<Calculation> Enumerate(bool withCancelled = false)
+        {
+            if (withCancelled)
+                return _calculations.Select(o => o.Value.Calculation);
+
+            return _calculations
+                .Where(o => !o.Value.CancellationTokenSource.IsCancellationRequested)
+                .Select(o => o.Value.Calculation);
+        }
+
         public bool TryGetStatus(Guid id, [NotNullWhen(true)] out CalculationStatus? status)
         {
             if (_calculations.TryGetValue(id, out Item item))

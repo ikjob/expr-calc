@@ -153,5 +153,22 @@ namespace ExprCalc.Storage.Repositories
                 throw;
             }
         }
+
+        public async Task<bool> DeleteCalculationByIdAsync(Guid id, CancellationToken token)
+        {
+            _logger.LogTrace(nameof(DeleteCalculationByIdAsync) + " started");
+            using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInDb) + "." + nameof(DeleteCalculationByIdAsync));
+
+            try
+            {
+                return await _databaseController.DeleteCalculationByIdAsync(id, token);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "{methodName} ended with exception", nameof(DeleteCalculationByIdAsync));
+                activity?.SetStatus(ActivityStatusCode.Error, $"{nameof(DeleteCalculationByIdAsync)} ended with exception");
+                throw;
+            }
+        }
     }
 }

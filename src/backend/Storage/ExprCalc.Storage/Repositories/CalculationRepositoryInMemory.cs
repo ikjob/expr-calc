@@ -104,6 +104,16 @@ namespace ExprCalc.Storage.Repositories
             }
         }
 
+        public bool DeleteCalculationById(Guid id)
+        {
+            _logger.LogTrace(nameof(DeleteCalculationByIdAsync) + " started");
+            using var activity = _activitySource.StartActivity(nameof(CalculationRepositoryInMemory) + "." + nameof(DeleteCalculationByIdAsync));
+
+            lock (_lock)
+            {
+                return _data.Remove(id);
+            }
+        }
 
 
         public Task<Calculation> AddCalculationAsync(Calculation calculation, CancellationToken token)
@@ -175,6 +185,18 @@ namespace ExprCalc.Storage.Repositories
         public Task<int> DeleteCalculationsAsync(DateTime createdBefore, CancellationToken token)
         {
             return Task.FromResult(0);
+        }
+
+        public Task<bool> DeleteCalculationByIdAsync(Guid id, CancellationToken token)
+        {
+            try
+            {
+                return Task.FromResult(DeleteCalculationById(id));
+            }
+            catch (Exception ex)
+            {
+                return Task.FromException<bool>(ex);
+            }
         }
     }
 }

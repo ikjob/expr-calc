@@ -21,6 +21,7 @@ namespace ExprCalc.CoreLogic.Services.StorageCleanup
     internal class StorageCleanupService : BackgroundService
     {
         private readonly ICalculationRepository _calculationsRepository;
+        private readonly IScheduledCalculationsRegistry _calculationRegistry;
 
         private readonly TimeSpan _expirationPeriod;
         private readonly TimeSpan _cleanupPeriod;
@@ -30,11 +31,13 @@ namespace ExprCalc.CoreLogic.Services.StorageCleanup
 
         public StorageCleanupService(
             ICalculationRepository calculationRepository,
+            IScheduledCalculationsRegistry calculationRegistry,
             IOptions<CoreLogicConfig> config,
             ILogger<StorageCleanupService> logger,
             InstrumentationContainer instrumentation)
         {
             _calculationsRepository = calculationRepository;
+            _calculationRegistry = calculationRegistry;
 
             _expirationPeriod = config.Value.StorageCleanupExpiration;
             _cleanupPeriod = config.Value.StorageCleanupPeriod;
@@ -68,7 +71,28 @@ namespace ExprCalc.CoreLogic.Services.StorageCleanup
             using var activity = _activitySource.StartActivity(nameof(StorageCleanupService) + ".Cleanup");
 
             Stopwatch sw = Stopwatch.StartNew();
+            // Remove from database first
             int deletedCount = await _calculationsRepository.DeleteCalculationsAsync(deleteBefore, token);
+
+            // Remove from registry
+            List<Guid> guidsToRemove = new List<Guid>();
+            foreach (var item in _calculationRegistry.Enumerate(withCancelled: false))
+            {
+                if (item.CreatedAt < deleteBefore)
+                {
+                    guidsToRemove.Add(item.Id);
+                }
+            }
+
+            foreach (var id in guidsToRemove)
+            {
+                if (_calculationRegistry.TryCancel(id, Entities.User.System, out _))
+                {
+                    // Due to possibility of race conditions it is important to remove explicitly from storage
+                    await _calculationsRepository.DeleteCalculationByIdAsync(id, token);
+                }
+            }
+
             _logger.LogInformation("Cleanup procedure removed {num} calculations. Procedure took {time}ms", deletedCount, sw.ElapsedMilliseconds);
         }
     }
