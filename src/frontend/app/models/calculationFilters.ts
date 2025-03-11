@@ -13,4 +13,7 @@ export type CalculationFilters = {
 
     state?: CalculationState;
     expression?: string;
+
+    calculationResultMin?: number;
+    calculationResultMax?: number;
 }

@@ -141,7 +141,10 @@ function CalculationSubmit(props: CalculationSubmitProps) {
     return (
         <div className="mt-4 mb-0">
             <div className="join flex">
-                <input type="text" className="input input-bordered input-accent join-item flex-auto" placeholder="Expression" maxLength={25001} onChange={e => { currentInput.current = e.target.value; }} />
+                <input type="text" className="input input-bordered input-accent join-item flex-auto" 
+                placeholder="Expression" maxLength={25001} 
+                onChange={e => { currentInput.current = e.target.value; }}
+                onKeyDown={(e) => { if (e.key == "Enter") { submitExpression(); } }} />
                 <button className="btn btn-accent join-item rounded-r-full flex-none" onClick={submitExpression}>Submit</button>
             </div>
             <span className="validator-hint text-error ml-1 mt-1 mb-0">

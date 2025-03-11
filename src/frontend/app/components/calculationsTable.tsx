@@ -38,7 +38,7 @@ function getErrorNameByErrorCode(code?: CalculationErrorCode | null) : string {
 
 export default function CalculationsTable({ rows, onStop }: CalculationsTableProps) {  
     return (
-        <table className="table border-1 border-base-200 table-fixed hover:table-hover">
+        <table className="table border-1 border-base-200 table-fixed hover:table-hover min-w-200">
             <thead className="info text-accent text-md bg-info/10">
                 <tr className="">
                     <th className="w-12"></th>

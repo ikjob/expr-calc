@@ -78,7 +78,11 @@ export function CalculationsFilter({ filters, onChange }: CalculationsFilterProp
     const expressionInputRef = useRef<HTMLInputElement>(null);
     const dateFromInputRef = useRef<HTMLInputElement>(null);
     const dateToInputRef = useRef<HTMLInputElement>(null);
-    const anyFilter = filters.createdBy || filters.state || filters.expression || filters.createdAtMin || filters.createdAtMax || false;
+    const resultMinInputRef = useRef<HTMLInputElement>(null);
+    const resultMaxInputRef = useRef<HTMLInputElement>(null);
+    const anyFilter = filters.createdBy || filters.state || filters.expression || 
+                    filters.createdAtMin || filters.createdAtMax || 
+                    filters.calculationResultMin || filters.calculationResultMax || false;
 
     function onSelectStateChange(newState: string) {
         if (newState != filters.state) {
@@ -89,6 +93,20 @@ export function CalculationsFilter({ filters, onChange }: CalculationsFilterProp
             else {
                 newFilters.state = newState as CalculationState;
             }
+
+            if (newFilters.state !== "Success") {
+                newFilters.calculationResultMin = undefined;
+                newFilters.calculationResultMax = undefined;
+            }
+            else {
+                if (resultMinInputRef.current != null) {
+                    newFilters.calculationResultMin = resultMinInputRef.current.value ? Number.parseFloat(resultMinInputRef.current.value) : undefined;
+                }
+                if (resultMaxInputRef.current != null) {
+                    newFilters.calculationResultMax = resultMaxInputRef.current.value ? Number.parseFloat(resultMaxInputRef.current.value) : undefined;
+                }
+            }
+
             onChange(newFilters);
         }
     }
@@ -139,6 +157,30 @@ export function CalculationsFilter({ filters, onChange }: CalculationsFilterProp
         return `${parsedDate.getFullYear()}-${numToStringWithLeadingZeros(parsedDate.getMonth() + 1)}-${numToStringWithLeadingZeros(parsedDate.getDate())}T${numToStringWithLeadingZeros(parsedDate.getHours())}:${numToStringWithLeadingZeros(parsedDate.getMinutes())}`;
     }
 
+
+    function onResultMinChanged(newResultMin: string, forceChange?: boolean) {
+        const parsedResultMin = newResultMin ? Number.parseFloat(newResultMin) : undefined;
+        if (parsedResultMin != filters.calculationResultMin) {
+            const newFilters = { ...filters };
+            newFilters.calculationResultMin = parsedResultMin;
+            onChange(newFilters);
+        }
+        if (resultMinInputRef.current != null && forceChange) {
+            resultMinInputRef.current.value = newResultMin;
+        }
+    }
+    function onResultMaxChanged(newResultMax: string, forceChange?: boolean) {
+        const parsedResultMax = newResultMax ? Number.parseFloat(newResultMax) : undefined;
+        if (parsedResultMax != filters.calculationResultMax) {
+            const newFilters = { ...filters };
+            newFilters.calculationResultMax = parsedResultMax;
+            onChange(newFilters);
+        }
+        if (resultMaxInputRef.current != null && forceChange) {
+            resultMaxInputRef.current.value = newResultMax;
+        }
+    }
+
     return (
         <details className="collapse collapse-arrow bg-base-200 border-base-300 rounded-md my-4">
             <summary className="collapse-title">
@@ -151,6 +193,8 @@ export function CalculationsFilter({ filters, onChange }: CalculationsFilterProp
                         { filters.createdAtMin ? <div className="badge badge-lg mx-2 mb-1 whitespace-nowrap"><span className="text-info">Submitted after:</span>{new Date(filters.createdAtMin).toLocaleString()}</div> : <></>}
                         { filters.createdAtMax ? <div className="badge badge-lg mx-2 mb-1 whitespace-nowrap"><span className="text-info">Submitted before:</span>{new Date(filters.createdAtMax).toLocaleString()}</div> : <></>}
                         { filters.state ? <div className="badge badge-lg mx-2 mb-1"><span className="text-info">State:</span> {filters.state}</div> : <></>}
+                        { filters.calculationResultMin ? <div className="badge badge-lg mx-2 mb-1"><span className="text-info">Result &gt;=</span> {filters.calculationResultMin}</div> : <></>}
+                        { filters.calculationResultMax ? <div className="badge badge-lg mx-2 mb-1"><span className="text-info">Result &lt;</span> {filters.calculationResultMax}</div> : <></>}
                     </div>
                 </div>
             </summary>
@@ -204,6 +248,37 @@ export function CalculationsFilter({ filters, onChange }: CalculationsFilterProp
                     <option value="Failed">Failed</option>
                     <option value="Cancelled">Cancelled</option>
                 </select>
+
+                <span className="self-center">Result between: </span>
+                <div>
+                    <label className="input w-70">
+                        <input type="number" className=""
+                            ref={resultMinInputRef}
+                            step="any"
+                            disabled={filters.state != "Success"}
+                            defaultValue={filters.calculationResultMin ?? undefined}
+                            onKeyDown={(e) => { if (e.key == "Enter") { onResultMinChanged((e.target as HTMLInputElement).value); } } }
+                            onBlur={(e) => onResultMinChanged((e.target as HTMLInputElement).value) }
+                            onChange={(e) => {e.target.focus();}} />
+                        <button onClick={() => onResultMinChanged("", true)}>
+                            <TimesIcon className="w-3 h-3"  />
+                        </button>
+                    </label>
+                    <span className="mx-3 align-middle">and</span>
+                    <label className="input w-70 mr-3">
+                        <input type="number" className=""
+                            ref={resultMaxInputRef}
+                            step="any"
+                            disabled={filters.state != "Success"}
+                            defaultValue={filters.calculationResultMax ?? undefined}
+                            onKeyDown={(e) => { if (e.key == "Enter") { onResultMaxChanged((e.target as HTMLInputElement).value); } } }
+                            onBlur={(e) => onResultMaxChanged((e.target as HTMLInputElement).value) }
+                            onChange={(e) => {e.target.focus();}} />
+                        <button onClick={() => onResultMaxChanged("", true)}>
+                            <TimesIcon className="w-3 h-3"  />
+                        </button>
+                    </label>
+                </div>
             </div>
         </details>
     )
