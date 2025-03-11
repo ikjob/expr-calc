@@ -31,6 +31,11 @@ namespace ExprCalc.RestApi.Dto
         [FromQuery]
         public string? Expression { get; init; }
 
+        [FromQuery]
+        public double? CalculationResultMin { get; init; }
+        [FromQuery]
+        public double? CalculationResultMax { get; init; }
+
 
         public CalculationFilters IntoEntity()
         {
@@ -43,7 +48,9 @@ namespace ExprCalc.RestApi.Dto
                 UpdatedAtMin = UpdatedAtMin,
                 UpdatedAtMax = UpdatedAtMax,
                 State = State,
-                Expression = Expression
+                Expression = Expression,
+                CalculationResultMin = CalculationResultMin,
+                CalculationResultMax = CalculationResultMax
             };
         }
     }

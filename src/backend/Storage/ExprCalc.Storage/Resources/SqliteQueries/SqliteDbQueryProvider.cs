@@ -263,6 +263,22 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
                 command.Parameters.Add("@Expression", SqliteType.Text).Value = "%" + filters.Expression + "%";
                 appendAnd = true;
             }
+            if (filters.CalculationResultMin != null)
+            {
+                if (appendAnd)
+                    conditionBuilder.Append(" AND ");
+                conditionBuilder.Append("CalcResult IS NOT NULL AND CalcResult >= @CalculationResultMin");
+                command.Parameters.Add("@CalculationResultMin", SqliteType.Real).Value = filters.CalculationResultMin.Value;
+                appendAnd = true;
+            }
+            if (filters.CalculationResultMax != null)
+            {
+                if (appendAnd)
+                    conditionBuilder.Append(" AND ");
+                conditionBuilder.Append("CalcResult IS NOT NULL AND CalcResult < @CalculationResultMax");
+                command.Parameters.Add("@CalculationResultMax", SqliteType.Real).Value = filters.CalculationResultMax.Value;
+                appendAnd = true;
+            }
 
             if (!appendAnd)
                 conditionBuilder.Append("1 = 1");

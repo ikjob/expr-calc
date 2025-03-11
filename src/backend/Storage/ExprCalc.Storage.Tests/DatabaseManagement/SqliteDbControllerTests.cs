@@ -79,7 +79,9 @@ namespace ExprCalc.Storage.Tests.DatabaseManagement
                 (filter.UpdatedAtMin == null || o.UpdatedAt >= filter.UpdatedAtMin.Value) &&
                 (filter.UpdatedAtMax == null || o.UpdatedAt < filter.UpdatedAtMax.Value) &&
                 (filter.CreatedBy == null || o.CreatedBy.Login == filter.CreatedBy) &&
-                (filter.Expression == null || o.Expression.Contains(filter.Expression))
+                (filter.Expression == null || o.Expression.Contains(filter.Expression)) &&
+                (filter.CalculationResultMin == null || o.Status.IsSuccess(out var success) && success.CalculationResult >= filter.CalculationResultMin.Value) &&
+                (filter.CalculationResultMax == null || o.Status.IsSuccess(out success) && success.CalculationResult < filter.CalculationResultMax.Value)
                 );
         }
 
@@ -193,7 +195,7 @@ namespace ExprCalc.Storage.Tests.DatabaseManagement
             List<Calculation> insertionList = [
                 CreateCalculationPending(user: "abc"),
                 CreateCalculationInProgress(user: "bcd", timeOffset: TimeSpan.FromMilliseconds(10)),
-                CreateCalculationSuccess(user: "bcd", timeOffset: TimeSpan.FromMilliseconds(20)),
+                CreateCalculationSuccess(user: "bcd", result: 3, timeOffset: TimeSpan.FromMilliseconds(20)),
                 CreateCalculationFailed(user: "abc", expression: "log(10) / cos(1)", timeOffset: TimeSpan.FromMilliseconds(30)),
                 CreateCalculationCancelled(user: "abc", timeOffset: TimeSpan.FromMilliseconds(40))
             ];
@@ -212,6 +214,8 @@ namespace ExprCalc.Storage.Tests.DatabaseManagement
                 new CalculationFilters() { CreatedAtMin = insertionList[1].CreatedAt, CreatedAtMax = insertionList[2].CreatedAt.AddMilliseconds(2) },
                 new CalculationFilters() { UpdatedAtMin = insertionList[1].CreatedAt, UpdatedAtMax = insertionList[2].CreatedAt.AddMilliseconds(2) },
                 new CalculationFilters() { UpdatedAtMin = insertionList[1].CreatedAt, CreatedBy = "abc" },
+                new CalculationFilters() { CalculationResultMin = 3, CalculationResultMax = 4 },
+                new CalculationFilters() { CalculationResultMin = 10 },
             ];
 
             foreach (var filter in filters)
