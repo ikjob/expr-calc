@@ -69,6 +69,11 @@ namespace ExprCalc.Storage.Resources.SqliteQueries
                         CreatedAt DESC,
                         State
                     ) WHERE State != {(int)CalculationState.Success};
+
+                    CREATE INDEX IF NOT EXISTS idx_Calculations_CreatedAt_CalcResult ON Calculations (
+                        CreatedAt DESC,
+                        CalcResult
+                    ) WHERE CalcResult IS NOT NULL;
                     """;
 
                 command.ExecuteNonQuery();
