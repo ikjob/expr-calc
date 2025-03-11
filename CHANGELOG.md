@@ -4,7 +4,8 @@ Expression calculator changelog
 
 ## [Unreleased]
 #### Added
-
+- Backend: filter by calculation result (#63)
+- Fontend: support for all filters (#63)
 
 #### Changed
 
