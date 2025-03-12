@@ -24,5 +24,8 @@ namespace ExprCalc.Entities.MetadataParams
         public CalculationState? State { get; init; }
 
         public string? Expression { get; init; }
+
+        public double? CalculationResultMin { get; init; }
+        public double? CalculationResultMax { get; init; }
     }
 }

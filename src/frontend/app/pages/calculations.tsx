@@ -2,15 +2,14 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useCancelCalculationMutation, useCreateCalculationMutation, useGetCalculationsQuery } from '../api/calculations'
 import CalculationsTable from '../components/calculationsTable'
 import Pagination from '../components/pagination'
-import { User as UserIcon } from '@ricons/fa'
 import { CalculationFilters } from '../models/calculationFilters'
 import { PaginationParams } from '../models/paginationParams'
 import { Uuid } from '../common'
 import { useSelector } from 'react-redux'
 import { selectActiveUserName } from '../redux/stores/userStore'
-import { CalculationState } from '../models/calculation'
 import AlertBar, { AlertBarSeverity, AlertContent, AlertItem } from '../components/alertBar'
 import { ErrorDetails, isErrorDetails } from '../models/errorDetails'
+import { CalculationsFilter } from '../components/calculationsFilter'
 
 const PAGE_SIZE = 10;
 const POLLING_INTERVAL_MS = 1500;
@@ -142,75 +141,15 @@ function CalculationSubmit(props: CalculationSubmitProps) {
     return (
         <div className="mt-4 mb-0">
             <div className="join flex">
-                <input type="text" className="input input-bordered input-accent join-item flex-auto" placeholder="Expression" maxLength={25001} onChange={e => { currentInput.current = e.target.value; }} />
+                <input type="text" className="input input-bordered input-accent join-item flex-auto" 
+                placeholder="Expression" maxLength={25001} 
+                onChange={e => { currentInput.current = e.target.value; }}
+                onKeyDown={(e) => { if (e.key == "Enter") { submitExpression(); } }} />
                 <button className="btn btn-accent join-item rounded-r-full flex-none" onClick={submitExpression}>Submit</button>
             </div>
             <span className="validator-hint text-error ml-1 mt-1 mb-0">
                 {inputErrorStatus.error}
             </span>
         </div>
-    )
-}
-
-
-
-interface CalculationsFilterProps {
-    filters: CalculationFilters;
-    onChange: (filters: CalculationFilters) => void;
-}
-
-function CalculationsFilter({ filters, onChange }: CalculationsFilterProps) {
-    const activeUser = useSelector(selectActiveUserName);
-    const anyFilter = filters.createdBy || filters.state || false;
-
-    function toggleActiveUserFilter() {
-        const newFilters = { ...filters };
-        if (newFilters.createdBy || activeUser === null) {
-            newFilters.createdBy = undefined;
-        } else {
-            newFilters.createdBy = activeUser;
-        }
-        onChange(newFilters);
-    }
-    function onSelectStateChange(newState: string) {
-        const newFilters = { ...filters };
-        if (!newState) {
-            newFilters.state = undefined;
-        }
-        else {
-            newFilters.state = newState as CalculationState;
-        }
-        onChange(newFilters);
-    }
-
-    return (
-        <details className="collapse collapse-arrow bg-base-200 border-base-300 rounded-md my-4">
-            <summary className="collapse-title">
-                <span className="align-middle">Filters:</span>
-                { !anyFilter ? <div className="badge badge-lg mx-4">All</div> : <></>}
-                { filters.createdBy ? <div className="badge badge-lg mx-4"><span className="text-info">Submitted by:</span> <UserIcon className="w-4 h-[1em] inline relative text-base-content" /> {filters.createdBy}</div> : <></>}
-                { filters.state ? <div className="badge badge-lg mx-4"><span className="text-info">State:</span> {filters.state}</div> : <></>}
-            </summary>
-            <div className="collapse-content mt-2">
-                <span className="mr-4 align-top">User: </span>
-                <label className="label cursor-pointer">
-                    <input type="checkbox" className="checkbox" 
-                        checked={filters.createdBy == activeUser}
-                        onChange={toggleActiveUserFilter} />
-                    <span className="label-text">Current</span>
-                </label>
-                <div className="mt-2">
-                    <span className="mr-2 align-middle">State: </span>
-                    <select defaultValue="Pick a status" className="select select-sm" onChange={(e) => onSelectStateChange(e.target.value)}>
-                        <option value="">---</option>
-                        <option value="Pending">Pending</option>
-                        <option value="InProgress">In Progress</option>
-                        <option value="Success">Success</option>
-                        <option value="Failed">Failed</option>
-                        <option value="Cancelled">Cancelled</option>
-                    </select>
-                </div>
-            </div>
-        </details>
     )
 }

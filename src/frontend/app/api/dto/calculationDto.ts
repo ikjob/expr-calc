@@ -78,6 +78,9 @@ export type CalculationGetListQueryParamsDto = {
     state?: CalculationStateDto;
     expression?: string;
 
+    calculationResultMin?: number;
+    calculationResultMax?: number;
+
     pageNumber?: number;
     pageSize?: number;
 }
@@ -92,6 +95,8 @@ export function convertCalculationFiltersAndPaginationParamsIntoQueryParams(filt
         updatedAtMax: filters?.updatedAtMax ? new Date(filters?.updatedAtMax).toISOString() : undefined,
         state: filters?.state,
         expression: filters?.expression,
+        calculationResultMin: filters?.calculationResultMin,
+        calculationResultMax: filters?.calculationResultMax,
 
         pageNumber: pagination?.pageNumber,
         pageSize: pagination?.pageSize

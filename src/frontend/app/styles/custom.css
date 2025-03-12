@@ -1,0 +1,4 @@
+.calendar-icon-postion-right::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 2.5em;
+}
